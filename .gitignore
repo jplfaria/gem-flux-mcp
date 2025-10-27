@@ -75,3 +75,5 @@ htmlcov/
 .implementation_logs/
 .implementation_flags
 optimized_prompt.md
+prompt.md
+optimized_prompt.md
