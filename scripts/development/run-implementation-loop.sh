@@ -352,10 +352,10 @@ try:
     print('ANALYSIS:' + str(task_analysis), file=sys.stderr)
 
     # Determine max_specs based on phase complexity
-    # Agent implementation phases need more specs to understand agent interactions
-    if $CURRENT_PHASE >= 8 and $CURRENT_PHASE <= 15:
-        max_specs = 9  # Agent phases: need agent spec + related agents + infrastructure
-    elif $CURRENT_PHASE >= 16:
+    # Tool implementation phases may need more specs for dependencies
+    if $CURRENT_PHASE >= 5 and $CURRENT_PHASE <= 7:
+        max_specs = 9  # Core tool phases: need tool spec + database + template + storage
+    elif $CURRENT_PHASE >= 10:
         max_specs = 8  # Integration phases: need multiple system specs
     else:
         max_specs = 6  # Infrastructure phases: simpler, fewer dependencies
@@ -451,7 +451,7 @@ $(cat CLAUDE.md)
 - Maintain 100% test pass rate for must-pass tests
 - Follow specification requirements exactly
 - Implement atomic features only
-- Use BAML for all content generation methods
+- Use FastMCP for all MCP tool implementations
 - Maintain ≥80% test coverage
 
 ## Context Optimization

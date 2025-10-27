@@ -98,7 +98,7 @@ When adding new tests:
 ## 🏗️ Technical Stack
 
 ### Core Technologies
-- **Python 3.11 (NOT 3.12+)**: Required due to distutils dependency
+- **Python 3.11 ONLY (NOT 3.12+)**: CRITICAL - Python 3.12+ removed distutils module which scikit-learn 1.2.0 requires (ModelSEEDpy dependency). Must use 3.11.
 - **FastMCP**: MCP server framework for tool registration
 - **ModelSEEDpy (Fxe/dev)**: CRITICAL - must use Fxe fork, not official repo
 - **COBRApy**: Genome-scale metabolic modeling
