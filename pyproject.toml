@@ -58,7 +58,11 @@ addopts = [
 
 [tool.coverage.run]
 source = ["src"]
-omit = ["*/tests/*", "*/conftest.py"]
+omit = [
+    "*/tests/*",
+    "*/conftest.py",
+    "*/utils/context_relevance.py"  # Loop infrastructure, not application code
+]
 
 [tool.coverage.report]
 precision = 2

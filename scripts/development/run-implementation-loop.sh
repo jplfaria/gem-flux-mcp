@@ -125,6 +125,23 @@ echo -e "${YELLOW}This implementation loop includes quality gates and validation
 echo -e "${CYAN}Each iteration must pass tests and coverage checks before proceeding.${NC}"
 echo -e "${YELLOW}Press Ctrl+C at any time to stop.${NC}\n"
 
+# CRITICAL: Ensure we're using the virtual environment
+if [ ! -d ".venv" ]; then
+    echo -e "${RED}❌ Error: .venv directory not found${NC}"
+    echo -e "${YELLOW}Run: uv sync${NC}"
+    exit 1
+fi
+
+if [ ! -f ".venv/bin/python" ]; then
+    echo -e "${RED}❌ Error: .venv/bin/python not found${NC}"
+    echo -e "${YELLOW}Virtual environment appears corrupted. Run: uv sync${NC}"
+    exit 1
+fi
+
+echo -e "${CYAN}✅ Using virtual environment: .venv${NC}"
+echo -e "${CYAN}   Python: $(.venv/bin/python --version)${NC}"
+echo -e "${CYAN}   Pytest: $(.venv/bin/pytest --version | head -1)${NC}\n"
+
 # Function to check if pytest is available
 check_pytest() {
     if [ ! -f ".venv/bin/pytest" ]; then

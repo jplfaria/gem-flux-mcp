@@ -105,6 +105,32 @@ When adding new tests:
 - **pytest**: Comprehensive testing with ≥80% coverage
 - **UV**: Package manager with virtual environment isolation
 
+### Virtual Environment Requirements
+
+**CRITICAL**: All development MUST happen in .venv
+
+The implementation loop enforces .venv usage automatically, but when running commands manually:
+
+```bash
+# ❌ WRONG - Uses system Python/pytest
+pytest tests/
+python -m pytest
+
+# ✅ CORRECT - Uses .venv
+.venv/bin/pytest tests/
+.venv/bin/python -m pytest
+
+# ✅ CORRECT - Activate venv first
+source .venv/bin/activate  # or: uv run
+pytest tests/
+```
+
+**Why this matters:**
+- System Python doesn't have `src/` in path → import errors
+- System pytest may have wrong dependencies
+- .venv has correct ModelSEEDpy (Fxe/dev fork)
+- .venv Python 3.11, system might be 3.12+
+
 ## 🔧 MCP Tool Development Best Practices
 
 ### Overview: FastMCP Tool Development
