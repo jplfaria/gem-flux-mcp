@@ -60,3 +60,18 @@ baml_client/
 
 # Spec development artifacts
 .spec_loop_state
+
+# UV package manager
+uv.lock
+.uv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Implementation loop artifacts
+.implementation_logs/
+.implementation_flags
+optimized_prompt.md
