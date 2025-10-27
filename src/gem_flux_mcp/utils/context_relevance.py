@@ -18,39 +18,49 @@ class SpecificationRelevanceScorer:
         self.specs_dir = specs_directory
         self.cache = {}
         # Always include foundational specs
-        self.critical_specs = ["001-system-overview.md", "002-core-principles.md", "003-research-workflow.md"]
+        self.critical_specs = ["001-system-overview.md", "002-data-formats.md"]
 
         # Domain keyword mappings for relevance scoring
         self.domain_keywords = {
-            'agent': ['agent', 'supervisor', 'generation', 'reflection', 'ranking', 'evolution', 'proximity', 'meta-review'],
-            'baml': ['baml', 'llm', 'function', 'prompt', 'model', 'client'],
+            'tools': ['build_media', 'build_model', 'gapfill_model', 'run_fba', 'tool', 'mcp'],
+            'database': ['database', 'compound', 'reaction', 'modelseed', 'lookup', 'search'],
             'testing': ['test', 'mock', 'pytest', 'integration', 'unit', 'coverage'],
-            'infrastructure': ['queue', 'memory', 'context', 'safety', 'task', 'worker'],
-            'phase': [f'phase {i}' for i in range(1, 18)]
+            'modeling': ['model', 'genome', 'metabolic', 'template', 'fba', 'gapfill'],
+            'session': ['session', 'storage', 'list_models', 'list_media', 'delete'],
+            'media': ['media', 'growth', 'minimal', 'complete', 'cpd']
         }
 
         # Component name to spec file mapping
         # This ensures critical component specs are always included
         self.component_spec_map = {
-            'supervisor': '005-supervisor-agent.md',
-            'supervisoragent': '005-supervisor-agent.md',
-            'generation': '007-generation-agent.md',
-            'generationagent': '007-generation-agent.md',
-            'reflection': '008-reflection-agent.md',
-            'reflectionagent': '008-reflection-agent.md',
-            'ranking': '009-ranking-agent.md',
-            'rankingagent': '009-ranking-agent.md',
-            'evolution': '010-evolution-agent.md',
-            'evolutionagent': '010-evolution-agent.md',
-            'proximity': '011-proximity-agent.md',
-            'proximityagent': '011-proximity-agent.md',
-            'meta-review': '012-meta-review-agent.md',
-            'metareview': '012-meta-review-agent.md',
-            'metareviewagent': '012-meta-review-agent.md',
-            'taskqueue': '006-task-queue-behavior.md',
-            'contextmemory': '015-context-memory.md',
-            'safety': '020-safety-mechanisms.md',
-            'baml': '030-baml-enhancements.md',
+            'build_media': '003-build-media-tool.md',
+            'buildmedia': '003-build-media-tool.md',
+            'build_model': '004-build-model-tool.md',
+            'buildmodel': '004-build-model-tool.md',
+            'gapfill_model': '005-gapfill-model-tool.md',
+            'gapfillmodel': '005-gapfill-model-tool.md',
+            'gapfill': '005-gapfill-model-tool.md',
+            'run_fba': '006-run-fba-tool.md',
+            'runfba': '006-run-fba-tool.md',
+            'fba': '006-run-fba-tool.md',
+            'database': '007-database-integration.md',
+            'compound': '008-compound-lookup-tools.md',
+            'compoundlookup': '008-compound-lookup-tools.md',
+            'reaction': '009-reaction-lookup-tools.md',
+            'reactionlookup': '009-reaction-lookup-tools.md',
+            'storage': '010-model-storage.md',
+            'modelstorage': '010-model-storage.md',
+            'import': '011-model-import-export.md',
+            'export': '011-model-import-export.md',
+            'template': '017-template-management.md',
+            'templatemanagement': '017-template-management.md',
+            'session': '018-session-management-tools.md',
+            'sessionmanagement': '018-session-management-tools.md',
+            'list_models': '018-session-management-tools.md',
+            'list_media': '018-session-management-tools.md',
+            'delete_model': '018-session-management-tools.md',
+            'media': '019-predefined-media-library.md',
+            'predefinedmedia': '019-predefined-media-library.md',
         }
 
     def extract_task_keywords(self, task_description: str) -> Set[str]:
@@ -176,20 +186,22 @@ class SpecificationRelevanceScorer:
         """Apply domain-specific weighting to relevance scores."""
         weight_multiplier = 1.0
 
-        # Boost agent-related specs for agent tasks
-        # Updated to include ALL agents (not just the original 4)
-        if any(kw in task_keywords for kw in self.domain_keywords['agent']):
-            if any(agent_type in spec_path for agent_type in [
-                'supervisor', 'generation', 'reflection', 'ranking',
-                'evolution', 'proximity', 'meta-review'  # Added missing agents
+        # Boost tool specs for tool-related tasks
+        if any(kw in task_keywords for kw in self.domain_keywords['tools']):
+            if any(tool in spec_path for tool in [
+                'build-media', 'build-model', 'gapfill', 'run-fba'
             ]):
                 weight_multiplier += 0.3
 
-        # Boost BAML specs for BAML-related tasks
-        # REDUCED from +0.4 to +0.2 to prevent over-weighting infrastructure specs
-        if any(kw in task_keywords for kw in self.domain_keywords['baml']):
-            if 'baml' in spec_path or 'llm' in spec_path:
-                weight_multiplier += 0.2  # Reduced from 0.4
+        # Boost database specs for database/lookup tasks
+        if any(kw in task_keywords for kw in self.domain_keywords['database']):
+            if any(db in spec_path for db in ['database', 'compound', 'reaction']):
+                weight_multiplier += 0.3
+
+        # Boost modeling specs for metabolic modeling tasks
+        if any(kw in task_keywords for kw in self.domain_keywords['modeling']):
+            if any(model in spec_path for model in ['model', 'template', 'genome']):
+                weight_multiplier += 0.2
 
         # Boost testing specs for test implementation
         if any(kw in task_keywords for kw in self.domain_keywords['testing']):
@@ -262,11 +274,13 @@ class SpecificationRelevanceScorer:
 
         if any(keyword in task_lower for keyword in ['test', 'testing', 'unit test', 'integration test']):
             return 'testing'
-        elif any(keyword in task_lower for keyword in ['agent', 'supervisor', 'generation', 'reflection']):
-            return 'agent_implementation'
-        elif any(keyword in task_lower for keyword in ['baml', 'function', 'client']):
-            return 'baml_integration'
-        elif any(keyword in task_lower for keyword in ['queue', 'memory', 'context']):
+        elif any(keyword in task_lower for keyword in ['build_media', 'build_model', 'gapfill', 'run_fba', 'tool']):
+            return 'tool_implementation'
+        elif any(keyword in task_lower for keyword in ['database', 'compound', 'reaction', 'lookup']):
+            return 'database_integration'
+        elif any(keyword in task_lower for keyword in ['session', 'storage', 'list', 'delete']):
+            return 'session_management'
+        elif any(keyword in task_lower for keyword in ['template', 'media', 'predefined']):
             return 'infrastructure'
         else:
             return 'general'
@@ -275,17 +289,17 @@ class SpecificationRelevanceScorer:
         """Extract system components mentioned in task."""
         components = []
         component_patterns = {
-            'TaskQueue': ['queue', 'task queue', 'worker'],
-            'ContextMemory': ['memory', 'context memory', 'storage'],
-            'SupervisorAgent': ['supervisor', 'orchestration', 'coordination'],
-            'GenerationAgent': ['generation', 'hypothesis'],
-            'ReflectionAgent': ['reflection', 'review', 'critique'],
-            'RankingAgent': ['ranking', 'tournament'],
-            'EvolutionAgent': ['evolution', 'mutation'],
-            'ProximityAgent': ['proximity', 'clustering'],
-            'MetaReviewAgent': ['meta-review', 'meta review'],
-            'BAML': ['baml', 'llm', 'function'],
-            'Safety': ['safety', 'validation', 'check']
+            'build_media': ['build_media', 'media creation', 'growth media'],
+            'build_model': ['build_model', 'model building', 'genome', 'rast', 'fasta'],
+            'gapfill_model': ['gapfill', 'gap fill', 'gapfilling'],
+            'run_fba': ['fba', 'flux balance', 'optimize', 'simulation'],
+            'database': ['database', 'modelseed', 'compounds.tsv', 'reactions.tsv'],
+            'compound_lookup': ['compound', 'cpd', 'lookup compound'],
+            'reaction_lookup': ['reaction', 'rxn', 'lookup reaction'],
+            'model_storage': ['storage', 'session', 'store model'],
+            'template_management': ['template', 'gramnegative', 'core'],
+            'session_tools': ['list_models', 'list_media', 'delete_model'],
+            'predefined_media': ['minimal', 'complete', 'rich', 'predefined']
         }
 
         task_lower = task_description.lower()
@@ -441,72 +455,78 @@ class SpecificationRelevanceScorer:
 
         # Domain-specific enhancement
         domain = task_analysis['domain']
-        if domain == 'agent' and 'agent' in spec_file:
+        if domain == 'tools' and 'tool' in spec_file:
             enhanced_score += 0.2
-        elif domain == 'baml' and ('baml' in spec_file or 'llm' in spec_file):
+        elif domain == 'database' and ('database' in spec_file or 'lookup' in spec_file):
             enhanced_score += 0.2
-        elif domain == 'infrastructure' and any(infra in spec_file for infra in ['queue', 'memory', 'context']):
+        elif domain == 'modeling' and any(model in spec_file for model in ['model', 'template', 'media']):
             enhanced_score += 0.2
 
-        # For agent phases, boost related agent specs (agents that interact with the primary)
+        # For tool phases, boost related tool specs (tools that the primary tool depends on)
         phase = task_analysis['phase']
-        if phase in [8, 9, 10, 11, 12, 13, 14, 15]:
-            # Boost agent interaction protocol spec
-            if spec_file == '013-agent-interaction-protocols.md':
-                enhanced_score += 0.3
-            # Boost multi-agent architecture for understanding coordination
-            if spec_file == '004-multi-agent-architecture.md':
+        if phase in [4, 5, 6, 7, 8, 9, 10, 11, 12]:
+            # Boost workflow spec for understanding end-to-end integration
+            if spec_file == '012-complete-workflow.md':
                 enhanced_score += 0.25
 
-            # Phase-specific related agents that should be included
-            related_agents = self.get_related_agent_specs(phase)
-            if spec_file in related_agents:
-                enhanced_score += 0.35  # Strong boost for related agents
+            # Boost error handling for understanding failure cases
+            if spec_file == '013-error-handling.md':
+                enhanced_score += 0.2
+
+            # Phase-specific related tools that should be included
+            related_tools = self.get_related_tool_specs(phase)
+            if spec_file in related_tools:
+                enhanced_score += 0.35  # Strong boost for related tools
 
         return min(1.0, enhanced_score)
 
     def get_phase_specific_specs(self, phase: int) -> List[str]:
-        """Get specifications most relevant to specific phases."""
+        """Get specifications most relevant to specific phases.
+
+        Note: Actual phases will be determined by AI during implementation planning.
+        This is a placeholder mapping for common patterns.
+        """
         phase_spec_map = {
-            1: ['001-system-overview.md'],
-            2: ['002-core-principles.md'],
-            3: ['006-task-queue-behavior.md'],
-            4: ['015-context-memory.md'],
-            5: ['020-safety-mechanisms.md'],
-            6: ['023-llm-abstraction.md'],
-            7: ['024-argo-gateway-integration.md'],
-            8: ['005-supervisor-agent.md'],
-            9: ['007-generation-agent.md'],
-            10: ['007-generation-agent.md'],
-            11: ['008-reflection-agent.md'],
-            12: ['009-ranking-agent.md'],
-            13: ['010-evolution-agent.md'],
-            14: ['011-proximity-agent.md'],
-            15: ['012-meta-review-agent.md'],
-            16: ['013-agent-interaction-protocols.md'],
-            17: ['021-validation-criteria.md']
+            # Infrastructure phases (likely 1-3)
+            1: ['014-installation.md', '015-mcp-server-setup.md'],
+            2: ['007-database-integration.md', '017-template-management.md'],
+            3: ['010-model-storage.md', '018-session-management-tools.md'],
+
+            # Core tool phases (likely 4-7)
+            4: ['003-build-media-tool.md', '019-predefined-media-library.md'],
+            5: ['004-build-model-tool.md'],
+            6: ['005-gapfill-model-tool.md'],
+            7: ['006-run-fba-tool.md'],
+
+            # Database tool phases (likely 8-9)
+            8: ['008-compound-lookup-tools.md'],
+            9: ['009-reaction-lookup-tools.md'],
+
+            # Integration phases (likely 10+)
+            10: ['011-model-import-export.md'],
+            11: ['012-complete-workflow.md'],
+            12: ['013-error-handling.md'],
         }
 
         return phase_spec_map.get(phase, [])
 
-    def get_related_agent_specs(self, phase: int) -> List[str]:
-        """Get agent specs that are related/interact with the phase's primary agent.
+    def get_related_tool_specs(self, phase: int) -> List[str]:
+        """Get tool specs that are related/interact with the phase's primary tool.
 
-        This helps include specs for agents that the current phase's agent depends on
-        or interacts with frequently.
+        This helps include specs for tools that the current phase's tool depends on.
         """
-        related_agents_map = {
-            8: [],  # Supervisor - orchestrates all, but doesn't need others yet
-            9: ['005-supervisor-agent.md'],  # Generation - called by Supervisor
-            10: ['005-supervisor-agent.md', '007-generation-agent.md'],  # Generation continued
-            11: ['007-generation-agent.md'],  # Reflection - reviews Generation outputs
-            12: ['007-generation-agent.md', '008-reflection-agent.md'],  # Ranking - uses both
-            13: ['007-generation-agent.md', '009-ranking-agent.md'],  # Evolution - improves based on ranking
-            14: ['007-generation-agent.md'],  # Proximity - clusters hypotheses
-            15: ['008-reflection-agent.md', '009-ranking-agent.md'],  # Meta-Review - analyzes Reflection & Ranking
+        related_tools_map = {
+            # build_model depends on template and database
+            5: ['007-database-integration.md', '017-template-management.md'],
+            # gapfill depends on build_model and build_media
+            6: ['004-build-model-tool.md', '003-build-media-tool.md'],
+            # run_fba depends on build_model (and potentially gapfill)
+            7: ['004-build-model-tool.md', '005-gapfill-model-tool.md'],
+            # workflow depends on all core tools
+            11: ['003-build-media-tool.md', '004-build-model-tool.md', '005-gapfill-model-tool.md', '006-run-fba-tool.md'],
         }
 
-        return related_agents_map.get(phase, [])
+        return related_tools_map.get(phase, [])
 
     def get_phase_confidence_boost(self, phase: int, selected_specs: List[str]) -> float:
         """Calculate confidence boost based on phase-appropriate spec inclusion."""
@@ -569,23 +589,18 @@ class SpecificationRelevanceScorer:
         """Get specification requirements for specific phases."""
 
         phase_map = {
-            1: [{'spec_type': 'system-setup', 'keywords': ['setup', 'structure', 'dependencies']}],
-            2: [{'spec_type': 'core-models', 'keywords': ['model', 'dataclass', 'structure']}],
-            3: [{'spec_type': 'task-queue', 'keywords': ['queue', 'task', 'worker']}],
-            4: [{'spec_type': 'context-memory', 'keywords': ['memory', 'context', 'storage']}],
-            5: [{'spec_type': 'safety-framework', 'keywords': ['safety', 'validation', 'check']}],
-            6: [{'spec_type': 'llm-abstraction', 'keywords': ['llm', 'provider', 'abstraction']}],
-            7: [{'spec_type': 'baml-infrastructure', 'keywords': ['baml', 'function', 'client']}],
-            8: [{'spec_type': 'supervisor-agent', 'keywords': ['supervisor', 'orchestration']}],
-            9: [{'spec_type': 'generation-agent', 'keywords': ['generation', 'hypothesis']}],
-            10: [{'spec_type': 'generation-agent', 'keywords': ['generation', 'hypothesis']}],
-            11: [{'spec_type': 'reflection-agent', 'keywords': ['reflection', 'review', 'critique']}],
-            12: [{'spec_type': 'ranking-agent', 'keywords': ['ranking', 'tournament']}],
-            13: [{'spec_type': 'evolution-agent', 'keywords': ['evolution', 'mutation']}],
-            14: [{'spec_type': 'proximity-agent', 'keywords': ['proximity', 'clustering']}],
-            15: [{'spec_type': 'meta-review-agent', 'keywords': ['meta-review', 'synthesis']}],
-            16: [{'spec_type': 'integration', 'keywords': ['integration', 'coordination']}],
-            17: [{'spec_type': 'validation', 'keywords': ['validation', 'testing', 'final']}]
+            1: [{'spec_type': 'installation', 'keywords': ['installation', 'setup', 'dependencies', 'uv']}],
+            2: [{'spec_type': 'database', 'keywords': ['database', 'compounds', 'reactions', 'modelseed']}],
+            3: [{'spec_type': 'storage', 'keywords': ['storage', 'session', 'model']}],
+            4: [{'spec_type': 'build-media', 'keywords': ['media', 'compounds', 'growth']}],
+            5: [{'spec_type': 'build-model', 'keywords': ['model', 'genome', 'template', 'rast', 'fasta']}],
+            6: [{'spec_type': 'gapfill', 'keywords': ['gapfill', 'media', 'reactions']}],
+            7: [{'spec_type': 'fba', 'keywords': ['fba', 'optimize', 'flux', 'simulation']}],
+            8: [{'spec_type': 'compound-lookup', 'keywords': ['compound', 'search', 'lookup']}],
+            9: [{'spec_type': 'reaction-lookup', 'keywords': ['reaction', 'search', 'lookup']}],
+            10: [{'spec_type': 'import-export', 'keywords': ['import', 'export', 'json', 'sbml']}],
+            11: [{'spec_type': 'workflow', 'keywords': ['workflow', 'integration', 'end-to-end']}],
+            12: [{'spec_type': 'error-handling', 'keywords': ['error', 'jsonrpc', 'failure']}]
         }
 
         return phase_map.get(phase, [])
