@@ -78,3 +78,8 @@ optimized_prompt.md
 # prompt.md is a STATIC file (tracked in repo, like specs-prompt.md)
 # Only optimized_prompt.md is generated dynamically
 optimized_prompt.md
+
+# Large database files (download from ModelSEED/ModelSEEDDatabase)
+data/database/compounds.tsv
+data/database/reactions.tsv
+# Keep README.md in repo to document sources
