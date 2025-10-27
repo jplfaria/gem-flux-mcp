@@ -1,0 +1,621 @@
+{
+  "phase_1": {
+    "name": "Project Setup and Structure",
+    "must_pass": [],
+    "may_fail": [],
+    "description": "No integration tests needed - setup phase only"
+  },
+  "phase_2": {
+    "name": "Core Data Models",
+    "must_pass": [],
+    "may_fail": [],
+    "description": "No integration tests needed - unit tests only"
+  },
+  "phase_3": {
+    "name": "Task Queue Implementation",
+    "must_pass": [
+      "test_full_task_lifecycle",
+      "test_priority_based_processing",
+      "test_worker_capability_matching",
+      "test_queue_persistence_and_recovery",
+      "test_queue_capacity_limits",
+      "test_task_overflow_handling",
+      "test_worker_heartbeat_timeout",
+      "test_dead_letter_queue",
+      "test_task_reassignment_on_failure",
+      "test_starvation_prevention"
+    ],
+    "may_fail": [
+      "test_task_dependencies",
+      "test_task_assignment_performance"
+    ],
+    "description": "Core task queue functionality must work correctly"
+  },
+  "phase_4": {
+    "name": "Context Memory Implementation",
+    "must_pass": [
+      "test_full_task_lifecycle",
+      "test_memory_storage_and_retrieval",
+      "test_context_thread_isolation",
+      "test_checkpoint_creation_and_recovery",
+      "test_concurrent_write_conflict_resolution",
+      "test_memory_version_history",
+      "test_storage_overflow_handling"
+    ],
+    "may_fail": [
+      "test_agent_memory_integration",
+      "test_memory_retrieval_performance",
+      "test_periodic_archive_rotation",
+      "test_garbage_collection"
+    ],
+    "description": "Memory must integrate with task queue"
+  },
+  "phase_5": {
+    "name": "Safety Framework (Lightweight)",
+    "must_pass": [
+      "test_full_task_lifecycle",
+      "test_memory_storage_and_retrieval",
+      "test_research_goal_logging",
+      "test_hypothesis_monitoring",
+      "test_trust_level_configuration",
+      "test_safety_logger_disable",
+      "test_pattern_report_generation",
+      "test_audit_trail_creation",
+      "test_safety_metrics_collection"
+    ],
+    "may_fail": [
+      "test_log_rotation",
+      "test_performance_impact"
+    ],
+    "description": "Lightweight safety monitoring must function"
+  },
+  "phase_6": {
+    "name": "LLM Abstraction Layer",
+    "must_pass": [
+      "test_full_task_lifecycle",
+      "test_llm_abstraction_interface",
+      "test_rate_limiting",
+      "test_model_capability_tracking",
+      "test_context_management",
+      "test_provider_failover",
+      "test_request_transformation"
+    ],
+    "may_fail": [
+      "test_baml_integration",
+      "test_smart_context_truncation",
+      "test_llm_response_caching"
+    ],
+    "description": "LLM abstraction layer must function"
+  },
+  "phase_7": {
+    "name": "BAML Infrastructure Setup",
+    "must_pass": [
+      "test_baml_schema_compilation",
+      "test_baml_client_connectivity",
+      "test_baml_mock_responses",
+      "test_enhanced_error_handling",
+      "test_baml_logging_configuration",
+      "test_retry_mechanisms",
+      "test_fallback_client_selection",
+      "test_circuit_breaker_integration"
+    ],
+    "may_fail": [
+      "test_baml_role_formatting_all_models",
+      "test_baml_streaming_support"
+    ],
+    "real_llm_tests": [
+      "test_baml_with_real_models",
+      "test_o3_reasoning_in_baml",
+      "test_baml_role_formatting_all_models",
+      "test_baml_structured_output_parsing",
+      "test_baml_function_chaining",
+      "test_baml_error_recovery_with_real_llm",
+      "test_model_specific_parameters"
+    ],
+    "description": "BAML infrastructure with enhanced error handling (retry, circuit breakers, fallback), role formatting for Claude/Gemini compatibility, model-specific parameter handling, and production reliability features"
+  },
+  "phase_7_5": {
+    "name": "Development Workflow Optimization",
+    "must_pass": [
+      "test_parallel_execution_faster_than_sequential",
+      "test_parallel_tests_produce_same_results",
+      "test_baml_tests_parallel_execution",
+      "test_parallel_marker_filtering",
+      "test_performance_measurement_script_exists",
+      "test_performance_script_help",
+      "test_performance_script_execution",
+      "test_pytest_xdist_configuration",
+      "test_test_suite_completes_in_reasonable_time",
+      "test_pytest_configuration_valid",
+      "test_parallel_test_isolation",
+      "test_baml_client_directory_exists",
+      "test_baml_source_directory_exists",
+      "test_baml_client_importable",
+      "test_parallel_testing_framework_complete",
+      "test_performance_metrics_available",
+      "test_workflow_optimization_benefits"
+    ],
+    "may_fail": [],
+    "description": "Parallel testing framework and workflow optimization must provide measurable benefits"
+  },
+  "phase_7_6": {
+    "name": "Tool Calling Infrastructure",
+    "must_pass": [
+      "test_tool_registry_registration",
+      "test_tool_registry_retrieval",
+      "test_tool_handler_base_class",
+      "test_tool_execution_engine_sync",
+      "test_tool_execution_engine_async",
+      "test_tool_error_handling",
+      "test_tool_timeout_handling",
+      "test_argo_tool_calling_integration",
+      "test_baml_tool_integration",
+      "test_tool_parameter_validation",
+      "test_tool_result_formatting",
+      "test_tool_registry_discovery"
+    ],
+    "may_fail": [
+      "test_tool_execution_performance",
+      "test_tool_caching",
+      "test_tool_retry_mechanism"
+    ],
+    "real_llm_tests": [
+      "test_ranking_agent_with_tools_real",
+      "test_evolution_agent_with_tools_real",
+      "test_meta_review_agent_with_tools_real",
+      "test_literature_search_with_tools_real",
+      "test_conversational_ai_with_tools_real",
+      "test_tool_calling_token_reduction",
+      "test_tool_selection_accuracy",
+      "test_multi_tool_workflow"
+    ],
+    "must_use_baml": [],
+    "notes": "Tool calling infrastructure enables Argo native function calling for dynamic, LLM-driven external function execution. Complementary to BAML - BAML handles reasoning/content generation, tools handle data retrieval and system actions. Key benefits: 40-93% token reduction (phase-dependent), zero hallucinated citations (Literature Search), 50% code reduction (Conversational AI).",
+    "description": "Tool registry, handler base class, execution engine, and Argo integration must function correctly. Real LLM tests verify token reduction and tool selection accuracy."
+  },
+  "phase_8": {
+    "name": "Argo Gateway Integration",
+    "must_pass": [
+      "test_argo_connectivity",
+      "test_model_routing",
+      "test_failover_behavior",
+      "test_cost_tracking",
+      "test_circuit_breaker",
+      "test_request_queuing",
+      "test_health_check_monitoring"
+    ],
+    "may_fail": [
+      "test_proxy_failover",
+      "test_rate_limiting"
+    ],
+    "real_llm_tests": [
+      "test_simple_prompt_all_models",
+      "test_model_capabilities",
+      "test_streaming_response",
+      "test_error_handling",
+      "test_health_check_behavior",
+      "test_request_queue_recovery"
+    ],
+    "description": "Argo Gateway must provide reliable LLM access with health monitoring"
+  },
+  "phase_9": {
+    "name": "Supervisor Agent",
+    "must_pass": [
+      "test_full_task_lifecycle",
+      "test_supervisor_task_creation",
+      "test_supervisor_orchestration"
+    ],
+    "may_fail": [
+      "test_full_research_cycle"
+    ],
+    "real_llm_tests": [
+      "test_research_goal_decomposition",
+      "test_supervisor_task_creation",
+      "test_supervisor_agent_selection",
+      "test_supervisor_task_distribution",
+      "test_supervisor_resource_allocation"
+    ],
+    "notes": "Supervisor orchestrates all agents through weighted selection (generation: 30%, reflection: 20%, ranking: 15%, evolution: 15%, proximity: 10%, meta-review: 10%). Already prepared for Phases 13-15 with task mappings, parameter generation, and resource allocations.",
+    "description": "Supervisor must create and intelligently manage tasks with weighted agent selection"
+  },
+  "phase_10": {
+    "name": "Generation Agent",
+    "must_pass": [
+      "test_full_task_lifecycle",
+      "test_supervisor_orchestration",
+      "test_hypothesis_generation"
+    ],
+    "may_fail": [
+      "test_hypothesis_reflection",
+      "test_ranking_tournament"
+    ],
+    "real_llm_tests": [
+      "test_hypothesis_creativity",
+      "test_hypothesis_scientific_validity"
+    ],
+    "must_use_baml": [
+      "generate_from_literature",
+      "generate_from_debate",
+      "generate_from_assumptions",
+      "generate_from_feedback"
+    ],
+    "description": "Hypothesis generation must function"
+  },
+  "phase_11": {
+    "name": "Reflection Agent",
+    "must_pass": [
+      "test_hypothesis_generation",
+      "test_hypothesis_reflection",
+      "test_review_types"
+    ],
+    "may_fail": [
+      "test_ranking_tournament"
+    ],
+    "real_llm_tests": [
+      "test_critique_quality",
+      "test_review_thoroughness"
+    ],
+    "must_use_baml": [
+      "generate_review",
+      "generate_critique"
+    ],
+    "description": "Review system must work correctly"
+  },
+  "phase_12": {
+    "name": "Ranking Agent",
+    "must_pass": [
+      "test_hypothesis_generation",
+      "test_hypothesis_reflection",
+      "test_ranking_tournament",
+      "test_elo_calculations"
+    ],
+    "may_fail": [
+      "test_evolution_enhancement",
+      "test_ranking_with_tool_calling",
+      "test_selective_context_loading",
+      "test_adaptive_depth_comparison"
+    ],
+    "real_llm_tests": [
+      "test_comparison_reasoning",
+      "test_ranking_consistency",
+      "test_multi_turn_debate_quality",
+      "test_tool_based_token_reduction"
+    ],
+    "must_use_baml": [
+      "compare_hypotheses",
+      "generate_comparison_reasoning"
+    ],
+    "tools": [
+      "get_hypothesis_details",
+      "get_hypothesis_reviews",
+      "get_similar_hypotheses",
+      "get_tournament_history",
+      "calculate_diversity_score",
+      "get_review_statistics",
+      "load_match_context"
+    ],
+    "notes": "Tool calling enhancement (Phase 7.6) enables 40-60% token reduction through selective context loading. Tools fetch hypothesis details, reviews, similarity data, and tournament history on-demand instead of loading all context upfront.",
+    "description": "Tournament ranking system must work, with optional tool calling for token optimization"
+  },
+  "phase_13": {
+    "name": "Evolution Agent",
+    "must_pass": [
+      "test_hypothesis_generation",
+      "test_ranking_tournament",
+      "test_evolution_agent_initialization",
+      "test_enhancement_strategy",
+      "test_combination_strategy",
+      "test_simplification_strategy",
+      "test_paradigm_shift_strategy",
+      "test_evolution_constraints",
+      "test_hypothesis_lineage_tracking"
+    ],
+    "may_fail": [
+      "test_proximity_clustering",
+      "test_evolution_diversity",
+      "test_evolution_quality_metrics",
+      "test_evolution_with_tool_calling",
+      "test_strategy_adaptive_context_loading",
+      "test_weakness_driven_evolution"
+    ],
+    "real_llm_tests": [
+      "test_enhancement_creativity",
+      "test_evolution_coherence",
+      "test_evolution_strategy_effectiveness",
+      "test_tool_based_weakness_analysis"
+    ],
+    "must_use_baml": [
+      "evolve_hypothesis",
+      "crossover_hypotheses",
+      "mutate_hypothesis"
+    ],
+    "tools": [
+      "get_hypothesis_weaknesses",
+      "search_improvement_evidence",
+      "validate_evolved_hypothesis",
+      "get_complementary_hypotheses",
+      "extract_debate_insights",
+      "compare_evolution_candidates",
+      "track_evolution_lineage"
+    ],
+    "notes": "Evolution Agent enhances existing hypotheses through 4 strategies: refine, combine, simplify, paradigm_shift. Supervisor allocates medium compute resources (25.0) with longer timeout (240s) for thoughtful enhancement. Tool calling enhancement (Phase 7.6) enables 50-70% token reduction through strategy-adaptive context loading and weakness-driven evolution using tournament/review feedback.",
+    "description": "Hypothesis evolution and enhancement must function, with optional tool calling for strategy-adaptive optimization"
+  },
+  "phase_14": {
+    "name": "Embedding Infrastructure (MUST DO FIRST) + Proximity Agent",
+    "must_pass": [
+      "test_embedding_service_initialization",
+      "test_embedding_with_context_memory_integration",
+      "test_similarity_calculation_workflow",
+      "test_find_similar_hypotheses",
+      "test_cache_persistence_across_operations",
+      "test_proximity_agent_workflow_simulation",
+      "test_hypothesis_generation",
+      "test_similarity_calculations",
+      "test_proximity_clustering"
+    ],
+    "may_fail": [
+      "test_meta_review",
+      "test_embedding_service_performance_characteristics"
+    ],
+    "real_llm_tests": [
+      "test_similarity_understanding",
+      "test_cluster_coherence"
+    ],
+    "must_use_baml": [
+      "generate_cluster_summary"
+    ],
+    "notes": "Phase 14 has TWO parts: (1) Embedding Infrastructure FIRST - creates EmbeddingService for similarity calculation using OpenAI text-embedding-3-small via Argo (1536 dims) with sentence-transformers fallback (384 dims). Implements caching in Context Memory with keys like 'embedding_hypothesis_id' (underscore, not colon). (2) Proximity Agent - uses embeddings for similarity, LLM ONLY for cluster summaries via GenerateClusterSummary BAML function. NOT using calculate_semantic_similarity BAML function - embeddings are faster (O(n) vs O(n²) LLM calls). Supervisor allocates lower compute (10.0) reflecting minimal LLM usage.",
+    "description": "Embedding infrastructure must work correctly, then proximity/clustering with embedding-based similarity"
+  },
+  "phase_15": {
+    "name": "Meta-Review Agent",
+    "must_pass": [
+      "test_full_research_cycle",
+      "test_meta_review_synthesis",
+      "test_pattern_extraction"
+    ],
+    "may_fail": [
+      "test_cli_integration",
+      "test_meta_review_with_tool_calling",
+      "test_aggregate_first_approach",
+      "test_scalable_synthesis"
+    ],
+    "real_llm_tests": [
+      "test_synthesis_quality",
+      "test_pattern_identification",
+      "test_cross_hypothesis_insights",
+      "test_tool_based_pattern_extraction"
+    ],
+    "must_use_baml": [
+      "synthesize_findings",
+      "extract_patterns",
+      "generate_insights"
+    ],
+    "tools": [
+      "get_review_statistics",
+      "get_reviews_by_pattern",
+      "get_iteration_comparison",
+      "get_hypothesis_cluster_summary",
+      "get_debate_arguments",
+      "calculate_consensus_metrics",
+      "get_evolution_history",
+      "get_top_hypotheses_summary",
+      "analyze_review_quality",
+      "extract_key_disagreements"
+    ],
+    "notes": "Meta-Review Agent synthesizes findings across multiple hypotheses and reviews. Supervisor allocates highest compute resources (40.0) with longest timeout (600s) reflecting complexity of synthesizing multiple reviews. Tool calling enhancement (Phase 7.6) enables 70-93% token reduction through aggregate-first approach - statistics and summaries replace full context loading. Scales to 100+ hypotheses without context overflow.",
+    "description": "Meta-review synthesis and pattern extraction must function, with optional tool calling for massive token reduction"
+  },
+  "phase_15b": {
+    "name": "ACADEMY-Inspired Autonomous Monitoring Loops",
+    "must_pass": [
+      "test_monitoring_loop_initialization",
+      "test_research_health_checks",
+      "test_stagnation_detection",
+      "test_quality_decline_detection",
+      "test_monitoring_shutdown"
+    ],
+    "may_fail": [
+      "test_autonomous_intervention",
+      "test_intervention_cooldown",
+      "test_parallel_research_monitoring",
+      "test_monitoring_loop_resilience"
+    ],
+    "real_llm_tests": [
+      "test_stagnation_paradigm_shift_real",
+      "test_quality_intervention_real",
+      "test_autonomous_research_guidance_real"
+    ],
+    "must_use_baml": [
+      "generate_paradigm_shift_suggestion",
+      "generate_quality_improvement_guidance"
+    ],
+    "notes": "ACADEMY-inspired autonomous monitoring loops (see specs/012-meta-review-agent.md lines 1278-1782 and docs/academy-inspired-patterns.md). MetaReviewAgent runs background monitoring every 10 minutes checking for stagnation, quality decline, and convergence issues. Proactive interventions trigger paradigm shifts or quality guidance. NO new phase dependencies - extends Phase 15 MetaReviewAgent with asyncio background tasks.",
+    "description": "Autonomous monitoring loops for proactive quality assurance and stagnation detection, inspired by ACADEMY @loop pattern"
+  },
+  "phase_16": {
+    "name": "Natural Language Interface (CLI and MCP)",
+    "must_pass": [
+      "test_research_manager_start_research",
+      "test_research_manager_get_status",
+      "test_hypothesis_manager_generate_hypotheses",
+      "test_hypothesis_manager_list_hypotheses",
+      "test_review_manager_submit_review",
+      "test_ranking_manager_get_top_hypotheses",
+      "test_mcp_start_research_tool",
+      "test_mcp_generate_hypotheses_tool",
+      "test_mcp_authentication_flow",
+      "test_shared_manager_layer"
+    ],
+    "may_fail": [
+      "test_cli_shell_completion",
+      "test_mcp_rate_limiter_complex_scenarios",
+      "test_template_formatter_custom_templates",
+      "test_cli_full_research_workflow",
+      "test_cli_output_formats",
+      "test_cli_authentication_flow",
+      "test_cli_hypothesis_evolution_workflow",
+      "test_cli_results_export",
+      "test_cli_error_handling",
+      "test_cli_verbose_mode",
+      "test_cli_concurrent_commands",
+      "test_mcp_full_research_workflow",
+      "test_mcp_resources_accessible",
+      "test_mcp_authentication_flow",
+      "test_mcp_tool_scope_enforcement",
+      "test_mcp_error_handling",
+      "test_cli_mcp_produce_identical_results",
+      "test_shared_manager_layer",
+      "test_concurrent_cli_mcp_access",
+      "test_hypothesis_listing_consistency",
+      "test_research_status_consistency",
+      "test_manager_error_handling_consistency",
+      "test_manager_method_signatures",
+      "test_data_model_consistency",
+      "test_phase16_mcp",
+      "test_phase16_cli",
+      "test_phase16_integration"
+    ],
+    "real_llm_tests": [],
+    "must_use_baml": [],
+    "notes": "Phase 16 implements dual interfaces (CLI and MCP) sharing business logic layer. CRITICAL test: both interfaces must produce identical results through shared manager classes (ResearchManager, HypothesisManager, ReviewManager, RankingManager). CLI uses Typer with rich output (text/JSON/YAML/template formats), local auth + OAuth 2.1. MCP uses FastMCP with tools/resources/prompts, OAuth 2.1 with PKCE, rate limiting. Both integrate with existing agents (Supervisor, Generation, Reflection, Ranking, Evolution). NO new BAML functions needed - interfaces are presentation layers.",
+    "description": "CLI and MCP interfaces must work correctly and produce identical results through shared manager layer. Authentication, output formatting, and concurrent access must function properly."
+  },
+  "phase_17": {
+    "name": "Integration and Polish",
+    "must_pass": [
+      "test_full_system_integration",
+      "test_end_to_end_workflow",
+      "test_output_formatting",
+      "test_cross_component_safety_queue",
+      "test_cross_component_memory_queue",
+      "test_cross_component_llm_safety",
+      "test_nih_specific_aims_formatting",
+      "test_export_functionality"
+    ],
+    "may_fail": [
+      "test_performance_benchmarks",
+      "test_monitoring_dashboard",
+      "test_system_scalability"
+    ],
+    "description": "Complete system integration must work"
+  },
+  "phase_18": {
+    "name": "Final Validation",
+    "must_pass": [
+      "test_full_system_integration",
+      "test_safety_validation",
+      "test_performance_benchmarks",
+      "test_task_assignment_latency",
+      "test_context_retrieval_latency",
+      "test_checkpoint_creation_timing",
+      "test_temporal_behaviors",
+      "test_80_percent_coverage"
+    ],
+    "may_fail": [],
+    "description": "Final system validation - all tests must pass"
+  },
+  "phase_19": {
+    "name": "Scientific Literature Search Integration",
+    "must_pass": [
+      "test_semantic_scholar_search",
+      "test_search_with_filters",
+      "test_generation_with_literature_search",
+      "test_hypothesis_has_citations"
+    ],
+    "may_fail": [
+      "test_paperqa_deep_verification",
+      "test_literature_search_with_tool_calling",
+      "test_iterative_query_refinement",
+      "test_zero_hallucinated_citations"
+    ],
+    "real_llm_tests": [
+      "test_literature_search_real_api",
+      "test_hypothesis_generation_with_real_literature",
+      "test_tool_based_citation_verification"
+    ],
+    "must_use_baml": [
+      "extract_literature_search_query",
+      "analyze_papers_for_hypothesis",
+      "generate_hypothesis_from_literature"
+    ],
+    "tools": [
+      "search_semantic_scholar",
+      "get_paper_details",
+      "verify_citation",
+      "download_pdf",
+      "extract_paper_metadata",
+      "search_by_doi",
+      "get_citation_context",
+      "analyze_citation_network"
+    ],
+    "notes": "Tool calling enhancement (Phase 7.6) enables 60-80% token reduction through iterative query refinement and zero hallucinated citations via verify_citation tool. LLM can dynamically search, analyze, and verify papers during hypothesis generation instead of receiving all literature upfront.",
+    "description": "Semantic Scholar integration for literature grounding, with optional tool calling for zero hallucinations and token optimization"
+  },
+  "phase_20": {
+    "name": "Automated Research Workflow Loop",
+    "must_pass": [
+      "test_workflow_single_iteration",
+      "test_convergence_detection",
+      "test_workflow_pause_resume"
+    ],
+    "may_fail": [
+      "test_full_workflow_convergence"
+    ],
+    "real_llm_tests": [
+      "test_full_workflow_convergence"
+    ],
+    "description": "Prefect-based workflow orchestration with convergence detection"
+  },
+  "phase_21": {
+    "name": "Conversational AI Architecture",
+    "must_pass": [
+      "test_chat_session_initialization",
+      "test_send_message_and_route",
+      "test_conversation_persistence",
+      "test_intent_classification"
+    ],
+    "may_fail": [
+      "test_multi_turn_clarification",
+      "test_conversational_ai_with_tool_calling",
+      "test_simplified_architecture",
+      "test_natural_parameter_extraction"
+    ],
+    "real_llm_tests": [
+      "test_full_conversation_flow",
+      "test_intent_accuracy",
+      "test_tool_based_system_actions"
+    ],
+    "must_use_baml": [
+      "generate_clarification",
+      "generate_response"
+    ],
+    "tools": [
+      "start_research",
+      "generate_hypotheses",
+      "rank_hypotheses",
+      "evolve_hypothesis",
+      "get_research_status",
+      "list_hypotheses",
+      "get_hypothesis_details",
+      "export_results"
+    ],
+    "notes": "THE KILLER USE CASE for tool calling! Tool calling enhancement (Phase 7.6) enables 50% reduction in Python code through simplified architecture. Single LLM+tools system replaces 3-component architecture (router + intent handlers + BAML). Natural parameter extraction (LLM understands context) replaces regex-based parsing. Tools handle all system actions (start research, generate, rank, evolve, export) instead of custom intent handlers.",
+    "description": "ContextMemory-based session management with optional tool calling for dramatically simplified architecture"
+  },
+  "phase_22": {
+    "name": "Chat Interface Implementation",
+    "must_pass": [
+      "test_chat_app_initialization",
+      "test_split_screen_layout",
+      "test_message_display",
+      "test_session_resume"
+    ],
+    "may_fail": [
+      "test_dual_mode"
+    ],
+    "real_llm_tests": [],
+    "description": "Textual-based chat UI with agent transparency"
+  }
+}
