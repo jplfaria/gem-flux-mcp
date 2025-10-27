@@ -1,0 +1,96 @@
+{
+  "name": "glucose_minimal_aerobic",
+  "description": "Minimal glucose medium with oxygen (aerobic conditions)",
+  "compounds": {
+    "cpd00027": {
+      "name": "D-Glucose",
+      "bounds": [-5.0, 100.0],
+      "comment": "Carbon source, uptake limited to 5 mmol/gDW/h"
+    },
+    "cpd00007": {
+      "name": "O2",
+      "bounds": [-10.0, 100.0],
+      "comment": "Oxygen for aerobic respiration"
+    },
+    "cpd00001": {
+      "name": "H2O",
+      "bounds": [-100.0, 100.0],
+      "comment": "Water"
+    },
+    "cpd00009": {
+      "name": "Phosphate",
+      "bounds": [-100.0, 100.0],
+      "comment": "Inorganic phosphate"
+    },
+    "cpd00011": {
+      "name": "CO2",
+      "bounds": [-100.0, 100.0],
+      "comment": "Carbon dioxide"
+    },
+    "cpd00067": {
+      "name": "H+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Proton"
+    },
+    "cpd00099": {
+      "name": "Cl-",
+      "bounds": [-100.0, 100.0],
+      "comment": "Chloride"
+    },
+    "cpd00034": {
+      "name": "Zn2+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Zinc"
+    },
+    "cpd00058": {
+      "name": "Cu2+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Copper"
+    },
+    "cpd00149": {
+      "name": "Co2+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Cobalt"
+    },
+    "cpd00030": {
+      "name": "Mn2+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Manganese"
+    },
+    "cpd00048": {
+      "name": "SO4",
+      "bounds": [-100.0, 100.0],
+      "comment": "Sulfate"
+    },
+    "cpd00205": {
+      "name": "K+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Potassium"
+    },
+    "cpd00254": {
+      "name": "Mg",
+      "bounds": [-100.0, 100.0],
+      "comment": "Magnesium"
+    },
+    "cpd00971": {
+      "name": "Na+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Sodium"
+    },
+    "cpd00063": {
+      "name": "Ca2+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Calcium"
+    },
+    "cpd10515": {
+      "name": "Fe2+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Iron(II)"
+    },
+    "cpd00013": {
+      "name": "NH3",
+      "bounds": [-100.0, 100.0],
+      "comment": "Ammonia (nitrogen source)"
+    }
+  }
+}

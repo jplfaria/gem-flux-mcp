@@ -17,7 +17,7 @@ for i in {1..10}; do
     echo -e "\n${GREEN}=== Running spec creation iteration $i ===${NC}"
 
     # Run Claude and capture output
-    OUTPUT=$(cat docs/spec-development/specs-prompt.md | claude -p --output-format=stream-json --dangerously-skip-permissions --verbose 2>/dev/null | jq -r .message.content)
+    OUTPUT=$(cat specs-prompt.md | claude -p --output-format=stream-json --dangerously-skip-permissions --verbose 2>/dev/null | jq -r .message.content)
 
     # Display the output
     echo "$OUTPUT"

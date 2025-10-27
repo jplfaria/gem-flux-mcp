@@ -10,8 +10,8 @@ CLEANROOM specifications (implementation-free behavioral specs).
 - Define clear interfaces and capabilities
 - Specify expected inputs/outputs
 - Document behavioral contracts
-- Follow the guidelines in docs/spec-development/SPECS_CLAUDE.md
-- Consider MCP server patterns and OAuth 2.1 flows
+- Follow the guidelines in SPECS_CLAUDE.md
+- This is a **metabolic modeling tool server**, not a multi-agent AI system
 
 ## Process:
 1. Read SPECS_PLAN.md
@@ -22,11 +22,16 @@ CLEANROOM specifications (implementation-free behavioral specs).
      d. Exit with message: "PLAN_CREATED - Please run again to start creating specs"
    - Otherwise, find the first unchecked [ ] item
 2. Study all relevant materials in specs-source/, including:
-   - references/mcp-server-reference.md for MCP patterns
-   - Any other reference materials provided
+   - build_metabolic_model/build_model.ipynb - ModelSEEDpy workflow example
+   - references/cobrapy-reference.md - FBA operations
+   - references/modelseed-database-guide.md - Database lookups
+   - references/mcp-server-reference.md - MCP patterns (for reference only)
+   - references/additional-mcp-tools.md - Future roadmap
+   - SOURCE_MATERIALS_SUMMARY.md - Complete project overview
+   - guidelines.md - Project-specific patterns
 3. Review any existing specs in specs/ for context and consistency
 4. Create a new specification file in specs/ with appropriate naming
-   - Use numbered prefixes: 001-system-overview.md, 002-oauth-authentication.md, etc.
+   - Use numbered prefixes: 001-system-overview.md, 002-core-tools.md, etc.
    - Follow document organization from SPECS_CLAUDE.md
 5. Update SPECS_PLAN.md to mark the item as complete [x]
 
@@ -40,68 +45,223 @@ If you cannot find any incomplete tasks after checking SPECS_PLAN.md thoroughly:
 ## Specification Format:
 - Use clear section headers
 - Add Prerequisites section when specs depend on others
-- Define interfaces using BAML when appropriate
-- Include relevant examples and edge cases
+- Include concrete examples from build_model.ipynb
 - Document error handling behavior
+- Show example usage from AI assistant perspective
 
 ## Key Elements to Specify (as relevant):
-- Core behaviors and responsibilities
-- Communication protocols (JSON-RPC 2.0, OAuth 2.1)
-- API interfaces (tools, resources, prompts)
-- Safety and security boundaries
-- Integration patterns with MCP clients
 
-## Examples of Good MCP Specifications:
+### MVP Tools (4 required)
+1. **build_media** - Create growth media from ModelSEED compound IDs
+2. **build_model** - Build metabolic model from protein sequences
+3. **gapfill_model** - Add reactions to enable growth in specified media
+4. **run_fba** - Execute flux balance analysis and return fluxes
+
+### ModelSEED Database Tools (4 required)
+1. **get_compound_name** - Get human-readable name for compound ID
+2. **get_reaction_name** - Get human-readable name and equation for reaction ID
+3. **search_compounds** - Find compounds by name/formula
+4. **search_reactions** - Find reactions by name/enzyme
+
+### Additional Considerations
+- Model I/O (import/export JSON)
+- Error handling patterns
+- Data formats (JSON structures)
+- Installation and deployment
+- Future enhancements (batch operations, strain design)
+
+## Examples of Good Specifications:
 
 ### Example 1: Tool Specification
-```
-Tool: list_hypotheses
-Input:
-  - research_id: string (required)
-  - status: string (optional, values: "pending", "reviewed", "evolved")
-  - min_elo: float (optional, filter by minimum ELO score)
+```markdown
+### build_media
 
-Output:
-  - List[Hypothesis] sorted by ELO score descending
+Create a growth medium from a list of ModelSEED compound IDs.
 
-Behavior:
-  - Validates research_id exists
-  - Filters by status if provided
-  - Filters by min_elo if provided
-  - Returns maximum 100 hypotheses
-  - Requires scope: hypotheses:generate OR research:read
-```
-
-### Example 2: OAuth Flow Specification
-```
-Authorization Flow: OAuth 2.1 with PKCE
-1. Client generates code_verifier (random 32 bytes)
-2. Client computes code_challenge = SHA256(code_verifier)
-3. Client requests authorization with code_challenge
-4. User authorizes in browser
-5. Server returns authorization code
-6. Client exchanges code + code_verifier for tokens
-7. Server validates SHA256(code_verifier) == code_challenge
-8. Server returns access_token + refresh_token
+**Input Parameters**:
+```python
+{
+    "compounds": ["cpd00027", "cpd00007", "cpd00001", ...],  # ModelSEED IDs
+    "default_uptake": 100.0,  # Default uptake bound (mmol/gDW/h)
+    "custom_bounds": {  # Optional custom bounds
+        "cpd00027": (-5, 100),  # Glucose: 5 mmol/gDW/h uptake
+        "cpd00007": (-10, 100)  # O2: 10 mmol/gDW/h uptake
+    }
+}
 ```
 
-### Example 3: Resource Specification
+**Output Structure**:
+```python
+{
+    "success": true,
+    "media_id": "media_12345",
+    "compounds": [
+        {"id": "cpd00027", "name": "D-Glucose", "bounds": (-5, 100)},
+        {"id": "cpd00007", "name": "O2", "bounds": (-10, 100)},
+        ...
+    ],
+    "num_compounds": 15
+}
 ```
-Resource: research://projects/{project_id}
-Format: Markdown
-Permissions: Requires research:read scope
 
-Content includes:
-- Research goal
-- Current status
-- Progress metrics
-- Top hypotheses with ELO scores
-- Recent updates
+**Behavior**:
+1. Validate all compound IDs exist in ModelSEED database
+2. Create MSMedia object from compounds
+3. Apply default uptake bounds to all compounds
+4. Override with custom_bounds if provided
+5. Store media with generated media_id
+6. Return media metadata with human-readable compound names
 
-Used by AI assistants to:
-- Inspect project state
-- Understand research direction
-- Report progress to user
+**Error Conditions**:
+- Invalid compound ID → 400 error listing invalid IDs
+- Empty compounds list → 400 error
+- Invalid bounds format → 400 error with details
+
+**Example Usage**:
 ```
+User: "Create a minimal glucose media for E. coli"
+
+AI Assistant calls build_media:
+{
+    "compounds": ["cpd00027", "cpd00007", "cpd00001", "cpd00009", ...],
+    "custom_bounds": {
+        "cpd00027": (-5, 100),  # Limit glucose
+        "cpd00007": (-10, 100)  # Aerobic conditions
+    }
+}
+
+Response: { "success": true, "media_id": "media_001", ... }
+
+AI: "I've created a minimal glucose medium with 15 compounds.
+Glucose uptake is limited to 5 mmol/gDW/h. Media ID: media_001"
+```
+```
+
+### Example 2: ModelSEED Database Tool
+```markdown
+### get_compound_name
+
+Get human-readable name and metadata for a ModelSEED compound ID.
+
+**Input Parameters**:
+```python
+{
+    "compound_id": "cpd00027"
+}
+```
+
+**Output Structure**:
+```python
+{
+    "success": true,
+    "id": "cpd00027",
+    "name": "D-Glucose",
+    "abbreviation": "glc__D",
+    "formula": "C6H12O6",
+    "charge": 0,
+    "aliases": ["glucose", "Glc", "dextrose"]
+}
+```
+
+**Behavior**:
+1. Query ModelSEED compounds database (compounds.tsv)
+2. Lookup compound by ID
+3. Parse aliases column for alternative names
+4. Return compound metadata
+
+**Error Conditions**:
+- Compound ID not found → 404 error with suggestion
+- Invalid ID format → 400 error
+
+**Example Usage**:
+```
+User: "What is cpd00027?"
+
+AI Assistant calls get_compound_name:
+{ "compound_id": "cpd00027" }
+
+Response: { "name": "D-Glucose", "formula": "C6H12O6", ... }
+
+AI: "cpd00027 is D-Glucose (C6H12O6), also known as glucose or dextrose."
+```
+```
+
+### Example 3: Workflow Specification
+```markdown
+## Complete Model Building Workflow
+
+This workflow shows how the MVP tools work together.
+
+**Steps**:
+1. **Create Media**: Use `build_media` to define growth conditions
+2. **Build Model**: Use `build_model` to create draft model from proteins
+3. **Gapfill**: Use `gapfill_model` to add missing reactions
+4. **Analyze**: Use `run_fba` to predict growth and fluxes
+
+**Example**:
+```python
+# Step 1: Create glucose minimal media
+media_result = build_media({
+    "compounds": ["cpd00027", "cpd00007", "cpd00001", ...],
+    "custom_bounds": {"cpd00027": (-5, 100)}
+})
+media_id = media_result["media_id"]
+
+# Step 2: Build model from protein sequences
+model_result = build_model({
+    "protein_sequences": {"prot1": "MKLL...", "prot2": "MVAL..."},
+    "template": "GramNegative"
+})
+model_id = model_result["model_id"]
+
+# Step 3: Gapfill for growth in media
+gapfill_result = gapfill_model({
+    "model_id": model_id,
+    "media_id": media_id,
+    "target_growth": 0.1
+})
+gapfilled_model_id = gapfill_result["model_id"]
+
+# Step 4: Run FBA
+fba_result = run_fba({
+    "model_id": gapfilled_model_id,
+    "media_id": media_id
+})
+growth_rate = fba_result["objective_value"]  # 0.874 hr^-1
+```
+
+**Data Flow**:
+1. Media definition → MSMedia object → media_id
+2. Protein sequences → MSBuilder → draft model → model_id
+3. Draft model + media → MSGapfill → gapfilled model → gapfilled_model_id
+4. Gapfilled model + media → COBRApy FBA → fluxes + growth rate
+```
+```
+
+## Critical Reminders:
+
+**This is NOT**:
+- ❌ A multi-agent AI research system
+- ❌ A hypothesis generation system
+- ❌ An LLM-based reasoning system
+
+**This IS**:
+- ✅ An MCP server exposing metabolic modeling tools
+- ✅ Integration layer for ModelSEEDpy and COBRApy
+- ✅ Database interface for LLM-friendly compound/reaction names
+- ✅ Tool server for AI-assisted metabolic engineering
+
+**Focus on**:
+- Tool inputs and outputs
+- ModelSEEDpy/COBRApy library interfaces
+- Data formats and validation
+- Error handling
+- Example usage from AI assistant perspective
+
+**Don't specify**:
+- Internal algorithms (defer to ModelSEEDpy/COBRApy)
+- Python class implementations
+- Performance optimizations
+- Database internals
 
 Write your output to specs/ folder.
