@@ -179,12 +179,15 @@ README, examples, deployment guide, final validation
   - Tests ID validation (invalid formats, duplicates)
   - Coverage: 85.44% for loader.py
 
-- [ ] **Task 17**: Implement template loader module
-  - Create `src/gem_flux_mcp/templates/loader.py`
+- [x] **Task 17**: Implement template loader module
+  - Create `src/gem_flux_mcp/templates/loader.py` (66 lines, 95.45% coverage)
   - Implement `load_template()` function (reads JSON, uses MSTemplateBuilder)
-  - Load GramNegative, GramPositive, Core templates
-  - Store in dict: `{"GramNegative": MSTemplate, ...}`
-  - Log template statistics (reaction counts)
+  - Implement `load_templates()` for startup (loads all templates, updates cache)
+  - Implement `get_template()` for O(1) runtime access
+  - Implement `validate_template_name()` and `list_available_templates()`
+  - Store in dict: `{"GramNegative": MSTemplate, ...}` via TEMPLATE_CACHE global
+  - Log template statistics (reaction counts, load time)
+  - 20 comprehensive unit tests, all passing (test_template_loader.py)
 
 - [ ] **Task 18**: Implement template validation
   - Verify template has reactions, metabolites, compartments
