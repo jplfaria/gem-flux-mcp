@@ -110,11 +110,13 @@ README, examples, deployment guide, final validation
   - Add common error constructors (model_not_found_error, media_not_found_error, etc.)
   - Write comprehensive unit tests (45 tests, 100% coverage)
 
-- [ ] **Task 9**: Create data types module
+- [x] **Task 9**: Create data types module
   - Create `src/gem_flux_mcp/types.py`
-  - Define TypedDict classes for request/response formats
-  - Define Pydantic models for validation
-  - Document all data structures
+  - Define Pydantic models for all core MCP tools (build_media, build_model, gapfill_model, run_fba)
+  - Define models for database lookup tools (compound/reaction search and lookup)
+  - Define error response types
+  - Write comprehensive unit tests (37 tests, 99.18% coverage)
+  - All validation logic working correctly
 
 - [ ] **Task 10**: Write unit tests for infrastructure
   - Test logging configuration
