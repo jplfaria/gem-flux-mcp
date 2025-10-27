@@ -103,11 +103,12 @@ README, examples, deployment guide, final validation
   - Write unit tests for logging (tests/unit/test_logging.py)
   - Test logging output and verify coverage ≥80% (achieved 100%)
 
-- [ ] **Task 8**: Create error handling module
+- [x] **Task 8**: Create error handling module
   - Create `src/gem_flux_mcp/errors.py`
-  - Define custom exceptions (ModelNotFoundError, MediaNotFoundError, etc.)
-  - Define JSON-RPC 2.0 compliant error responses
-  - Add error message templates
+  - Define custom exceptions (ValidationError, NotFoundError, InfeasibilityError, LibraryError, DatabaseError, ServerError, TimeoutError)
+  - Define JSON-RPC 2.0 compliant error responses with build_error_response()
+  - Add common error constructors (model_not_found_error, media_not_found_error, etc.)
+  - Write comprehensive unit tests (45 tests, 100% coverage)
 
 - [ ] **Task 9**: Create data types module
   - Create `src/gem_flux_mcp/types.py`
