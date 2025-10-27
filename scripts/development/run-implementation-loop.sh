@@ -359,7 +359,7 @@ optimize_context_selection() {
     CONTEXT_RESULT=$(python3 -c "
 import sys
 sys.path.append('src')
-from utils.context_relevance import SpecificationRelevanceScorer
+from gem_flux_mcp.utils.context_relevance import SpecificationRelevanceScorer
 
 try:
     scorer = SpecificationRelevanceScorer()
@@ -724,7 +724,7 @@ validate_context_optimization() {
     python3 -c "
 import sys
 sys.path.append('src')
-from utils.context_relevance import SpecificationRelevanceScorer
+from gem_flux_mcp.utils.context_relevance import SpecificationRelevanceScorer
 
 scorer = SpecificationRelevanceScorer()
 selected_specs = []
