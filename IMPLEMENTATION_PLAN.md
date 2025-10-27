@@ -128,12 +128,15 @@ README, examples, deployment guide, final validation
 
 ### Phase 2: Database & Templates
 
-- [ ] **Task 11**: Implement database loader module
-  - Create `src/gem_flux_mcp/database/loader.py`
-  - Implement `load_compounds_database()` function (pandas TSV reader)
-  - Implement `load_reactions_database()` function
-  - Add validation for required columns
-  - Handle missing/corrupted files with clear errors
+- [x] **Task 11**: Implement database loader module
+  - Create `src/gem_flux_mcp/database/loader.py` (103 lines, 85.44% coverage)
+  - Implement `load_compounds_database()` function (pandas TSV reader with validation)
+  - Implement `load_reactions_database()` function (pandas TSV reader with validation)
+  - Add validation for required columns (9 compound cols, 11 reaction cols)
+  - Handle missing/corrupted files with clear DatabaseError messages
+  - Implement `parse_aliases()` function for structured alias dictionaries
+  - Implement `validate_compound_id()` and `validate_reaction_id()` functions
+  - 32 comprehensive unit tests, all passing
 
 - [ ] **Task 12**: Implement database indexing
   - Create indexed DataFrames for O(1) lookup by ID
