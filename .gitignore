@@ -75,5 +75,6 @@ htmlcov/
 .implementation_logs/
 .implementation_flags
 optimized_prompt.md
-prompt.md
+# prompt.md is a STATIC file (tracked in repo, like specs-prompt.md)
+# Only optimized_prompt.md is generated dynamically
 optimized_prompt.md

@@ -979,16 +979,11 @@ while [ $ITERATION -lt $MAX_ITERATIONS ]; do
         fi
     else
         echo "⚠️  Using full context as fallback"
-
-        # Generate prompt.md if it doesn't exist (first iteration)
+        # prompt.md should exist as a static file (not generated)
         if [ ! -f "prompt.md" ]; then
-            echo "📝 Generating initial prompt with all specifications..."
-            if [ -f "scripts/development/generate-initial-prompt.sh" ]; then
-                ./scripts/development/generate-initial-prompt.sh
-            else
-                echo "❌ Error: generate-initial-prompt.sh not found"
-                exit 1
-            fi
+            echo "❌ Error: prompt.md not found. This should be a static file in the repo."
+            echo "   Create it following the pattern from specs-prompt.md"
+            exit 1
         fi
     fi
 
