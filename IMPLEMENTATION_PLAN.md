@@ -64,7 +64,7 @@ README, examples, deployment guide, final validation
   - Set up `tests/unit/` and `tests/integration/` directories
   - Verify package can be imported
 
-- [ ] **Task 2**: Configure pyproject.toml with dependencies
+- [x] **Task 2**: Configure pyproject.toml with dependencies
   - Add Python 3.11 requirement (NOT 3.12+)
   - Add ModelSEEDpy from Fxe/dev fork: `git+https://github.com/Fxe/ModelSEEDpy.git@dev`
   - Add COBRApy >=0.27.0
