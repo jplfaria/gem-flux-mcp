@@ -87,8 +87,8 @@ GEM_FLUX_HOST="localhost"            # Host to bind (default: localhost)
 GEM_FLUX_PORT="8080"                 # Port to listen (default: 8080)
 
 # Resource paths
-GEM_FLUX_DATABASE_DIR="./database"   # ModelSEED database location
-GEM_FLUX_TEMPLATE_DIR="./templates" # ModelSEED template location
+GEM_FLUX_DATABASE_DIR="./data/database"   # ModelSEED database location
+GEM_FLUX_TEMPLATE_DIR="./data/templates" # ModelSEED template location
 
 # Performance tuning
 GEM_FLUX_MAX_MODELS="100"           # Max models in session storage
@@ -770,8 +770,8 @@ CMD ["uv", "run", "python", "-m", "gem_flux_mcp.server"]
 # Set configuration via environment variables
 export GEM_FLUX_HOST="0.0.0.0"
 export GEM_FLUX_PORT="8080"
-export GEM_FLUX_DATABASE_DIR="./database"
-export GEM_FLUX_TEMPLATE_DIR="./templates"
+export GEM_FLUX_DATABASE_DIR="./data/database"
+export GEM_FLUX_TEMPLATE_DIR="./data/templates"
 export GEM_FLUX_LOG_LEVEL="INFO"
 export GEM_FLUX_LOG_FILE="./gem-flux.log"
 

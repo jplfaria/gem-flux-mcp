@@ -130,17 +130,12 @@ The `reversibility` column uses these symbols:
 
 **Where**: Database files located in project at:
 ```
-specs-source/references/modelseed-database/
+data/database/
 ├── compounds.tsv
 └── reactions.tsv
 ```
 
-For deployment, copy to:
-```
-src/gem_flux_mcp/data/
-├── compounds.tsv
-└── reactions.tsv
-```
+These files are loaded at runtime by the database loader module.
 
 ### Loading Requirements
 
@@ -449,7 +444,7 @@ For quick reference during flux analysis:
 
 **Download Latest Database**:
 ```bash
-cd specs-source/references/modelseed-database/
+cd data/database/
 curl -sL "https://raw.githubusercontent.com/ModelSEED/ModelSEEDDatabase/master/Biochemistry/compounds.tsv" -o compounds.tsv
 curl -sL "https://raw.githubusercontent.com/ModelSEED/ModelSEEDDatabase/master/Biochemistry/reactions.tsv" -o reactions.tsv
 ```
