@@ -19,6 +19,7 @@ from gem_flux_mcp.templates.loader import (
     list_available_templates,
     load_template,
     load_templates,
+    validate_template,
     validate_template_name,
 )
 
@@ -80,6 +81,99 @@ def temp_template_dir(tmp_path):
     }))
 
     return template_dir
+
+
+class TestValidateTemplate:
+    """Tests for validate_template() function."""
+
+    def test_validate_template_success(self, mock_mstemplate):
+        """Test successful template validation."""
+        # Should not raise any exceptions
+        validate_template(mock_mstemplate, "GramNegative")
+
+    def test_validate_template_no_reactions(self):
+        """Test validation fails when template has no reactions."""
+        template = Mock()
+        template.reactions = []  # Empty reactions list
+        template.metabolites = [Mock()]
+        template.compartments = ["c0", "e0"]
+
+        with pytest.raises(DatabaseError) as exc_info:
+            validate_template(template, "TestTemplate")
+
+        assert "has no reactions" in str(exc_info.value)
+        assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_REACTIONS"
+
+    def test_validate_template_no_reactions_attribute(self):
+        """Test validation fails when template missing reactions attribute."""
+        template = Mock(spec=['metabolites', 'compartments'])
+        template.metabolites = [Mock()]
+        template.compartments = ["c0", "e0"]
+
+        with pytest.raises(DatabaseError) as exc_info:
+            validate_template(template, "TestTemplate")
+
+        assert "has no reactions" in str(exc_info.value)
+
+    def test_validate_template_no_metabolites(self):
+        """Test validation fails when template has no metabolites."""
+        template = Mock()
+        template.reactions = [Mock()]
+        template.metabolites = []  # Empty metabolites list
+        template.compartments = ["c0", "e0"]
+
+        with pytest.raises(DatabaseError) as exc_info:
+            validate_template(template, "TestTemplate")
+
+        assert "has no metabolites" in str(exc_info.value)
+        assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_METABOLITES"
+
+    def test_validate_template_no_metabolites_attribute(self):
+        """Test validation fails when template missing metabolites attribute."""
+        template = Mock(spec=['reactions', 'compartments'])
+        template.reactions = [Mock()]
+        template.compartments = ["c0", "e0"]
+
+        with pytest.raises(DatabaseError) as exc_info:
+            validate_template(template, "TestTemplate")
+
+        assert "has no metabolites" in str(exc_info.value)
+
+    def test_validate_template_no_compartments(self):
+        """Test validation fails when template has no compartments."""
+        template = Mock()
+        template.reactions = [Mock()]
+        template.metabolites = [Mock()]
+        template.compartments = []  # Empty compartments list
+
+        with pytest.raises(DatabaseError) as exc_info:
+            validate_template(template, "TestTemplate")
+
+        assert "has no compartments" in str(exc_info.value)
+        assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_COMPARTMENTS"
+
+    def test_validate_template_no_compartments_attribute(self):
+        """Test validation fails when template missing compartments attribute."""
+        template = Mock(spec=['reactions', 'metabolites'])
+        template.reactions = [Mock()]
+        template.metabolites = [Mock()]
+
+        with pytest.raises(DatabaseError) as exc_info:
+            validate_template(template, "TestTemplate")
+
+        assert "has no compartments" in str(exc_info.value)
+
+    def test_validate_template_logs_statistics(self, mock_mstemplate, caplog):
+        """Test validation logs template statistics at DEBUG level."""
+        with caplog.at_level(logging.DEBUG):
+            validate_template(mock_mstemplate, "GramNegative")
+
+        # Check that statistics were logged
+        assert any("validated" in record.message for record in caplog.records)
+        assert any("2 reactions" in record.message for record in caplog.records)
+        assert any("2 metabolites" in record.message for record in caplog.records)
+        assert any("c0, e0, p0" in record.message or "compartments" in record.message
+                   for record in caplog.records)
 
 
 class TestLoadTemplate:
@@ -153,6 +247,69 @@ class TestLoadTemplate:
             assert "Failed to read template file" in str(exc_info.value)
         finally:
             template_path.chmod(0o644)  # Restore permissions
+
+    def test_load_template_validation_fails_no_reactions(self, tmp_path, mock_template_dict):
+        """Test error when template validation fails (no reactions)."""
+        template_path = tmp_path / "template.json"
+        template_path.write_text(json.dumps(mock_template_dict))
+
+        # Mock MSTemplateBuilder to return template with no reactions
+        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+            mock_builder = Mock()
+            invalid_template = Mock()
+            invalid_template.reactions = []  # No reactions
+            invalid_template.metabolites = [Mock()]
+            invalid_template.compartments = ["c0"]
+            mock_builder.build.return_value = invalid_template
+            MockBuilder.from_dict.return_value = mock_builder
+
+            with pytest.raises(DatabaseError) as exc_info:
+                load_template(template_path, "GramNegative")
+
+            assert "has no reactions" in str(exc_info.value)
+            assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_REACTIONS"
+
+    def test_load_template_validation_fails_no_metabolites(self, tmp_path, mock_template_dict):
+        """Test error when template validation fails (no metabolites)."""
+        template_path = tmp_path / "template.json"
+        template_path.write_text(json.dumps(mock_template_dict))
+
+        # Mock MSTemplateBuilder to return template with no metabolites
+        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+            mock_builder = Mock()
+            invalid_template = Mock()
+            invalid_template.reactions = [Mock()]
+            invalid_template.metabolites = []  # No metabolites
+            invalid_template.compartments = ["c0"]
+            mock_builder.build.return_value = invalid_template
+            MockBuilder.from_dict.return_value = mock_builder
+
+            with pytest.raises(DatabaseError) as exc_info:
+                load_template(template_path, "GramNegative")
+
+            assert "has no metabolites" in str(exc_info.value)
+            assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_METABOLITES"
+
+    def test_load_template_validation_fails_no_compartments(self, tmp_path, mock_template_dict):
+        """Test error when template validation fails (no compartments)."""
+        template_path = tmp_path / "template.json"
+        template_path.write_text(json.dumps(mock_template_dict))
+
+        # Mock MSTemplateBuilder to return template with no compartments
+        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+            mock_builder = Mock()
+            invalid_template = Mock()
+            invalid_template.reactions = [Mock()]
+            invalid_template.metabolites = [Mock()]
+            invalid_template.compartments = []  # No compartments
+            mock_builder.build.return_value = invalid_template
+            MockBuilder.from_dict.return_value = mock_builder
+
+            with pytest.raises(DatabaseError) as exc_info:
+                load_template(template_path, "GramNegative")
+
+            assert "has no compartments" in str(exc_info.value)
+            assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_COMPARTMENTS"
 
 
 class TestLoadTemplates:

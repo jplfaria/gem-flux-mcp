@@ -24,6 +24,54 @@ from gem_flux_mcp.errors import DatabaseError
 logger = logging.getLogger(__name__)
 
 
+def validate_template(template: MSTemplate, template_name: str) -> None:
+    """Validate template integrity.
+
+    Verifies that the template has required components:
+    - Reactions list (non-empty)
+    - Metabolites list (non-empty)
+    - Compartments list (non-empty)
+
+    Args:
+        template: MSTemplate object to validate
+        template_name: Name of template (for error messages)
+
+    Raises:
+        DatabaseError: If template missing required components
+    """
+    # Check reactions exist
+    if not hasattr(template, 'reactions') or not template.reactions:
+        raise DatabaseError(
+            message=f"Template '{template_name}' has no reactions.\n"
+                    "A valid template must contain at least one reaction.",
+            error_code="INVALID_TEMPLATE_NO_REACTIONS"
+        )
+
+    # Check metabolites exist
+    if not hasattr(template, 'metabolites') or not template.metabolites:
+        raise DatabaseError(
+            message=f"Template '{template_name}' has no metabolites.\n"
+                    "A valid template must contain at least one metabolite.",
+            error_code="INVALID_TEMPLATE_NO_METABOLITES"
+        )
+
+    # Check compartments exist
+    if not hasattr(template, 'compartments') or not template.compartments:
+        raise DatabaseError(
+            message=f"Template '{template_name}' has no compartments.\n"
+                    "A valid template must define at least one compartment (e.g., c0, e0).",
+            error_code="INVALID_TEMPLATE_NO_COMPARTMENTS"
+        )
+
+    # Log validation success with statistics
+    logger.debug(
+        f"Template '{template_name}' validated: "
+        f"{len(template.reactions)} reactions, "
+        f"{len(template.metabolites)} metabolites, "
+        f"{len(template.compartments)} compartments"
+    )
+
+
 # Template file mapping (spec 017)
 TEMPLATE_FILES = {
     "GramNegative": "GramNegModelTemplateV6.json",
@@ -84,6 +132,9 @@ def load_template(template_path: Path, template_name: str) -> MSTemplate:
                     "This may indicate a template version mismatch or corrupted file.",
             error_code="TEMPLATE_BUILD_FAILED"
         )
+
+    # Validate template integrity (spec 015)
+    validate_template(template, template_name)
 
     return template
 
