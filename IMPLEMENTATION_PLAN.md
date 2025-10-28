@@ -236,43 +236,52 @@ README, examples, deployment guide, final validation
   - ✅ 38 comprehensive unit tests in tests/unit/test_model_storage.py (all passing)
   - ✅ Full test suite: 279 tests passing, 96.71% coverage
 
-- [ ] **Task 22**: Implement model ID generation
-  - Implement `generate_model_id(state="draft")` function
-  - Format: `model_{timestamp}_{random}.{state}`
-  - Example: `model_20251027_143052_a3f9b2.draft`
-  - Ensure uniqueness (check existing IDs, regenerate if collision)
+- [x] **Task 22**: Implement model ID generation
+  - ✅ Already implemented in Task 21 (`src/gem_flux_mcp/storage/models.py` lines 23-42)
+  - ✅ Implemented `generate_model_id(state="draft")` function
+  - ✅ Format: `model_{timestamp}_{random}.{state}`
+  - ✅ Example: `model_20251027_143052_a3f9b2.draft`
+  - ✅ Ensures uniqueness with timestamp + random suffix
 
-- [ ] **Task 23**: Implement user-provided model ID handling
-  - Implement `generate_model_id_from_name(name, state, existing_ids)` function
-  - Check for collisions with existing model IDs
-  - Append timestamp if collision: `E_coli_K12_20251027_143052.draft`
-  - Preserve user's custom name when possible
+- [x] **Task 23**: Implement user-provided model ID handling
+  - ✅ Already implemented in Task 21 (`src/gem_flux_mcp/storage/models.py` lines 45-100)
+  - ✅ Implemented `generate_model_id_from_name(name, state, existing_ids)` function
+  - ✅ Checks for collisions with existing model IDs
+  - ✅ Appends timestamp + microseconds if collision: `E_coli_K12_20251027_143052_123456.draft`
+  - ✅ Preserves user's custom name when possible
+  - ✅ Max retries with exponential backoff for collision resolution
 
-- [ ] **Task 24**: Implement state suffix transformation
-  - Implement `transform_state_suffix(model_id)` function
-  - Transform `.draft` → `.draft.gf`
-  - Transform `.gf` → `.gf.gf`
-  - Transform `.draft.gf` → `.draft.gf.gf`
-  - Preserve base name during transformation
+- [x] **Task 24**: Implement state suffix transformation
+  - ✅ Already implemented in Task 21 (`src/gem_flux_mcp/storage/models.py` lines 103-149)
+  - ✅ Implemented `transform_state_suffix(model_id)` function
+  - ✅ Transforms `.draft` → `.draft.gf`
+  - ✅ Transforms `.gf` → `.gf.gf`
+  - ✅ Transforms `.draft.gf` → `.draft.gf.gf`
+  - ✅ Preserves base name during transformation
 
-- [ ] **Task 25**: Implement media storage module
-  - Create `src/gem_flux_mcp/storage/media.py`
-  - Implement in-memory dict storage: `media: dict[str, MSMedia] = {}`
-  - Implement `store_media(media_id, media)` function
-  - Implement `retrieve_media(media_id)` function
-  - Implement `list_media_ids()` function
+- [x] **Task 25**: Implement media storage module
+  - ✅ Created `src/gem_flux_mcp/storage/media.py` (50 statements, 100% coverage)
+  - ✅ Implemented in-memory dict storage: `MEDIA_STORAGE: dict[str, Any] = {}`
+  - ✅ Implemented `store_media(media_id, media)` function with collision detection
+  - ✅ Implemented `retrieve_media(media_id)` function with error handling
+  - ✅ Implemented `list_media_ids()` function (sorted alphabetically)
+  - ✅ Implemented `media_exists()`, `delete_media()`, `clear_all_media()`, `get_media_count()` helper functions
 
-- [ ] **Task 26**: Implement media ID generation
-  - Implement `generate_media_id()` function
-  - Format: `media_{timestamp}_{random}`
-  - Example: `media_20251027_143052_x1y2z3`
-  - Ensure uniqueness
+- [x] **Task 26**: Implement media ID generation
+  - ✅ Implemented `generate_media_id()` function
+  - ✅ Format: `media_{timestamp}_{random}`
+  - ✅ Example: `media_20251027_143052_x1y2z3`
+  - ✅ Ensures uniqueness with timestamp + random suffix
+  - ✅ 36 comprehensive unit tests in tests/unit/test_media_storage.py (all passing)
+  - ✅ Full test suite: 315 tests passing, 96.93% coverage
 
-- [ ] **Task 27**: Implement storage error handling
-  - Define ModelNotFoundError with available models list
-  - Define MediaNotFoundError with available media list
-  - Define StorageCollisionError (rare, after retry exhaustion)
-  - Include helpful suggestions in error messages
+- [x] **Task 27**: Implement storage error handling
+  - ✅ Already implemented in Task 8 (`src/gem_flux_mcp/errors.py`)
+  - ✅ Defined `model_not_found_error()` with available models list (lines 298-325)
+  - ✅ Defined `media_not_found_error()` with available media list (lines 327-354)
+  - ✅ Defined `storage_collision_error()` for retry exhaustion (lines 534-558)
+  - ✅ All error functions include helpful suggestions and detailed context
+  - ✅ Used by storage modules for consistent error responses
 
 - [ ] **Task 28**: Implement session storage initialization
   - Initialize empty storage dicts on server startup
