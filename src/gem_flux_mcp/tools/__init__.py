@@ -8,9 +8,11 @@ from gem_flux_mcp.tools.compound_lookup import (
     GetCompoundNameResponse,
     get_compound_name,
 )
+from gem_flux_mcp.tools.run_fba import run_fba
 
 __all__ = [
     "get_compound_name",
     "GetCompoundNameRequest",
     "GetCompoundNameResponse",
+    "run_fba",
 ]
