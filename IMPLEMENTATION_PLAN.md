@@ -329,15 +329,17 @@ README, examples, deployment guide, final validation
   - Unit tests: tests/unit/test_search_compounds.py (26 tests, 100% coverage) ✓
   - Full test suite: 386 passed, 97.57% coverage ✓
 
-- [ ] **Task 33**: Implement get_reaction_name tool
-  - Create `src/gem_flux_mcp/tools/get_reaction_name.py`
-  - Input: `{"reaction_id": "rxn00148"}`
-  - Validate reaction_id format and existence
-  - Query database for reaction record
-  - Parse equation (with IDs and with names)
-  - Parse reversibility symbol to readable string
-  - Parse EC numbers, pathways, aliases
-  - Return: name, abbreviation, equation, equation_with_ids, reversibility, direction, is_transport, ec_numbers, pathways, aliases
+- [x] **Task 33**: Implement get_reaction_name tool
+  - ✅ Created `src/gem_flux_mcp/tools/reaction_lookup.py` (130 statements, 90.77% coverage)
+  - ✅ Implemented `GetReactionNameRequest` and `GetReactionNameResponse` models
+  - ✅ Implemented `get_reaction_name()` function with O(1) database lookup
+  - ✅ Implemented helper functions: `parse_reversibility_and_direction()`, `parse_ec_numbers()`, `parse_pathways()`, `format_equation_readable()`
+  - ✅ Parses equation with IDs and human-readable names
+  - ✅ Parses reversibility symbols (>, <, =) to readable strings
+  - ✅ Parses EC numbers, pathways (with database prefix removal), aliases
+  - ✅ Returns complete metadata: name, abbreviation, equation, equation_with_ids, reversibility, direction, is_transport, ec_numbers, pathways, deltag, deltagerr, aliases
+  - ✅ 32 comprehensive unit tests in tests/unit/test_get_reaction_name.py (all passing)
+  - ✅ Full test suite: 418 tests passing (386 + 32 new), 97.57% coverage
 
 - [ ] **Task 34**: Implement search_reactions tool
   - Create `src/gem_flux_mcp/tools/search_reactions.py`
