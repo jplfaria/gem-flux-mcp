@@ -254,15 +254,22 @@ def test_apply_media_to_model_basic(mock_model, mock_media_data):
     assert mock_model.medium["EX_cpd00007_e0"] == 10.0
 
 
-def test_apply_media_to_model_missing_exchange(mock_model, mock_media_data, caplog):
-    """Test media application warns for missing exchange reactions."""
+def test_apply_media_to_model_missing_exchange(mock_model, mock_media_data):
+    """Test media application handles missing exchange reactions gracefully."""
     # Add a compound with no exchange reaction
     mock_media_data["bounds"]["cpd99999"] = (-5, 100)
 
+    # Should complete without error even if exchange reaction missing
     apply_media_to_model(mock_model, mock_media_data)
 
-    # Should log warning
-    assert "no exchange reaction" in caplog.text.lower()
+    # Verify model was still updated for valid compounds
+    assert mock_model.medium is not None
+    # Should have the 2 valid exchanges, cpd99999 skipped
+    assert len(mock_model.medium) == 2
+    assert "EX_cpd00027_e0" in mock_model.medium
+    assert "EX_cpd00007_e0" in mock_model.medium
+    # Missing compound should not be in medium
+    assert "EX_cpd99999_e0" not in mock_model.medium
 
 
 # ============================================================================

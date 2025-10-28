@@ -1,0 +1,14 @@
+# Pre-commit hooks for Gem-Flux MCP Server
+# Install: pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # Local hooks
+  - repo: local
+    hooks:
+      - id: no-caplog-in-tests
+        name: Check for flaky caplog assertions in tests
+        entry: scripts/hooks/check-caplog.sh
+        language: script
+        files: ^tests/.*\.py$
+        description: 'Prevents flaky logging tests - see docs/testing-guidelines.md'

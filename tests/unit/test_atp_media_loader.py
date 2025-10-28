@@ -5,7 +5,6 @@ Tests the loading, caching, and error handling of ATP gapfilling media
 according to spec 015-mcp-server-setup.md.
 """
 
-import logging
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -80,16 +79,17 @@ class TestLoadATPMedia:
 
             assert len(result) == 3
 
-    def test_load_atp_media_logs_success(self, clear_atp_cache, mock_atp_media, caplog):
-        """Test that successful loading logs info message."""
+    def test_load_atp_media_populates_cache(self, clear_atp_cache, mock_atp_media):
+        """Test that successful loading populates the cache correctly."""
         with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
             mock_load.return_value = mock_atp_media
 
-            with caplog.at_level(logging.INFO):
-                load_atp_media()
+            result = load_atp_media()
 
-            # Verify success log message
-            assert "✓ Loaded 3 ATP test media conditions" in caplog.text
+            # Verify functional behavior: cache is populated
+            assert len(ATP_MEDIA_CACHE) == 3
+            assert ATP_MEDIA_CACHE == mock_atp_media
+            assert result == mock_atp_media
 
     def test_load_atp_media_empty_result(self, clear_atp_cache):
         """Test loading ATP media when ModelSEEDpy returns empty list."""
@@ -101,37 +101,31 @@ class TestLoadATPMedia:
             assert len(result) == 0
             assert len(ATP_MEDIA_CACHE) == 0
 
-    def test_load_atp_media_file_not_found(self, clear_atp_cache, caplog):
+    def test_load_atp_media_file_not_found(self, clear_atp_cache):
         """Test handling of FileNotFoundError during loading."""
         with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
             mock_load.side_effect = FileNotFoundError("ATP media file not found")
 
-            with caplog.at_level(logging.WARNING):
-                result = load_atp_media()
+            result = load_atp_media()
 
-            # Verify warning was logged
-            assert "ATP media file not found" in caplog.text
-            assert "ATP correction will be unavailable" in caplog.text
-
-            # Verify empty result returned (non-fatal error)
+            # Verify functional behavior: graceful degradation
+            # Empty result returned (non-fatal error)
             assert result == []
             assert len(ATP_MEDIA_CACHE) == 0
+            assert has_atp_media() is False
 
-    def test_load_atp_media_generic_error(self, clear_atp_cache, caplog):
+    def test_load_atp_media_generic_error(self, clear_atp_cache):
         """Test handling of generic exception during loading."""
         with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
             mock_load.side_effect = Exception("Unexpected error")
 
-            with caplog.at_level(logging.WARNING):
-                result = load_atp_media()
+            result = load_atp_media()
 
-            # Verify warning was logged
-            assert "Failed to load ATP gapfilling media" in caplog.text
-            assert "Server will continue without ATP media" in caplog.text
-
-            # Verify empty result returned (non-fatal error)
+            # Verify functional behavior: graceful degradation
+            # Empty result returned (non-fatal error)
             assert result == []
             assert len(ATP_MEDIA_CACHE) == 0
+            assert has_atp_media() is False
 
     def test_load_atp_media_clears_previous_cache(self, clear_atp_cache, mock_atp_media):
         """Test that loading ATP media clears previous cache."""
@@ -257,20 +251,16 @@ class TestATPMediaIntegration:
         assert len(info) == 3
         assert info[0]["id"] == "test_media_0"
 
-    def test_loading_failure_workflow(self, clear_atp_cache, caplog):
+    def test_loading_failure_workflow(self, clear_atp_cache):
         """Test workflow when loading fails."""
         # Attempt to load with error
         with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
             mock_load.side_effect = FileNotFoundError("File not found")
 
-            with caplog.at_level(logging.WARNING):
-                result = load_atp_media()
+            result = load_atp_media()
 
-        # Verify no media available
+        # Verify functional behavior: complete system gracefully handles failure
         assert result == []
         assert has_atp_media() is False
         assert get_atp_media() == []
         assert get_atp_media_info() == []
-
-        # Verify warning logged
-        assert "ATP media file not found" in caplog.text
