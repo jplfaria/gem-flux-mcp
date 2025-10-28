@@ -3,11 +3,52 @@
 import pytest
 from unittest.mock import Mock, MagicMock
 from pathlib import Path
+import pandas as pd
 
 
 # ============================================================================
 # Test Database Mocks
 # ============================================================================
+
+@pytest.fixture
+def mock_compounds_df():
+    """Mock compounds DataFrame for testing."""
+    data = {
+        "id": ["cpd00001", "cpd00007", "cpd00009", "cpd00011", "cpd00027"],
+        "name": ["H2O", "O2", "Phosphate", "CO2", "D-Glucose"],
+        "abbreviation": ["h2o", "o2", "pi", "co2", "glc__D"],
+        "formula": ["H2O", "O2", "HO4P", "CO2", "C6H12O6"],
+        "mass": [18.0, 32.0, 95.0, 44.0, 180.0],
+        "charge": [0, 0, -2, 0, 0],
+        "inchikey": ["", "", "", "", "WQZGKKKJIJFFOK-GASJEMHNSA-N"],
+        "smiles": ["", "", "", "", "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O"],
+        "aliases": ["", "", "", "", "KEGG: C00031|BiGG: glc__D"],
+    }
+    df = pd.DataFrame(data)
+    df = df.set_index("id")
+    return df
+
+
+@pytest.fixture
+def mock_reactions_df():
+    """Mock reactions DataFrame for testing."""
+    data = {
+        "id": ["rxn00001", "rxn00148"],
+        "name": ["Test Reaction", "hexokinase"],
+        "abbreviation": ["TEST", "HEX1"],
+        "equation": ["A <=> B", "D-Glucose + ATP => ADP + H+ + D-Glucose-6-phosphate"],
+        "definition": ["", ""],
+        "stoichiometry": ["", ""],
+        "reversibility": ["=", ">"],
+        "is_transport": [0, 0],
+        "ec_numbers": ["", "2.7.1.1"],
+        "pathways": ["", "Glycolysis"],
+        "aliases": ["", "KEGG: R00200|BiGG: HEX1"],
+    }
+    df = pd.DataFrame(data)
+    df = df.set_index("id")
+    return df
+
 
 @pytest.fixture
 def mock_modelseed_database():
