@@ -10,16 +10,21 @@ from gem_flux_mcp.tools.run_fba import run_fba
 from gem_flux_mcp.tools.compound_lookup import (
     get_compound_name,
     search_compounds,
+    GetCompoundNameRequest,
+    SearchCompoundsRequest,
 )
 from gem_flux_mcp.tools.reaction_lookup import (
     get_reaction_name,
     search_reactions,
+    GetReactionNameRequest,
+    SearchReactionsRequest,
 )
 from gem_flux_mcp.tools.list_models import list_models
 from gem_flux_mcp.tools.delete_model import delete_model
 from gem_flux_mcp.tools.list_media import list_media
 
 __all__ = [
+    # Tool functions
     "build_media",
     "build_model",
     "gapfill_model",
@@ -31,4 +36,9 @@ __all__ = [
     "list_models",
     "delete_model",
     "list_media",
+    # Request types (for tool modules defined in tool files)
+    "GetCompoundNameRequest",
+    "SearchCompoundsRequest",
+    "GetReactionNameRequest",
+    "SearchReactionsRequest",
 ]
