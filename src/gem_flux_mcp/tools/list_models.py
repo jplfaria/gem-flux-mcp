@@ -118,7 +118,7 @@ def extract_model_metadata(model_id: str, model: Any) -> ModelInfo:
 
 def list_models(
     request: ListModelsRequest,
-) -> Union[ListModelsResponse, ErrorResponse]:
+) -> dict:
     """List all models in current session with filtering.
 
     Args:
@@ -185,7 +185,7 @@ def list_models(
             f"draft: {state_counts['draft']}, gapfilled: {state_counts['gapfilled']})"
         )
 
-        return response
+        return response.model_dump()
 
     except Exception as e:
         logger.error(f"Error in list_models: {e}", exc_info=True)
@@ -195,4 +195,4 @@ def list_models(
             message=f"Failed to list models: {str(e)}",
             details={"exception": str(e)},
             suggestion="Check server logs for details.",
-        )
+        ).model_dump()

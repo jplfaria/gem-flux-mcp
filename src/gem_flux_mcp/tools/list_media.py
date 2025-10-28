@@ -110,7 +110,7 @@ def extract_media_metadata(media_id: str, media: Any, db_index=None) -> MediaInf
     )
 
 
-def list_media(db_index=None) -> Union[ListMediaResponse, ErrorResponse]:
+def list_media(db_index=None) -> dict:
     """List all media in current session.
 
     Args:
@@ -156,7 +156,7 @@ def list_media(db_index=None) -> Union[ListMediaResponse, ErrorResponse]:
             f"(predefined: {predefined_count}, user-created: {user_created_count})"
         )
 
-        return response
+        return response.model_dump()
 
     except Exception as e:
         logger.error(f"Error in list_media: {e}", exc_info=True)
@@ -166,4 +166,4 @@ def list_media(db_index=None) -> Union[ListMediaResponse, ErrorResponse]:
             message=f"Failed to list media: {str(e)}",
             details={"exception": str(e)},
             suggestion="Check server logs for details.",
-        )
+        ).model_dump()
