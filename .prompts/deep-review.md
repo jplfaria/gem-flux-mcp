@@ -16,7 +16,8 @@ Review the most recent implementation log and perform a comprehensive code quali
 3. Compare implementation against relevant specifications
 4. Check integration with existing code
 5. Evaluate if setup is appropriate for future work
-6. Provide FINDINGS ONLY - no immediate changes
+6. **Check if any suggested changes require loop restart**
+7. Provide FINDINGS ONLY - no immediate changes
 
 ## ANALYSIS CHECKLIST
 
@@ -49,6 +50,20 @@ Review the most recent implementation log and perform a comprehensive code quali
 - Any technical debt being introduced?
 - Extensibility considerations?
 
+### Loop Restart Detection
+**Check if any suggested changes affect these files:**
+- ❌ `scripts/development/run-implementation-loop.sh` → RESTART REQUIRED
+- ❌ `scripts/development/run-quality-gates.sh` → RESTART REQUIRED
+- ❌ `scripts/development/context-optimizer.py` → RESTART REQUIRED
+- ❌ Any `.py` files imported by loop scripts → RESTART REQUIRED
+- ✅ `src/**/*.py` (application code) → Safe while paused
+- ✅ `tests/**/*.py` (test code) → Safe while paused
+- ✅ `docs/**/*.md` (documentation) → Safe while paused
+- ✅ `specs/**/*.md` (specifications) → Safe while paused
+- ✅ `.prompts/**/*.md` (prompts) → Safe while paused
+
+**Rule**: If ANY suggested change is ❌, mark "Loop Restart Required: YES"
+
 ## DETECTION RULES
 
 - **If phase just completed:** THOROUGH analysis of entire phase
@@ -61,6 +76,38 @@ Review the most recent implementation log and perform a comprehensive code quali
 - Iteration: [number]
 - Phase Status: [in progress / boundary detected]
 - Analysis Depth: [thorough / deep / spot check]
+- **Loop Restart Required**: [YES / NO - only YES if changes affect loop scripts]
+
+### ⚠️ Loop Restart Notice (if applicable)
+
+**IF any suggested changes modify loop infrastructure files, include this section:**
+
+```
+🔄 LOOP RESTART REQUIRED
+
+The suggested changes modify loop infrastructure. After applying changes:
+
+1. Ctrl+C to stop the current loop
+2. Apply the suggested changes
+3. Commit the changes
+4. Restart loop: ./scripts/development/run-implementation-loop.sh
+
+Files that require restart if modified:
+- scripts/development/run-implementation-loop.sh
+- scripts/development/run-quality-gates.sh
+- scripts/development/context-optimizer.py
+- Any Python files imported by loop scripts
+
+All other changes (src/, tests/, docs/, specs/) can be applied while loop is paused.
+```
+
+**IF no changes require restart (most common), simply state:**
+```
+✅ NO LOOP RESTART REQUIRED
+
+All suggested changes are to application code (src/tests/docs) and can be
+applied while the loop is paused between iterations.
+```
 
 ### Findings
 
@@ -73,6 +120,12 @@ Review the most recent implementation log and perform a comprehensive code quali
 #### 🔧 Suggested Changes
 [Very specific, actionable suggestions with exact locations]
 [NO immediate implementation - just documented recommendations]
+
+**For each suggestion, indicate:**
+- File path and line numbers
+- Exact change needed
+- ⚠️ **If file is in scripts/development/**: Mark as "REQUIRES LOOP RESTART"
+- ✅ **If file is in src/tests/docs/specs/**: Mark as "Safe to apply while paused"
 
 #### 📊 Spec Compliance
 [Comparison against specifications]
