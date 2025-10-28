@@ -849,7 +849,7 @@ README, examples, deployment guide, final validation
   - ✅ Fixed bugs in compound_lookup.py and reaction_lookup.py (Series index vs compound["id"])
   - Note: Tests check dict responses (tools return model.model_dump())
 
-- [ ] **Task 83**: Write integration test: Session management
+- [x] **Task 83**: Write integration test: Session management
   - Test: Create multiple models → list_models → delete_model
   - Test: Create multiple media → list_media
   - Verify storage limits respected
