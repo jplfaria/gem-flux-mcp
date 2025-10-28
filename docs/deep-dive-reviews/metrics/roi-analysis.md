@@ -6,14 +6,15 @@ This document tracks the return on investment for manual deep dive code reviews.
 
 | Metric | Value |
 |--------|-------|
-| **Total Sessions** | 3 |
-| **Total Time Invested** | 125 minutes (~2 hours) |
-| **Files Changed** | 8 |
+| **Total Sessions** | 4 |
+| **Total Time Invested** | 145 minutes (~2.4 hours) |
+| **Files Changed** | 12 |
 | **Tests Added** | 1 |
-| **Lines Changed** | ~299 |
+| **Lines Changed** | ~311 |
 | **Critical Issues Prevented** | 2 |
 | **Systemic Issues Resolved** | 1 |
-| **Overall Coverage** | 91.24% |
+| **Maintenance Issues Prevented** | 1 |
+| **Overall Coverage** | 91.36% |
 
 ## Per-Session Breakdown
 
@@ -86,21 +87,49 @@ This document tracks the return on investment for manual deep dive code reviews.
 
 ---
 
+### Session 4: Iteration 1 (session management tools)
+**Time**: 20 minutes
+**ROI**: ⭐⭐⭐ Medium
+
+| Metric | Value |
+|--------|-------|
+| Files Changed | 4 |
+| Tests Added | 0 (no new tests required) |
+| Lines Changed | +22 / -10 (net +12) |
+| Coverage | 91.36% maintained |
+
+**Impact**:
+- ✅ Added observability for timestamp fallback behavior
+- ✅ Centralized predefined media constants (prevents sync issues)
+- ✅ Prepared codebase for Task 68 (predefined media library)
+
+**Value**: Quality improvements with modest time investment
+
+**Cost of Not Fixing**:
+- Observability: ~5-10 minutes per debugging session when timestamp issues occur
+- Centralization: ~30 minutes to debug and fix sync issues if lists diverge
+
+**Net Benefit**: 20 minutes invested prevents small frustrations and prepares for future work
+
+---
+
 ## ROI by Category
 
 ### Time Saved
 - **Session 1**: Prevented Phase 6 blocker (estimated 2-4 hours of debugging)
 - **Session 2**: Future debugging improvements (estimated 1-2 hours over project lifetime)
 - **Session 3**: 4 past occurrences × 15 min = 60 min, plus infinite future occurrences prevented
+- **Session 4**: Prevented sync issues with Task 68 (~30 min) + debugging time saved (~5-10 min per occurrence)
 
-**Total Time Saved**: 3-6 hours past + infinite future
+**Total Time Saved**: 3-6 hours past + ~1 hour future + infinite recurring issues prevented
 
 ### Quality Improvements
 - 1 critical TODO enhanced with context
 - 1 biologically important edge case tested
 - 7 flaky tests converted to stable tests
-- Logging observability improved
+- 2 observability improvements (file cleanup, timestamp fallback)
 - Testing patterns documented
+- 1 constant centralized for maintainability
 
 ### Infrastructure Added
 - Testing guidelines document (200+ lines)
@@ -110,16 +139,17 @@ This document tracks the return on investment for manual deep dive code reviews.
 
 ## Cost-Benefit Analysis
 
-**Investment**: 125 minutes (≈2 hours)
+**Investment**: 145 minutes (≈2.4 hours)
 
 **Returns**:
-- **Tangible**: 3-6 hours debugging time saved
+- **Tangible**: 4-7 hours debugging time saved
 - **Intangible**:
   - Prevented Phase 6 blocker
   - Eliminated recurring frustration
   - Established quality patterns
   - Improved developer experience
   - Created reusable infrastructure
+  - Improved maintainability for future tasks
 
 **ROI Ratio**: 3:1 to 6:1 (conservative estimate, excluding intangibles)
 
@@ -173,4 +203,4 @@ Manual deep dive reviews provide **high to extremely high ROI**, especially for:
 
 ---
 
-**Last Updated**: 2025-10-28 (after Session 3)
+**Last Updated**: 2025-10-28 (after Session 4)
