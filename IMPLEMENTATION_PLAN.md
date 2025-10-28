@@ -464,7 +464,7 @@ README, examples, deployment guide, final validation
   - Test invalid bounds error
   - Test custom_bounds override default
 
-- [ ] **Task 45**: Implement build_model tool (FASTA input)
+- [x] **Task 45**: Implement build_model tool (FASTA input)
   - Create `src/gem_flux_mcp/tools/build_model.py`
   - Input: `{"fasta_file_path": "/path/to/proteins.faa", "template": "GramNegative", "model_name": "E_coli_K12", "annotate_with_rast": true}`
   - Validate FASTA file exists and is readable
@@ -480,28 +480,28 @@ README, examples, deployment guide, final validation
   - Collect statistics (num_reactions, num_metabolites, num_genes)
   - Return: model_id, statistics, template_used, compartments
 
-- [ ] **Task 46**: Implement build_model tool (dict input)
+- [x] **Task 46**: Implement build_model tool (dict input)
   - Handle `protein_sequences` dict input
   - Validate all amino acid sequences contain only valid characters: `[ACDEFGHIKLMNPQRSTVWY]`
   - Convert dict to temporary .faa file for RAST (if annotate_with_rast=true)
   - Create MSGenome from dict (without RAST if offline mode)
   - Rest follows same flow as FASTA input
 
-- [ ] **Task 47**: Implement protein sequence validation
+- [x] **Task 47**: Implement protein sequence validation
   - Validate non-empty protein_sequences dict OR fasta_file_path (not both)
   - Validate amino acid alphabet: `ACDEFGHIKLMNPQRSTVWY`
   - Report ALL invalid sequences (don't stop at first)
   - Validate no empty sequences
   - Validate no duplicate protein IDs
 
-- [ ] **Task 48**: Implement RAST annotation integration
+- [x] **Task 48**: Implement RAST annotation integration
   - If `annotate_with_rast=true`: submit .faa to RAST API
   - Handle RAST network errors gracefully
   - Use RAST results to create MSGenome with functional annotations
   - If `annotate_with_rast=false`: offline template matching only
   - Document RAST vs offline tradeoffs
 
-- [ ] **Task 49**: Implement model statistics collection
+- [x] **Task 49**: Implement model statistics collection
   - Count total reactions, metabolites, genes
   - Break down reactions by compartment
   - Count exchange reactions (EX_ prefix)
@@ -509,7 +509,7 @@ README, examples, deployment guide, final validation
   - Identify transport reactions
   - Set `is_draft=true`, `requires_gapfilling=true`
 
-- [ ] **Task 50**: Write unit tests for build_model
+- [x] **Task 50**: Write unit tests for build_model
   - Test successful model building from dict
   - Test successful model building from FASTA
   - Test invalid amino acid sequences error
