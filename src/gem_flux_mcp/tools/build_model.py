@@ -335,8 +335,12 @@ def create_genome_from_dict(
             import os
             try:
                 os.unlink(fasta_path)
-            except Exception:
-                pass
+                logger.debug(f"Cleaned up temporary FASTA file: {fasta_path}")
+            except FileNotFoundError:
+                pass  # Already deleted, that's fine
+            except Exception as e:
+                # Log but don't raise - cleanup failure shouldn't break the tool
+                logger.warning(f"Failed to clean up temporary file {fasta_path}: {e}")
 
     else:
         # Offline mode: create genome directly from dict
