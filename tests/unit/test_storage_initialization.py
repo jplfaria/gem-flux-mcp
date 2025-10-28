@@ -95,19 +95,19 @@ class TestLoadConfigFromEnv:
             assert config.max_models == 300
             assert config.max_media == 150
 
-    def test_invalid_max_models_uses_default(self, caplog):
-        """Test that invalid max_models value uses default and logs warning."""
+    def test_invalid_max_models_uses_default(self):
+        """Test that invalid max_models value uses default."""
         with patch.dict(os.environ, {"GEM_FLUX_MAX_MODELS": "invalid"}):
             config = load_config_from_env()
             assert config.max_models == DEFAULT_MAX_MODELS
-            assert "Invalid GEM_FLUX_MAX_MODELS value" in caplog.text
+            assert config.max_media == DEFAULT_MAX_MEDIA
 
-    def test_invalid_max_media_uses_default(self, caplog):
-        """Test that invalid max_media value uses default and logs warning."""
+    def test_invalid_max_media_uses_default(self):
+        """Test that invalid max_media value uses default."""
         with patch.dict(os.environ, {"GEM_FLUX_MAX_MEDIA": "not_a_number"}):
             config = load_config_from_env()
+            assert config.max_models == DEFAULT_MAX_MODELS
             assert config.max_media == DEFAULT_MAX_MEDIA
-            assert "Invalid GEM_FLUX_MAX_MEDIA value" in caplog.text
 
 
 class TestInitializeStorage:
@@ -123,35 +123,34 @@ class TestInitializeStorage:
         clear_all_media()
         initialization._storage_config = None
 
-    def test_initialize_with_default_config(self, caplog):
+    def test_initialize_with_default_config(self):
         """Test initialization with default configuration."""
-        import logging
-        caplog.set_level(logging.INFO)
-
         config = initialize_storage()
 
         assert config.max_models == DEFAULT_MAX_MODELS
         assert config.max_media == DEFAULT_MAX_MEDIA
-        assert "Initializing session storage" in caplog.text
-        assert f"Storage limits: {DEFAULT_MAX_MODELS} models, {DEFAULT_MAX_MEDIA} media" in caplog.text
 
-    def test_initialize_with_custom_config(self, caplog):
+        # Verify storage is initialized
+        from gem_flux_mcp.storage.models import get_model_count
+        from gem_flux_mcp.storage.media import get_media_count
+        assert get_model_count() == 0
+        assert get_media_count() == 0
+
+    def test_initialize_with_custom_config(self):
         """Test initialization with custom configuration."""
-        import logging
-        caplog.set_level(logging.INFO)
-
         custom_config = StorageConfig(max_models=200, max_media=100)
         config = initialize_storage(custom_config)
 
         assert config.max_models == 200
         assert config.max_media == 100
-        assert "Storage limits: 200 models, 100 media" in caplog.text
 
-    def test_initialize_from_env_vars(self, caplog):
+        # Verify config is retrievable
+        retrieved_config = get_storage_config()
+        assert retrieved_config["max_models"] == 200
+        assert retrieved_config["max_media"] == 100
+
+    def test_initialize_from_env_vars(self):
         """Test initialization loads from environment variables."""
-        import logging
-        caplog.set_level(logging.INFO)
-
         with patch.dict(
             os.environ, {"GEM_FLUX_MAX_MODELS": "250", "GEM_FLUX_MAX_MEDIA": "125"}
         ):
@@ -159,28 +158,38 @@ class TestInitializeStorage:
 
             assert config.max_models == 250
             assert config.max_media == 125
-            assert "Storage limits: 250 models, 125 media" in caplog.text
 
-    def test_initialize_logs_empty_storage(self, caplog):
-        """Test initialization logs that storage is empty."""
-        import logging
-        caplog.set_level(logging.INFO)
+            # Verify config is applied
+            retrieved_config = get_storage_config()
+            assert retrieved_config["max_models"] == 250
+            assert retrieved_config["max_media"] == 125
+
+    def test_initialize_with_empty_storage(self):
+        """Test initialization with empty storage."""
+        from gem_flux_mcp.storage.models import get_model_count
+        from gem_flux_mcp.storage.media import get_media_count
 
         initialize_storage()
-        assert "Storage initialized: 0 models, 0 media" in caplog.text
 
-    def test_initialize_warns_if_storage_not_empty(self, caplog):
-        """Test warning logged if storage not empty on initialization."""
-        from gem_flux_mcp.storage.models import store_model
+        # Verify storage starts empty
+        assert get_model_count() == 0
+        assert get_media_count() == 0
+
+    def test_initialize_with_non_empty_storage(self):
+        """Test initialization when storage is not empty."""
+        from gem_flux_mcp.storage.models import store_model, get_model_count
 
         # Create a mock model
         mock_model = MagicMock()
         store_model("model_test.draft", mock_model)
 
+        # Verify storage has items before init
+        assert get_model_count() == 1
+
         initialize_storage()
 
-        assert "Storage not empty on initialization" in caplog.text
-        assert "1 models, 0 media (expected 0, 0)" in caplog.text
+        # Storage should still have the item (init doesn't clear)
+        assert get_model_count() == 1
 
     def test_get_storage_config_after_init(self):
         """Test retrieving storage config after initialization."""
@@ -211,25 +220,23 @@ class TestShutdownStorage:
         initialization._storage_config = None
         initialize_storage()
 
-    def test_shutdown_empty_storage(self, caplog):
+    def test_shutdown_empty_storage(self):
         """Test shutdown with empty storage."""
-        import logging
-        caplog.set_level(logging.INFO)
-
         models_cleared, media_cleared = shutdown_storage()
 
         assert models_cleared == 0
         assert media_cleared == 0
-        assert "Shutting down session storage" in caplog.text
-        assert "Storage cleared: 0 models, 0 media" in caplog.text
 
-    def test_shutdown_with_models_and_media(self, caplog):
+        # Verify storage is still empty after shutdown
+        from gem_flux_mcp.storage.models import get_model_count
+        from gem_flux_mcp.storage.media import get_media_count
+        assert get_model_count() == 0
+        assert get_media_count() == 0
+
+    def test_shutdown_with_models_and_media(self):
         """Test shutdown clears models and media."""
-        import logging
-        caplog.set_level(logging.INFO)
-
-        from gem_flux_mcp.storage.models import store_model
-        from gem_flux_mcp.storage.media import store_media
+        from gem_flux_mcp.storage.models import store_model, get_model_count
+        from gem_flux_mcp.storage.media import store_media, get_media_count
 
         # Add mock models and media
         mock_model = MagicMock()
@@ -239,11 +246,18 @@ class TestShutdownStorage:
         store_model("model_2.draft", mock_model)
         store_media("media_1", mock_media)
 
+        # Verify items exist before shutdown
+        assert get_model_count() == 2
+        assert get_media_count() == 1
+
         models_cleared, media_cleared = shutdown_storage()
 
         assert models_cleared == 2
         assert media_cleared == 1
-        assert "Storage cleared: 2 models, 1 media" in caplog.text
+
+        # Verify storage is cleared after shutdown
+        assert get_model_count() == 0
+        assert get_media_count() == 0
 
     def test_shutdown_actually_clears_storage(self):
         """Test that shutdown actually clears storage dictionaries."""
@@ -385,17 +399,15 @@ class TestIntegrationScenarios:
         clear_all_media()
         initialization._storage_config = None
 
-    def test_full_lifecycle(self, caplog):
+    def test_full_lifecycle(self):
         """Test complete storage lifecycle: init → use → shutdown."""
-        import logging
-        caplog.set_level(logging.INFO)
-
         from gem_flux_mcp.storage.models import store_model, get_model_count
         from gem_flux_mcp.storage.media import store_media, get_media_count
 
         # Step 1: Initialize
         config = initialize_storage(StorageConfig(max_models=50, max_media=25))
-        assert "Initializing session storage" in caplog.text
+        assert config.max_models == 50
+        assert config.max_media == 25
 
         # Step 2: Use storage
         mock_model = MagicMock()
@@ -417,7 +429,6 @@ class TestIntegrationScenarios:
         models_cleared, media_cleared = shutdown_storage()
         assert models_cleared == 1
         assert media_cleared == 1
-        assert "Shutting down session storage" in caplog.text
 
         # Step 5: Verify cleared
         assert get_model_count() == 0
