@@ -594,10 +594,11 @@ def search_reactions(request: SearchReactionsRequest, db_index: DatabaseIndex) -
         ec_numbers = parse_ec_numbers(ec_numbers_raw)
 
         result = ReactionSearchResult(
-            id=reaction["id"],  # Use reaction ID from data, not Series index
+            id=reaction.name,  # Series.name is the index value ('id')
             name=reaction["name"],
             equation=equation,
             ec_numbers=ec_numbers,
+            match_field=match_field,
             match_type=match_type,
         )
         results.append(result)

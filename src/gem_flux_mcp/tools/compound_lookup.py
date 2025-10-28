@@ -351,7 +351,7 @@ def search_compounds(request: SearchCompoundsRequest, db_index: DatabaseIndex) -
     results = []
     for priority, compound, match_field, match_type in limited_matches:
         result = CompoundSearchResult(
-            id=compound["id"],  # Use compound ID from data, not Series index
+            id=compound.name,  # Series.name is the index value ('id')
             name=compound["name"],
             abbreviation=compound["abbreviation"],
             formula=compound["formula"],

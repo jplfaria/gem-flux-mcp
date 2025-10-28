@@ -51,7 +51,11 @@ from gem_flux_mcp.errors import NotFoundError
 
 @pytest.fixture(scope="module")
 def mock_compounds_db():
-    """Create a mock compounds database with realistic test data."""
+    """Create a mock compounds database with realistic test data.
+
+    IMPORTANT: DataFrame must be indexed by 'id' column for DatabaseIndex.get_compound_by_id()
+    to work (uses .loc[id] for O(1) lookups).
+    """
     data = {
         "id": ["cpd00001", "cpd00027", "cpd00007", "cpd00002", "cpd00008", "cpd00079"],
         "abbreviation": ["h2o", "glc__D", "o2", "atp", "adp", "g6p"],
@@ -70,12 +74,19 @@ def mock_compounds_db():
                     "KEGG: C00002|BiGG: atp", "KEGG: C00008|BiGG: adp",
                     "KEGG: C00092|BiGG: g6p|MetaCyc: GLC-6-P"],
     }
-    return pd.DataFrame(data)
+    df = pd.DataFrame(data)
+    # Set 'id' as index for O(1) lookups via .loc[id]
+    df = df.set_index("id")
+    return df
 
 
 @pytest.fixture(scope="module")
 def mock_reactions_db():
-    """Create a mock reactions database with realistic test data."""
+    """Create a mock reactions database with realistic test data.
+
+    IMPORTANT: DataFrame must be indexed by 'id' column for DatabaseIndex.get_reaction_by_id()
+    to work (uses .loc[id] for O(1) lookups).
+    """
     data = {
         "id": ["rxn00148", "rxn00200", "rxn00350", "rxn00558"],
         "abbreviation": ["HEX1", "PDH", "PGK", "MDH"],
@@ -111,7 +122,10 @@ def mock_reactions_db():
         "deltag": ["-16.7", "-33.4", "18.8", "29.7"],
         "deltagerr": ["1.2", "2.3", "3.4", "1.8"],
     }
-    return pd.DataFrame(data)
+    df = pd.DataFrame(data)
+    # Set 'id' as index for O(1) lookups via .loc[id]
+    df = df.set_index("id")
+    return df
 
 
 @pytest.fixture(scope="module")
@@ -289,8 +303,8 @@ def test_search_reactions_to_lookup_workflow(reaction_db_index):
     assert "cpd00002" in lookup_response["equation_with_ids"]
 
     # Step 4: Verify reversibility and direction
-    assert lookup_response["reversibility"] == "irreversible_forward"
-    assert lookup_response["direction"] == ">"
+    assert lookup_response["reversibility"] == "irreversible"  # Parsed from ">" symbol
+    assert lookup_response["direction"] == "forward"  # Parsed from ">" symbol
 
     # Step 5: Verify EC number and pathway
     assert "2.7.1.1" in lookup_response["ec_numbers"]
@@ -408,8 +422,8 @@ def test_reaction_metadata_enrichment(reaction_db_index):
     assert "cpd00130" in response["equation_with_ids"]
 
     # Reversibility
-    assert response["reversibility"] == "reversible"
-    assert response["direction"] == "="
+    assert response["reversibility"] == "reversible"  # Parsed from "=" symbol
+    assert response["direction"] == "bidirectional"  # Parsed from "=" symbol
 
     # EC numbers and pathways
     assert "1.1.1.37" in response["ec_numbers"]
