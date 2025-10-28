@@ -289,13 +289,13 @@ README, examples, deployment guide, final validation
   - Configure storage limits (100 models, 50 media for MVP)
   - Log initialization complete
 
-- [ ] **Task 29**: Implement storage cleanup on shutdown
+- [x] **Task 29**: Implement storage cleanup on shutdown
   - Clear all models from storage
   - Clear all media from storage
   - Log storage statistics before clearing
   - Free memory (Python garbage collection)
 
-- [ ] **Task 30**: Write storage unit tests
+- [x] **Task 30**: Write storage unit tests
   - Test model storage and retrieval
   - Test media storage and retrieval
   - Test model ID generation (auto and user-provided)
