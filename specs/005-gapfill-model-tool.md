@@ -1190,11 +1190,16 @@ def integrate_gapfill_solution(template, model, solution):
         if rxn_id.startswith('EX_'):
             continue
 
-        # Remove compartment suffix for template lookup
-        rxn_id_no_comp = rxn_id[:-3]  # Remove _c0, _e0, etc.
+        # Convert model reaction ID (indexed) to template reaction ID (non-indexed)
+        # Model uses: rxn05481_c0, Template uses: rxn05481_c
+        # Strip trailing '0' to convert indexed (_c0) to non-indexed (_c)
+        if rxn_id.endswith('0'):
+            template_rxn_id = rxn_id[:-1]  # rxn05481_c0 → rxn05481_c
+        else:
+            template_rxn_id = rxn_id  # Already in template format
 
         # Get reaction from template
-        template_reaction = template.reactions.get_by_id(rxn_id_no_comp)
+        template_reaction = template.reactions.get_by_id(template_rxn_id)
 
         # Convert to COBRApy reaction
         model_reaction = template_reaction.to_reaction(model)
