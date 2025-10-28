@@ -583,7 +583,7 @@ def search_reactions(request: SearchReactionsRequest, db_index: DatabaseIndex) -
 
     # Build results list
     results = []
-    for _, reaction, match_field, match_type in limited_matches:
+    for priority, reaction, match_field, match_type in limited_matches:
         # Format equation for human readability
         equation_with_ids = reaction.get("equation", "")
         definition = reaction.get("definition", "")
@@ -594,11 +594,10 @@ def search_reactions(request: SearchReactionsRequest, db_index: DatabaseIndex) -
         ec_numbers = parse_ec_numbers(ec_numbers_raw)
 
         result = ReactionSearchResult(
-            id=reaction.name,  # pandas Series.name is the index
+            id=reaction["id"],  # Use reaction ID from data, not Series index
             name=reaction["name"],
             equation=equation,
             ec_numbers=ec_numbers,
-            match_field=match_field,
             match_type=match_type,
         )
         results.append(result)

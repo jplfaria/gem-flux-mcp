@@ -838,10 +838,16 @@ README, examples, deployment guide, final validation
   - Implementation: tests/integration/test_phase11_complete_workflow.py
   - Tests: test_full_workflow_build_gapfill_fba, test_workflow_with_custom_media, test_end_to_end_error_handling
 
-- [ ] **Task 82**: Write integration test: Database lookups
-  - Test: search_compounds → get_compound_name
-  - Test: search_reactions → get_reaction_name
-  - Verify enrichment of tool outputs with names
+- [x] **Task 82**: Write integration test: Database lookups
+  - ✅ Created `tests/integration/test_phase12_database_lookups.py` with 16 comprehensive tests
+  - ✅ Test compound search → lookup workflow (search_compounds → get_compound_name)
+  - ✅ Test reaction search → lookup workflow (search_reactions → get_reaction_name)
+  - ✅ Test metadata enrichment (aliases, cross-references, equations)
+  - ✅ Test performance (O(1) lookups)
+  - ✅ Test error handling (not found, no results)
+  - ✅ Test priority-based search ordering
+  - ✅ Fixed bugs in compound_lookup.py and reaction_lookup.py (Series index vs compound["id"])
+  - Note: Tests check dict responses (tools return model.model_dump())
 
 - [ ] **Task 83**: Write integration test: Session management
   - Test: Create multiple models → list_models → delete_model

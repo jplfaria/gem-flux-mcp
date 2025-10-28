@@ -349,9 +349,9 @@ def search_compounds(request: SearchCompoundsRequest, db_index: DatabaseIndex) -
 
     # Build results list
     results = []
-    for _, compound, match_field, match_type in limited_matches:
+    for priority, compound, match_field, match_type in limited_matches:
         result = CompoundSearchResult(
-            id=compound.name,  # pandas Series.name is the index
+            id=compound["id"],  # Use compound ID from data, not Series index
             name=compound["name"],
             abbreviation=compound["abbreviation"],
             formula=compound["formula"],
