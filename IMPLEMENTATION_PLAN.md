@@ -356,42 +356,76 @@ README, examples, deployment guide, final validation
   - ✅ Fixed DatabaseIndex to handle empty DataFrames (added empty check before .str operations)
   - ✅ Full test suite: 443 tests passing (418 + 25 new), 97.02% coverage
 
-- [ ] **Task 35**: Implement equation formatting
-  - Parse database equation with compound IDs
-  - Parse database definition with compound names
-  - Remove compartment suffixes `[0]` for readability
-  - Format: `"(1) D-Glucose + (1) ATP => (1) ADP + (1) H+ + (1) D-Glucose-6-phosphate"`
+- [x] **Task 35**: Implement equation formatting
+  - ✅ Implemented `format_equation_readable()` in `reaction_lookup.py` (lines 301-328)
+  - ✅ Parses database equation with compound IDs
+  - ✅ Parses database definition with compound names
+  - ✅ Removes compartment suffixes `[0]`, `[c0]`, `[e0]`, `[p0]` for readability
+  - ✅ Format: `"(1) D-Glucose + (1) ATP => (1) ADP + (1) H+ + (1) D-Glucose-6-phosphate"`
+  - ✅ 3 comprehensive unit tests (test_format_equation_readable*)
 
-- [ ] **Task 36**: Implement pathway parsing
-  - Parse pipe-separated pathways: `"MetaCyc: Glycolysis|KEGG: rn00010"`
-  - Extract pathway names, remove database prefixes
-  - Return array: `["Glycolysis", "Glycolysis / Gluconeogenesis"]`
+- [x] **Task 36**: Implement pathway parsing
+  - ✅ Implemented `parse_pathways()` in `reaction_lookup.py` (lines 226-298)
+  - ✅ Parses pipe-separated pathways: `"MetaCyc: Glycolysis|KEGG: rn00010"`
+  - ✅ Extracts pathway names, removes database prefixes like "MetaCyc:", "KEGG:"
+  - ✅ Handles descriptive text in parentheses
+  - ✅ Returns array: `["Glycolysis", "Glycolysis / Gluconeogenesis"]`
+  - ✅ 5 comprehensive unit tests (test_parse_pathways*)
 
-- [ ] **Task 37**: Write unit tests for get_compound_name
-  - Test successful compound lookup (cpd00027 → D-Glucose)
-  - Test compound not found error
-  - Test invalid format error
-  - Test alias parsing
+- [x] **Task 37**: Write unit tests for get_compound_name
+  - ✅ 14 comprehensive unit tests in tests/unit/test_get_compound_name.py
+  - ✅ Test successful compound lookup (cpd00027 → D-Glucose, cpd00001 → H2O, cpd00002 → ATP)
+  - ✅ Test compound not found error
+  - ✅ Test invalid format errors (too short, wrong prefix, letters in ID)
+  - ✅ Test alias parsing
+  - ✅ Test case-insensitive lookup
+  - ✅ Test whitespace trimming
+  - ✅ Test performance (<1ms per lookup with 1000 lookups)
+  - ✅ All tests passing, 100% coverage for tool
 
-- [ ] **Task 38**: Write unit tests for search_compounds
-  - Test exact name match
-  - Test partial name match
-  - Test formula search
-  - Test empty results
-  - Test limit parameter
+- [x] **Task 38**: Write unit tests for search_compounds
+  - ✅ 26 comprehensive unit tests in tests/unit/test_search_compounds.py
+  - ✅ Test exact name match (exact ID, exact name, exact abbreviation)
+  - ✅ Test partial name match
+  - ✅ Test formula search
+  - ✅ Test alias search
+  - ✅ Test empty results with suggestions
+  - ✅ Test limit parameter (default 10, max 100, validation)
+  - ✅ Test priority ordering (exact matches before partial)
+  - ✅ Test duplicate removal
+  - ✅ Test truncation flag
+  - ✅ Test query trimming and case-insensitive matching
+  - ✅ All tests passing, 100% coverage for tool
 
-- [ ] **Task 39**: Write unit tests for get_reaction_name
-  - Test successful reaction lookup (rxn00148 → hexokinase)
-  - Test reaction not found error
-  - Test equation formatting
-  - Test reversibility parsing
+- [x] **Task 39**: Write unit tests for get_reaction_name
+  - ✅ 32 comprehensive unit tests in tests/unit/test_get_reaction_name.py
+  - ✅ Test successful reaction lookup (rxn00148 → hexokinase)
+  - ✅ Test reaction not found error
+  - ✅ Test equation formatting (3 tests: test_format_equation_readable*)
+  - ✅ Test reversibility parsing (4 tests: forward, reverse, bidirectional, unknown)
+  - ✅ Test EC number parsing (4 tests: single, multiple semicolon, multiple pipe, empty)
+  - ✅ Test pathway parsing (5 tests: simple, semicolon, database prefix, description, empty)
+  - ✅ Test transport reactions
+  - ✅ Test thermodynamic data (deltag, deltagerr)
+  - ✅ Test multiple pathways and complex pathway strings
+  - ✅ All tests passing, 90.77% coverage for tool
 
-- [ ] **Task 40**: Write unit tests for search_reactions
-  - Test exact name match
-  - Test EC number search
-  - Test pathway search
-  - Test empty results
-  - Test limit parameter
+- [x] **Task 40**: Write unit tests for search_reactions
+  - ✅ 25 comprehensive unit tests in tests/unit/test_search_reactions.py
+  - ✅ Test exact name match (exact ID, exact name, exact abbreviation)
+  - ✅ Test EC number search
+  - ✅ Test pathway search
+  - ✅ Test alias search
+  - ✅ Test partial name match
+  - ✅ Test empty results with suggestions
+  - ✅ Test limit parameter (default 10, validation)
+  - ✅ Test priority ordering (7 priority levels)
+  - ✅ Test duplicate removal (keeps highest priority match)
+  - ✅ Test truncation flag
+  - ✅ Test equation formatting in results
+  - ✅ Test EC number parsing in results
+  - ✅ Test alphabetical sorting within same priority
+  - ✅ All tests passing, 94.59% coverage for tool
 
 ---
 
