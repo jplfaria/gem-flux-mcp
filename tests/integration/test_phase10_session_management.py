@@ -161,20 +161,20 @@ def test_list_models(mock_cobra_model, mock_gapfilled_model):
 
     # Verify model metadata
     draft_model = response["models"][0]
-    assert draft_model.model_id == "model_20251027_143052_abc123.draft"
-    assert draft_model.state == "draft"
-    assert draft_model.num_reactions == 100
-    assert draft_model.num_metabolites == 80
-    assert draft_model.num_genes == 50
-    assert draft_model.template_used == "GramNegative"
-    assert draft_model.derived_from is None
+    assert draft_model["model_id"] == "model_20251027_143052_abc123.draft"
+    assert draft_model["state"] == "draft"
+    assert draft_model["num_reactions"] == 100
+    assert draft_model["num_metabolites"] == 80
+    assert draft_model["num_genes"] == 50
+    assert draft_model["template_used"] == "GramNegative"
+    assert draft_model["derived_from"] is None
 
     gapfilled_model = response["models"][1]
-    assert gapfilled_model.model_id == "model_20251027_143052_abc123.draft.gf"
-    assert gapfilled_model.state == "gapfilled"
-    assert gapfilled_model.num_reactions == 120
-    assert gapfilled_model.num_metabolites == 95
-    assert gapfilled_model.derived_from == "model_20251027_143052_abc123.draft"
+    assert gapfilled_model["model_id"] == "model_20251027_143052_abc123.draft.gf"
+    assert gapfilled_model["state"] == "gapfilled"
+    assert gapfilled_model["num_reactions"] == 120
+    assert gapfilled_model["num_metabolites"] == 95
+    assert gapfilled_model["derived_from"] == "model_20251027_143052_abc123.draft"
 
     # Test filter: draft only
     request = ListModelsRequest(filter_state="draft")
@@ -183,7 +183,7 @@ def test_list_models(mock_cobra_model, mock_gapfilled_model):
     assert response["success"] is True
     assert len(response["models"]) == 1
     assert response["total_models"] == 1
-    assert response["models"][0].state == "draft"
+    assert response["models"][0]["state"] == "draft"
 
     # Test filter: gapfilled only
     request = ListModelsRequest(filter_state="gapfilled")
@@ -192,7 +192,7 @@ def test_list_models(mock_cobra_model, mock_gapfilled_model):
     assert response["success"] is True
     assert len(response["models"]) == 1
     assert response["total_models"] == 1
-    assert response["models"][0].state == "gapfilled"
+    assert response["models"][0]["state"] == "gapfilled"
 
     # Test invalid filter - skip this test since Pydantic validates before the tool
     # Pydantic will raise ValidationError before list_models can handle it
@@ -236,22 +236,22 @@ def test_list_media(mock_media_dict):
     # Find user-created media in response
     user_media = None
     for media_info in response["media"]:
-        if media_info.media_id == "media_20251027_143052_x1y2z3":
+        if media_info["media_id"] == "media_20251027_143052_x1y2z3":
             user_media = media_info
             break
 
     assert user_media is not None
-    assert user_media.media_name is None  # Auto-generated
-    assert user_media.num_compounds == 4
-    assert user_media.media_type == "minimal"  # < 50 compounds
-    assert not user_media.is_predefined
+    assert user_media["media_name"] is None  # Auto-generated
+    assert user_media["num_compounds"] == 4
+    assert user_media["media_type"] == "minimal"  # < 50 compounds
+    assert not user_media["is_predefined"]
 
     # Verify predefined media
-    predefined_media = [m for m in response.media if m.is_predefined]
+    predefined_media = [m for m in response["media"] if m["is_predefined"]]
     assert len(predefined_media) >= 4  # At least 4 predefined
     for media_info in predefined_media:
-        assert media_info.media_name is not None
-        assert media_info.is_predefined is True
+        assert media_info["media_name"] is not None
+        assert media_info["is_predefined"] is True
 
 
 # ============================================================================
@@ -280,7 +280,7 @@ def test_delete_model(mock_cobra_model):
     response = delete_model(request)
 
     assert response["success"] is True
-    assert response.deleted_model_id == model_id
+    assert response["deleted_model_id"] == model_id
     assert "deleted successfully" in response["message"].lower()
 
     # Verify model no longer exists
@@ -291,17 +291,17 @@ def test_delete_model(mock_cobra_model):
     response = delete_model(request)
 
     assert response["success"] is False
-    assert response.error_type == "ModelNotFound"
+    assert response["error_type"] == "ModelNotFound"
     assert model_id in response["message"]
-    # response.details is a Pydantic model with available_models field
-    assert hasattr(response.details, "available_models")
+    # response["details"] is a Pydantic model with available_models field
+    assert ("available_models" in response["details"])
 
     # Test deleting with empty model_id
     request = DeleteModelRequest(model_id="")
     response = delete_model(request)
 
     assert response["success"] is False
-    assert response.error_type == "ValidationError"
+    assert response["error_type"] == "ValidationError"
     assert "Missing required parameter" in response["message"]
 
 
@@ -426,8 +426,8 @@ def test_list_models_with_user_named_models(mock_cobra_model):
 
     # Verify user name extracted
     model_info = response["models"][0]
-    assert model_info.model_id == "E_coli_K12.draft"
-    assert model_info.model_name == "E_coli_K12"
+    assert model_info["model_id"] == "E_coli_K12.draft"
+    assert model_info["model_name"] == "E_coli_K12"
 
 
 def test_list_models_chronological_sorting(mock_cobra_model):
@@ -476,9 +476,9 @@ def test_list_models_chronological_sorting(mock_cobra_model):
     assert len(response["models"]) == 3
 
     # Verify chronological order (oldest first)
-    assert response["models"][0].model_id == "model_3.draft"  # 08:00
-    assert response["models"][1].model_id == "model_1.draft"  # 10:00
-    assert response["models"][2].model_id == "model_2.draft"  # 12:00
+    assert response["models"][0]["model_id"] == "model_3.draft"  # 08:00
+    assert response["models"][1]["model_id"] == "model_1.draft"  # 10:00
+    assert response["models"][2]["model_id"] == "model_2.draft"  # 12:00
 
 
 def test_delete_model_workflow_integration(mock_cobra_model, mock_gapfilled_model):
@@ -504,8 +504,8 @@ def test_delete_model_workflow_integration(mock_cobra_model, mock_gapfilled_mode
     # Step 5: List again (should only see gapfilled)
     response = list_models(request)
     assert response["total_models"] == 1
-    assert response["models"][0].model_id == gapfilled_id
-    assert response["models"][0].state == "gapfilled"
+    assert response["models"][0]["model_id"] == gapfilled_id
+    assert response["models"][0]["state"] == "gapfilled"
 
     # Step 6: Delete gapfilled
     delete_request = DeleteModelRequest(model_id=gapfilled_id)
@@ -536,15 +536,15 @@ def test_media_classification(mock_media_dict):
     minimal = None
     rich = None
     for media_info in response["media"]:
-        if media_info.media_id == "minimal_media":
+        if media_info["media_id"] == "minimal_media":
             minimal = media_info
-        elif media_info.media_id == "rich_media":
+        elif media_info["media_id"] == "rich_media":
             rich = media_info
 
     assert minimal is not None
-    assert minimal.media_type == "minimal"
-    assert minimal.num_compounds == 4
+    assert minimal["media_type"] == "minimal"
+    assert minimal["num_compounds"] == 4
 
     assert rich is not None
-    assert rich.media_type == "rich"
-    assert rich.num_compounds == 60
+    assert rich["media_type"] == "rich"
+    assert rich["num_compounds"] == 60

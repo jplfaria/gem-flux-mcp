@@ -1,4 +1,6 @@
-"""Unit tests for delete_model tool.
+""" MCP tool functions return dictionaries (not Pydantic objects) for JSON-RPC
+serialize. Tests must use dictionary access (response["key"]) not attribute
+access (response.key).Unit tests for delete_model tool.
 
 Tests the delete_model MCP tool according to specification
 018-session-management-tools.md.
@@ -46,9 +48,9 @@ def test_delete_model_success():
     request = DeleteModelRequest(model_id="model_abc.draft")
     response = delete_model(request)
 
-    assert response.success is True
-    assert response.deleted_model_id == "model_abc.draft"
-    assert response.message == "Model deleted successfully"
+    assert response["success"] is True
+    assert response["deleted_model_id"] == "model_abc.draft"
+    assert response["message"] == "Model deleted successfully"
     assert "model_abc.draft" not in MODEL_STORAGE
 
 
@@ -57,9 +59,9 @@ def test_delete_model_not_found():
     request = DeleteModelRequest(model_id="nonexistent_model.draft")
     response = delete_model(request)
 
-    assert response.success is False
-    assert "not found" in response.message.lower()
-    assert response.details is not None
+    assert response["success"] is False
+    assert "not found" in response["message"].lower()
+    assert response["details"] is not None
 
 
 def test_delete_model_empty_id():
@@ -67,8 +69,8 @@ def test_delete_model_empty_id():
     request = DeleteModelRequest(model_id="")
     response = delete_model(request)
 
-    assert response.success is False
-    assert "missing" in response.message.lower() or "required" in response.message.lower()
+    assert response["success"] is False
+    assert "missing" in response["message"].lower() or "required" in response["message"].lower()
 
 
 def test_delete_model_whitespace_id():
@@ -76,7 +78,7 @@ def test_delete_model_whitespace_id():
     request = DeleteModelRequest(model_id="   ")
     response = delete_model(request)
 
-    assert response.success is False
+    assert response["success"] is False
 
 
 def test_delete_model_multiple_models():
@@ -94,7 +96,7 @@ def test_delete_model_multiple_models():
     request = DeleteModelRequest(model_id="model_2.draft")
     response = delete_model(request)
 
-    assert response.success is True
+    assert response["success"] is True
     assert "model_1.draft" in MODEL_STORAGE
     assert "model_2.draft" not in MODEL_STORAGE
     assert "model_3.draft" in MODEL_STORAGE
@@ -108,8 +110,8 @@ def test_delete_model_gapfilled():
     request = DeleteModelRequest(model_id="model_abc.draft.gf")
     response = delete_model(request)
 
-    assert response.success is True
-    assert response.deleted_model_id == "model_abc.draft.gf"
+    assert response["success"] is True
+    assert response["deleted_model_id"] == "model_abc.draft.gf"
     assert "model_abc.draft.gf" not in MODEL_STORAGE
 
 
@@ -121,8 +123,8 @@ def test_delete_model_user_named():
     request = DeleteModelRequest(model_id="E_coli_K12.draft")
     response = delete_model(request)
 
-    assert response.success is True
-    assert response.deleted_model_id == "E_coli_K12.draft"
+    assert response["success"] is True
+    assert response["deleted_model_id"] == "E_coli_K12.draft"
 
 
 def test_delete_model_preserves_original():
@@ -138,7 +140,7 @@ def test_delete_model_preserves_original():
     request = DeleteModelRequest(model_id="model_abc.draft.gf")
     response = delete_model(request)
 
-    assert response.success is True
+    assert response["success"] is True
     assert "model_abc.draft" in MODEL_STORAGE  # Original preserved
     assert "model_abc.draft.gf" not in MODEL_STORAGE
 
@@ -156,10 +158,10 @@ def test_delete_model_available_models_in_error():
     request = DeleteModelRequest(model_id="model_nonexistent.draft")
     response = delete_model(request)
 
-    assert response.success is False
-    assert response.details is not None
+    assert response["success"] is False
+    assert response["details"] is not None
     # Check that available models are listed (details is an ErrorDetails object with attributes)
-    assert hasattr(response.details, "available_models") or "available" in response.message.lower()
+    assert ("available_models" in response["details"]) or "available" in response["message"].lower()
 
 
 def test_delete_model_case_sensitive():
@@ -172,7 +174,7 @@ def test_delete_model_case_sensitive():
     response = delete_model(request)
 
     # Should fail because model_id is case-sensitive
-    assert response.success is False
+    assert response["success"] is False
     assert "model_abc.draft" in MODEL_STORAGE  # Original still there
 
 
@@ -184,8 +186,8 @@ def test_delete_model_twice():
     # First deletion
     request = DeleteModelRequest(model_id="model_abc.draft")
     response1 = delete_model(request)
-    assert response1.success is True
+    assert response1["success"] is True
 
     # Second deletion (should fail)
     response2 = delete_model(request)
-    assert response2.success is False
+    assert response2["success"] is False

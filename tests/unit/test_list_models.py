@@ -153,11 +153,11 @@ def test_list_models_empty_storage():
     request = ListModelsRequest(filter_state="all")
     response = list_models(request)
 
-    assert response.success is True
-    assert response.total_models == 0
-    assert len(response.models) == 0
-    assert response.models_by_state["draft"] == 0
-    assert response.models_by_state["gapfilled"] == 0
+    assert response["success"] is True
+    assert response["total_models"] == 0
+    assert len(response["models"]) == 0
+    assert response["models_by_state"]["draft"] == 0
+    assert response["models_by_state"]["gapfilled"] == 0
 
 
 def test_list_models_all_filter():
@@ -175,11 +175,11 @@ def test_list_models_all_filter():
     request = ListModelsRequest(filter_state="all")
     response = list_models(request)
 
-    assert response.success is True
-    assert response.total_models == 2
-    assert len(response.models) == 2
-    assert response.models_by_state["draft"] == 1
-    assert response.models_by_state["gapfilled"] == 1
+    assert response["success"] is True
+    assert response["total_models"] == 2
+    assert len(response["models"]) == 2
+    assert response["models_by_state"]["draft"] == 1
+    assert response["models_by_state"]["gapfilled"] == 1
 
 
 def test_list_models_draft_filter():
@@ -195,10 +195,10 @@ def test_list_models_draft_filter():
     request = ListModelsRequest(filter_state="draft")
     response = list_models(request)
 
-    assert response.success is True
-    assert response.total_models == 1
-    assert len(response.models) == 1
-    assert response.models[0].state == "draft"
+    assert response["success"] is True
+    assert response["total_models"] == 1
+    assert len(response["models"]) == 1
+    assert response["models"][0]["state"] == "draft"
 
 
 def test_list_models_gapfilled_filter():
@@ -214,10 +214,10 @@ def test_list_models_gapfilled_filter():
     request = ListModelsRequest(filter_state="gapfilled")
     response = list_models(request)
 
-    assert response.success is True
-    assert response.total_models == 1
-    assert len(response.models) == 1
-    assert response.models[0].state == "gapfilled"
+    assert response["success"] is True
+    assert response["total_models"] == 1
+    assert len(response["models"]) == 1
+    assert response["models"][0]["state"] == "gapfilled"
 
 
 def test_list_models_sorted_by_created_at():
@@ -235,11 +235,11 @@ def test_list_models_sorted_by_created_at():
     request = ListModelsRequest(filter_state="all")
     response = list_models(request)
 
-    assert response.total_models == 3
+    assert response["total_models"] == 3
     # Check sorted order (oldest first)
-    assert response.models[0].model_id == "model_1.draft"
-    assert response.models[1].model_id == "model_2.draft"
-    assert response.models[2].model_id == "model_3.draft"
+    assert response["models"][0]["model_id"] == "model_1.draft"
+    assert response["models"][1]["model_id"] == "model_2.draft"
+    assert response["models"][2]["model_id"] == "model_3.draft"
 
 
 def test_list_models_invalid_filter():
@@ -250,8 +250,8 @@ def test_list_models_invalid_filter():
 
     response = list_models(request)
 
-    assert response.success is False
-    assert "invalid" in response.message.lower()
+    assert response["success"] is False
+    assert "invalid" in response["message"].lower()
 
 
 def test_list_models_multiple_states():
@@ -275,9 +275,9 @@ def test_list_models_multiple_states():
     request = ListModelsRequest(filter_state="all")
     response = list_models(request)
 
-    assert response.total_models == 3
-    assert response.models_by_state["draft"] == 1
-    assert response.models_by_state["gapfilled"] == 2
+    assert response["total_models"] == 3
+    assert response["models_by_state"]["draft"] == 1
+    assert response["models_by_state"]["gapfilled"] == 2
 
 
 def test_list_models_user_named():
@@ -288,8 +288,8 @@ def test_list_models_user_named():
     request = ListModelsRequest(filter_state="all")
     response = list_models(request)
 
-    assert response.total_models == 1
-    assert response.models[0].model_name == "E_coli_K12"
+    assert response["total_models"] == 1
+    assert response["models"][0]["model_name"] == "E_coli_K12"
 
 
 def test_list_models_mixed_naming():
@@ -305,9 +305,9 @@ def test_list_models_mixed_naming():
     request = ListModelsRequest(filter_state="all")
     response = list_models(request)
 
-    assert response.total_models == 2
-    assert response.models[0].model_name is None  # Auto-generated
-    assert response.models[1].model_name == "E_coli_K12"  # User-named
+    assert response["total_models"] == 2
+    assert response["models"][0]["model_name"] is None  # Auto-generated
+    assert response["models"][1]["model_name"] == "E_coli_K12"  # User-named
 
 
 def test_list_models_derived_from():
@@ -327,9 +327,9 @@ def test_list_models_derived_from():
     request = ListModelsRequest(filter_state="all")
     response = list_models(request)
 
-    assert response.total_models == 2
-    assert response.models[0].derived_from is None
-    assert response.models[1].derived_from == "model_abc.draft"
+    assert response["total_models"] == 2
+    assert response["models"][0]["derived_from"] is None
+    assert response["models"][1]["derived_from"] == "model_abc.draft"
 
 
 def test_list_models_case_insensitive_filter():
@@ -341,9 +341,9 @@ def test_list_models_case_insensitive_filter():
     request = ListModelsRequest(filter_state="all")
     request.filter_state = "ALL"
     response = list_models(request)
-    assert response.success is True
+    assert response["success"] is True
 
     # Test mixed case
     request.filter_state = "DrAfT"
     response = list_models(request)
-    assert response.success is True
+    assert response["success"] is True

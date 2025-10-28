@@ -133,11 +133,11 @@ def test_list_media_empty_storage():
     """Test listing media when storage is empty."""
     response = list_media()
 
-    assert response.success is True
-    assert response.total_media == 0
-    assert len(response.media) == 0
-    assert response.predefined_media == 0
-    assert response.user_created_media == 0
+    assert response["success"] is True
+    assert response["total_media"] == 0
+    assert len(response["media"]) == 0
+    assert response["predefined_media"] == 0
+    assert response["user_created_media"] == 0
 
 
 def test_list_media_single():
@@ -147,11 +147,11 @@ def test_list_media_single():
 
     response = list_media()
 
-    assert response.success is True
-    assert response.total_media == 1
-    assert len(response.media) == 1
-    assert response.user_created_media == 1
-    assert response.predefined_media == 0
+    assert response["success"] is True
+    assert response["total_media"] == 1
+    assert len(response["media"]) == 1
+    assert response["user_created_media"] == 1
+    assert response["predefined_media"] == 0
 
 
 def test_list_media_multiple():
@@ -166,9 +166,9 @@ def test_list_media_multiple():
 
     response = list_media()
 
-    assert response.success is True
-    assert response.total_media == 3
-    assert len(response.media) == 3
+    assert response["success"] is True
+    assert response["total_media"] == 3
+    assert len(response["media"]) == 3
 
 
 def test_list_media_predefined():
@@ -179,10 +179,10 @@ def test_list_media_predefined():
 
     response = list_media()
 
-    assert response.success is True
-    assert response.total_media == 1
-    assert response.predefined_media == 1
-    assert response.user_created_media == 0
+    assert response["success"] is True
+    assert response["total_media"] == 1
+    assert response["predefined_media"] == 1
+    assert response["user_created_media"] == 0
 
 
 def test_list_media_mixed():
@@ -197,10 +197,10 @@ def test_list_media_mixed():
 
     response = list_media()
 
-    assert response.success is True
-    assert response.total_media == 2
-    assert response.predefined_media == 1
-    assert response.user_created_media == 1
+    assert response["success"] is True
+    assert response["total_media"] == 2
+    assert response["predefined_media"] == 1
+    assert response["user_created_media"] == 1
 
 
 def test_list_media_sorted_by_created_at():
@@ -215,10 +215,10 @@ def test_list_media_sorted_by_created_at():
 
     response = list_media()
 
-    assert response.total_media == 2
+    assert response["total_media"] == 2
     # Predefined should be first (oldest timestamp)
-    assert response.media[0].media_id == "glucose_minimal_aerobic"
-    assert response.media[1].media_id == "media_20251027_143052_xyz"
+    assert response["media"][0]["media_id"] == "glucose_minimal_aerobic"
+    assert response["media"][1]["media_id"] == "media_20251027_143052_xyz"
 
 
 def test_list_media_with_db_index():
@@ -229,10 +229,10 @@ def test_list_media_with_db_index():
     db_index = create_mock_db_index()
     response = list_media(db_index=db_index)
 
-    assert response.success is True
-    assert response.total_media == 1
+    assert response["success"] is True
+    assert response["total_media"] == 1
     # Compounds preview should have names
-    assert len(response.media[0].compounds_preview) == 2
+    assert len(response["media"][0]["compounds_preview"]) == 2
 
 
 def test_list_media_minimal_vs_rich():
@@ -247,13 +247,13 @@ def test_list_media_minimal_vs_rich():
 
     response = list_media()
 
-    assert response.total_media == 2
+    assert response["total_media"] == 2
     # Find each media in response
-    minimal_info = next(m for m in response.media if m.media_id == "media_minimal")
-    rich_info = next(m for m in response.media if m.media_id == "media_rich")
+    minimal_info = next(m for m in response["media"] if m["media_id"] == "media_minimal")
+    rich_info = next(m for m in response["media"] if m["media_id"] == "media_rich")
 
-    assert minimal_info.media_type == "minimal"
-    assert rich_info.media_type == "rich"
+    assert minimal_info["media_type"] == "minimal"
+    assert rich_info["media_type"] == "rich"
 
 
 def test_list_media_all_predefined():
@@ -265,10 +265,10 @@ def test_list_media_all_predefined():
 
     response = list_media()
 
-    assert response.success is True
-    assert response.total_media == len(PREDEFINED_MEDIA_IDS)
-    assert response.predefined_media == len(PREDEFINED_MEDIA_IDS)
-    assert response.user_created_media == 0
+    assert response["success"] is True
+    assert response["total_media"] == len(PREDEFINED_MEDIA_IDS)
+    assert response["predefined_media"] == len(PREDEFINED_MEDIA_IDS)
+    assert response["user_created_media"] == 0
 
 
 def test_list_media_compounds_preview_content():
@@ -282,8 +282,8 @@ def test_list_media_compounds_preview_content():
 
     response = list_media()
 
-    assert response.total_media == 1
-    preview = response.media[0].compounds_preview
+    assert response["total_media"] == 1
+    preview = response["media"][0]["compounds_preview"]
 
     # Check structure
     assert len(preview) == 3
@@ -304,4 +304,4 @@ def test_list_media_error_handling():
     response = list_media()
 
     # Should return error response, not crash
-    assert response.success is False or response.total_media >= 0
+    assert response["success"] is False or response["total_media"] >= 0

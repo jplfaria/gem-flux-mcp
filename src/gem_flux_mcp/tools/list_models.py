@@ -145,7 +145,7 @@ def list_models(
                     "valid_values": valid_states,
                 },
                 suggestion="Use 'all', 'draft', or 'gapfilled' for filter_state parameter.",
-            )
+            ).model_dump()
 
         # Query all models from storage
         all_model_ids = sorted(MODEL_STORAGE.keys())

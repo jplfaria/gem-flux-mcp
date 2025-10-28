@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 
 def delete_model(
     request: DeleteModelRequest,
-) -> Union[DeleteModelResponse, ErrorResponse]:
+) -> dict:
     """Delete a model from session storage.
 
     Args:
@@ -40,7 +40,7 @@ def delete_model(
                 message="Missing required parameter 'model_id'",
                 details={"parameter": "model_id", "received": model_id},
                 suggestion="Provide model_id to delete.",
-            )
+            ).model_dump()
 
         # Check if model exists
         if not model_exists(model_id):
@@ -56,7 +56,7 @@ def delete_model(
                     "available_models": available,
                 },
                 suggestion="Use list_models tool to see available models.",
-            )
+            ).model_dump()
 
         # Delete the model
         storage_delete_model(model_id)
@@ -67,7 +67,7 @@ def delete_model(
             success=True,
             deleted_model_id=model_id,
             message="Model deleted successfully",
-        )
+        ).model_dump()
 
     except Exception as e:
         logger.error(f"Error in delete_model: {e}", exc_info=True)
@@ -77,4 +77,4 @@ def delete_model(
             message=f"Failed to delete model: {str(e)}",
             details={"exception": str(e), "model_id": request.model_id},
             suggestion="Check server logs for details.",
-        )
+        ).model_dump()
