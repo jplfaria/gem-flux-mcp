@@ -581,6 +581,7 @@ class MediaInfo(BaseModel):
         description="First 3 compounds with ID and name"
     )
     created_at: str = Field(..., description="ISO 8601 timestamp")
+    is_predefined: bool = Field(default=False, description="True if predefined media, False if user-created")
 
 
 class ListMediaResponse(BaseModel):

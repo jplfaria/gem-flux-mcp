@@ -5,7 +5,7 @@
     "cpd00020": {
       "name": "Pyruvate",
       "bounds": [-5.0, 100.0],
-      "comment": "Carbon source (pyruvate instead of glucose), uptake limited to 5 mmol/gDW/h"
+      "comment": "Carbon source, uptake limited to 5 mmol/gDW/h"
     },
     "cpd00001": {
       "name": "H2O",
@@ -15,7 +15,7 @@
     "cpd00009": {
       "name": "Phosphate",
       "bounds": [-100.0, 100.0],
-      "comment": "Inorganic phosphate"
+      "comment": "Phosphorus source"
     },
     "cpd00011": {
       "name": "CO2",
@@ -27,35 +27,15 @@
       "bounds": [-100.0, 100.0],
       "comment": "Proton"
     },
-    "cpd00099": {
-      "name": "Cl-",
+    "cpd00013": {
+      "name": "NH3",
       "bounds": [-100.0, 100.0],
-      "comment": "Chloride"
-    },
-    "cpd00034": {
-      "name": "Zn2+",
-      "bounds": [-100.0, 100.0],
-      "comment": "Zinc"
-    },
-    "cpd00058": {
-      "name": "Cu2+",
-      "bounds": [-100.0, 100.0],
-      "comment": "Copper"
-    },
-    "cpd00149": {
-      "name": "Co2+",
-      "bounds": [-100.0, 100.0],
-      "comment": "Cobalt"
-    },
-    "cpd00030": {
-      "name": "Mn2+",
-      "bounds": [-100.0, 100.0],
-      "comment": "Manganese"
+      "comment": "Nitrogen source"
     },
     "cpd00048": {
       "name": "SO4",
       "bounds": [-100.0, 100.0],
-      "comment": "Sulfate"
+      "comment": "Sulfur source"
     },
     "cpd00205": {
       "name": "K+",
@@ -77,15 +57,35 @@
       "bounds": [-100.0, 100.0],
       "comment": "Calcium"
     },
+    "cpd00099": {
+      "name": "Cl-",
+      "bounds": [-100.0, 100.0],
+      "comment": "Chloride"
+    },
     "cpd10515": {
       "name": "Fe2+",
       "bounds": [-100.0, 100.0],
       "comment": "Iron(II)"
     },
-    "cpd00013": {
-      "name": "NH3",
+    "cpd00030": {
+      "name": "Mn2+",
       "bounds": [-100.0, 100.0],
-      "comment": "Ammonia (nitrogen source)"
+      "comment": "Manganese"
+    },
+    "cpd00034": {
+      "name": "Zn2+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Zinc"
+    },
+    "cpd00058": {
+      "name": "Cu2+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Copper"
+    },
+    "cpd00149": {
+      "name": "Co2+",
+      "bounds": [-100.0, 100.0],
+      "comment": "Cobalt"
     }
   }
 }

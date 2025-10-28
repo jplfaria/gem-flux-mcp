@@ -106,6 +106,7 @@ def extract_media_metadata(media_id: str, media: Any, db_index=None) -> MediaInf
         media_type=media_type,
         compounds_preview=compounds_preview,
         created_at=created_at_str,
+        is_predefined=(media_id in PREDEFINED_MEDIA_IDS),
     )
 
 
