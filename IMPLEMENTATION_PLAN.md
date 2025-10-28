@@ -307,13 +307,14 @@ README, examples, deployment guide, final validation
 
 ### Phase 4: Database Lookup Tools
 
-- [ ] **Task 31**: Implement get_compound_name tool
-  - Create `src/gem_flux_mcp/tools/get_compound_name.py`
-  - Input: `{"compound_id": "cpd00027"}`
-  - Validate compound_id format and existence
-  - Query database for compound record
-  - Parse aliases into structured dict
-  - Return: name, abbreviation, formula, mass, charge, inchikey, smiles, aliases
+- [x] **Task 31**: Implement get_compound_name tool
+  - Create `src/gem_flux_mcp/tools/compound_lookup.py` ✓
+  - Input: `{"compound_id": "cpd00027"}` ✓
+  - Validate compound_id format and existence ✓
+  - Query database for compound record ✓
+  - Parse aliases into structured dict ✓
+  - Return: name, abbreviation, formula, mass, charge, inchikey, smiles, aliases ✓
+  - Unit tests: tests/unit/test_get_compound_name.py (14 tests, 100% coverage) ✓
 
 - [ ] **Task 32**: Implement search_compounds tool
   - Create `src/gem_flux_mcp/tools/search_compounds.py`
