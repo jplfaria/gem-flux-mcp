@@ -269,8 +269,11 @@ def build_media(request: BuildMediaRequest, db_index: DatabaseIndex) -> dict:
 
     # Step 3: Create MSMedia object
     # For MVP, we'll create a simple dict representation
-    # TODO: Integrate with ModelSEEDpy MSMedia.from_dict() in next iteration
-    # For now, we'll store the bounds dict as the "media object"
+    # TODO (CRITICAL - Required before Phase 6): Integrate ModelSEEDpy MSMedia.from_dict()
+    # Timeline: Must be completed before Task 51 (gapfill_model implementation)
+    # Reason: gapfill_model and run_fba tools require real MSMedia objects from ModelSEEDpy
+    # Integration: See spec 003-build-media-tool.md lines 320-340 for MSMedia.from_dict() pattern
+    # Current: Storing dict representation for Phase 5 unit testing only
     media_data = {
         "bounds": bounds_dict,
         "default_uptake": request.default_uptake,

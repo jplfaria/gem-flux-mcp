@@ -268,6 +268,30 @@ class TestBuildMediaFunction:
         h2o = next(c for c in response["compounds"] if c["id"] == "cpd00001")
         assert h2o["bounds"] == (-100.0, 100.0)
 
+    def test_anaerobic_conditions_zero_oxygen(self, db_index):
+        """Test that equal bounds [0,0] are allowed for blocked compounds (anaerobic)."""
+        request = BuildMediaRequest(
+            compounds=["cpd00027", "cpd00007", "cpd00001"],
+            default_uptake=100.0,
+            custom_bounds={
+                "cpd00007": (0.0, 0.0),  # O2 blocked (anaerobic conditions)
+            },
+        )
+
+        response = build_media(request, db_index)
+
+        assert response["success"] is True
+        assert response["custom_bounds_applied"] == 1
+
+        # Verify O2 is blocked (bounds are [0, 0])
+        o2 = next(c for c in response["compounds"] if c["id"] == "cpd00007")
+        assert o2["bounds"] == (0.0, 0.0)
+        assert o2["name"] == "O2"
+
+        # Other compounds should have default bounds
+        glucose = next(c for c in response["compounds"] if c["id"] == "cpd00027")
+        assert glucose["bounds"] == (-100.0, 100.0)
+
     def test_media_stored_in_session(self, db_index):
         """Test media is stored in session storage."""
         request = BuildMediaRequest(compounds=["cpd00027", "cpd00007"])
