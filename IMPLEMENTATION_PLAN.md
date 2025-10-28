@@ -722,10 +722,18 @@ README, examples, deployment guide, final validation
   - ✅ All 4 media files load successfully (verified with loader test)
   - ✅ Full test suite: 619 tests passing, 91.47% coverage
 
-- [ ] **Task 69**: Write integration tests for session management
-  - Test: build_model → list_models → delete_model workflow
-  - Test: build_media → list_media workflow
-  - Test: Multiple models in session, filter by state
+- [x] **Task 69**: Write integration tests for session management
+  - ✅ Created `tests/integration/test_phase10_session_management.py` with 8 tests
+  - ✅ **test_list_models** (must_pass): Tests listing models with filtering by state
+  - ✅ **test_list_media** (must_pass): Tests listing media with predefined/user-created counts
+  - ✅ **test_delete_model** (must_pass): Tests deleting models and error handling
+  - ✅ **test_session_isolation** (must_pass): Tests session-scoped storage independence
+  - ✅ test_list_models_with_user_named_models: Tests user-provided model names
+  - ✅ test_list_models_chronological_sorting: Tests sorting by created_at timestamp
+  - ✅ test_delete_model_workflow_integration: Complete workflow (build → gapfill → list → delete)
+  - ✅ test_media_classification: Tests minimal vs rich media classification
+  - ✅ All 4 must-pass tests passing (as defined in test_expectations.json Phase 10)
+  - ✅ All 8 tests passing with comprehensive coverage of session management tools
 
 - [ ] **Task 70**: Document session lifecycle
   - Document model lifecycle: Creation → Modification → Query → Session End
