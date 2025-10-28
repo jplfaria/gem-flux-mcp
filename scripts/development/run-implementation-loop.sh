@@ -775,6 +775,16 @@ run_quality_gates() {
 
     # Only run if we have Python files to test
     if [ -d "src" ] && find src -name "*.py" -type f | grep -q .; then
+        # 0. Check test imports are properly exported (prevents collection errors)
+        if [ -f "scripts/development/check-test-imports.py" ]; then
+            echo -e "${YELLOW}Checking test imports...${NC}"
+            if ! .venv/bin/python scripts/development/check-test-imports.py; then
+                echo -e "${RED}❌ Test import validation failed!${NC}"
+                echo -e "${YELLOW}Fix the module __all__ exports before continuing.${NC}"
+                return 1
+            fi
+        fi
+
         # 1. Run tests
         echo -e "${YELLOW}Running tests...${NC}"
         .venv/bin/pytest tests/ --tb=short -q 2>&1 | tee ".test_output_${iteration}.tmp"
