@@ -95,6 +95,10 @@ def extract_model_metadata(model_id: str, model: Any) -> ModelInfo:
     created_at_str = getattr(model, "notes", {}).get("created_at")
     if not created_at_str:
         created_at_str = datetime.utcnow().isoformat() + "Z"
+        logger.warning(
+            f"Model '{model_id}' missing created_at timestamp, using current time. "
+            "This may affect chronological sorting."
+        )
 
     # Get parent model ID from notes (if available)
     derived_from = getattr(model, "notes", {}).get("derived_from", None)

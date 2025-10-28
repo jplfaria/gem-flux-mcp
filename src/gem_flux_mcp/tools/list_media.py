@@ -8,6 +8,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
 from gem_flux_mcp.logging import get_logger
+from gem_flux_mcp.media.predefined import PREDEFINED_MEDIA_IDS, PREDEFINED_MEDIA_TIMESTAMP
 from gem_flux_mcp.storage.media import MEDIA_STORAGE
 from gem_flux_mcp.types import (
     ListMediaResponse,
@@ -17,15 +18,6 @@ from gem_flux_mcp.types import (
 # No error imports needed - we return simple error response dicts
 
 logger = get_logger(__name__)
-
-
-# Predefined media IDs (from library)
-PREDEFINED_MEDIA_IDS = {
-    "glucose_minimal_aerobic",
-    "glucose_minimal_anaerobic",
-    "pyruvate_minimal_aerobic",
-    "pyruvate_minimal_anaerobic",
-}
 
 
 def extract_media_name(media_id: str) -> Optional[str]:
@@ -103,7 +95,7 @@ def extract_media_metadata(media_id: str, media: Any, db_index=None) -> MediaInf
     # Get creation timestamp (fallback to current time if not stored)
     # For predefined media, use a fixed timestamp
     if media_id in PREDEFINED_MEDIA_IDS:
-        created_at_str = "2025-10-27T00:00:00Z"
+        created_at_str = PREDEFINED_MEDIA_TIMESTAMP
     else:
         created_at_str = datetime.utcnow().isoformat() + "Z"
 
