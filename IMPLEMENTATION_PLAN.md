@@ -643,55 +643,68 @@ README, examples, deployment guide, final validation
 
 ### Phase 7: Session Management Tools
 
-- [ ] **Task 61**: Implement list_models tool
-  - Create `src/gem_flux_mcp/tools/list_models.py`
-  - Input: `{"filter_state": "all"}`  # "all", "draft", "gapfilled"
-  - Query MODEL_STORAGE for all models
-  - Extract metadata from each COBRApy Model object
-  - Determine state from model_id suffix
-  - Apply filter if specified
-  - Sort by created_at timestamp (oldest first)
-  - Return: models array, total_models, models_by_state
+- [x] **Task 61**: Implement list_models tool
+  - ✅ Created `src/gem_flux_mcp/tools/list_models.py`
+  - ✅ Input: `{"filter_state": "all"}`  # "all", "draft", "gapfilled"
+  - ✅ Query MODEL_STORAGE for all models
+  - ✅ Extract metadata from each COBRApy Model object
+  - ✅ Determine state from model_id suffix
+  - ✅ Apply filter if specified
+  - ✅ Sort by created_at timestamp (oldest first)
+  - ✅ Return: models array, total_models, models_by_state
 
-- [ ] **Task 62**: Implement state classification
-  - Parse state from model_id suffix
-  - `.draft` → state: "draft"
-  - `.gf` or `.draft.gf` or any suffix containing `.gf` → state: "gapfilled"
-  - Include in model metadata
+- [x] **Task 62**: Implement state classification
+  - ✅ Implemented classify_model_state() function
+  - ✅ `.draft` → state: "draft"
+  - ✅ `.gf` or `.draft.gf` or any suffix containing `.gf` → state: "gapfilled"
+  - ✅ Include in model metadata
 
-- [ ] **Task 63**: Implement delete_model tool
-  - Create `src/gem_flux_mcp/tools/delete_model.py`
-  - Input: `{"model_id": "model_abc.draft"}`
-  - Validate model_id exists in storage
-  - Remove from MODEL_STORAGE dictionary
-  - Memory freed automatically (Python GC)
-  - Return: success, deleted_model_id
+- [x] **Task 63**: Implement delete_model tool
+  - ✅ Created `src/gem_flux_mcp/tools/delete_model.py`
+  - ✅ Input: `{"model_id": "model_abc.draft"}`
+  - ✅ Validate model_id exists in storage
+  - ✅ Remove from MODEL_STORAGE dictionary
+  - ✅ Memory freed automatically (Python GC)
+  - ✅ Return: success, deleted_model_id
 
-- [ ] **Task 64**: Implement list_media tool
-  - Create `src/gem_flux_mcp/tools/list_media.py`
-  - Input: `{}` (no parameters)
-  - Query MEDIA_STORAGE for all media
-  - Extract metadata from each MSMedia object
-  - Get first 3 compounds for preview
-  - Sort by created_at timestamp
-  - Count predefined vs user-created media
-  - Return: media array, total_media, predefined_media, user_created_media
+- [x] **Task 64**: Implement list_media tool
+  - ✅ Created `src/gem_flux_mcp/tools/list_media.py`
+  - ✅ Input: `{}` (no parameters)
+  - ✅ Query MEDIA_STORAGE for all media
+  - ✅ Extract metadata from each MSMedia object
+  - ✅ Get first 3 compounds for preview
+  - ✅ Sort by created_at timestamp
+  - ✅ Count predefined vs user-created media
+  - ✅ Return: media array, total_media, predefined_media, user_created_media
 
-- [ ] **Task 65**: Write unit tests for list_models
-  - Test listing all models
-  - Test filtering by state (draft, gapfilled)
-  - Test empty storage
-  - Test sorting by timestamp
+- [x] **Task 65**: Write unit tests for list_models
+  - ✅ 19 comprehensive unit tests in tests/unit/test_list_models.py
+  - ✅ Test listing all models
+  - ✅ Test filtering by state (draft, gapfilled)
+  - ✅ Test empty storage
+  - ✅ Test sorting by timestamp
+  - ✅ Test helper functions (classify_model_state, extract_model_name, extract_model_metadata)
+  - ✅ Test case-insensitive filter
+  - ✅ All tests passing
 
-- [ ] **Task 66**: Write unit tests for delete_model
-  - Test successful deletion
-  - Test model not found error
-  - Test missing model_id parameter error
+- [x] **Task 66**: Write unit tests for delete_model
+  - ✅ 11 comprehensive unit tests in tests/unit/test_delete_model_tool.py
+  - ✅ Test successful deletion
+  - ✅ Test model not found error
+  - ✅ Test missing model_id parameter error
+  - ✅ Test multiple models
+  - ✅ Test deletion preserves other models
+  - ✅ All tests passing
 
-- [ ] **Task 67**: Write unit tests for list_media
-  - Test listing all media
-  - Test empty storage
-  - Test compounds preview (first 3)
+- [x] **Task 67**: Write unit tests for list_media
+  - ✅ 19 comprehensive unit tests in tests/unit/test_list_media.py
+  - ✅ Test listing all media
+  - ✅ Test empty storage
+  - ✅ Test compounds preview (first 3)
+  - ✅ Test helper functions (extract_media_name, extract_media_metadata)
+  - ✅ Test predefined media handling
+  - ✅ Test minimal vs rich classification
+  - ✅ All tests passing
 
 - [ ] **Task 68**: Implement predefined media library
   - Create `data/media/` directory

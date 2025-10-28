@@ -519,6 +519,81 @@ class ReactionSearchResponse(BaseModel):
 
 
 # =============================================================================
+# Session Management Tool Types (spec: 018-session-management-tools.md)
+# =============================================================================
+
+
+class ListModelsRequest(BaseModel):
+    """Request format for list_models tool."""
+
+    filter_state: Literal["all", "draft", "gapfilled"] = Field(
+        default="all",
+        description="Filter models by processing state"
+    )
+
+
+class ModelInfo(BaseModel):
+    """Model metadata for list_models response."""
+
+    model_id: str = Field(..., description="Unique model identifier with state suffix")
+    model_name: Optional[str] = Field(None, description="User-provided name or None")
+    state: Literal["draft", "gapfilled"] = Field(..., description="Processing state")
+    num_reactions: int = Field(..., description="Reaction count")
+    num_metabolites: int = Field(..., description="Metabolite count")
+    num_genes: int = Field(..., description="Gene count")
+    template_used: str = Field(..., description="Template name used for building")
+    created_at: str = Field(..., description="ISO 8601 timestamp")
+    derived_from: Optional[str] = Field(None, description="Parent model ID or None")
+
+
+class ListModelsResponse(BaseModel):
+    """Response format for list_models tool."""
+
+    success: bool = Field(default=True)
+    models: List[ModelInfo] = Field(..., description="List of model metadata")
+    total_models: int = Field(..., description="Total models after filtering")
+    models_by_state: Dict[str, int] = Field(..., description="Breakdown by state")
+
+
+class DeleteModelRequest(BaseModel):
+    """Request format for delete_model tool."""
+
+    model_id: str = Field(..., description="Model ID to delete")
+
+
+class DeleteModelResponse(BaseModel):
+    """Response format for delete_model tool."""
+
+    success: bool = Field(default=True)
+    deleted_model_id: str = Field(..., description="Confirmation of deleted ID")
+    message: str = Field(default="Model deleted successfully")
+
+
+class MediaInfo(BaseModel):
+    """Media metadata for list_media response."""
+
+    media_id: str = Field(..., description="Unique media identifier")
+    media_name: Optional[str] = Field(None, description="User/predefined name or None")
+    num_compounds: int = Field(..., description="Number of compounds")
+    media_type: Literal["minimal", "rich"] = Field(..., description="Classification")
+    compounds_preview: List[Dict[str, str]] = Field(
+        ...,
+        description="First 3 compounds with ID and name"
+    )
+    created_at: str = Field(..., description="ISO 8601 timestamp")
+
+
+class ListMediaResponse(BaseModel):
+    """Response format for list_media tool."""
+
+    success: bool = Field(default=True)
+    media: List[MediaInfo] = Field(..., description="List of media metadata")
+    total_media: int = Field(..., description="Total media count")
+    predefined_media: int = Field(..., description="Count of predefined media")
+    user_created_media: int = Field(..., description="Count of user-created media")
+
+
+# =============================================================================
 # Error Response Types (spec: 013-error-handling.md)
 # =============================================================================
 
