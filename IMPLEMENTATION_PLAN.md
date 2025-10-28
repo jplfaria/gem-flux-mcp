@@ -316,12 +316,18 @@ README, examples, deployment guide, final validation
   - Return: name, abbreviation, formula, mass, charge, inchikey, smiles, aliases ✓
   - Unit tests: tests/unit/test_get_compound_name.py (14 tests, 100% coverage) ✓
 
-- [ ] **Task 32**: Implement search_compounds tool
-  - Create `src/gem_flux_mcp/tools/search_compounds.py`
-  - Input: `{"query": "glucose", "limit": 10}`
-  - Search in order: exact ID, exact name, exact abbreviation, partial name, formula, aliases
-  - Rank results: exact matches first, then partial
-  - Return: list of compound objects with match_field and match_type
+- [x] **Task 32**: Implement search_compounds tool
+  - Added to `src/gem_flux_mcp/tools/compound_lookup.py` ✓
+  - Input: `{"query": "glucose", "limit": 10}` ✓
+  - Search in order: exact ID, exact name, exact abbreviation, partial name, formula, aliases ✓
+  - Priority-based ranking: exact matches first (1-3), then partial (4-6) ✓
+  - Alphabetical sorting within same priority level ✓
+  - Duplicate removal (keep highest priority match) ✓
+  - Return: list of compound objects with match_field and match_type ✓
+  - Truncation flag when more results exist beyond limit ✓
+  - Suggestions included when no results found ✓
+  - Unit tests: tests/unit/test_search_compounds.py (26 tests, 100% coverage) ✓
+  - Full test suite: 386 passed, 97.57% coverage ✓
 
 - [ ] **Task 33**: Implement get_reaction_name tool
   - Create `src/gem_flux_mcp/tools/get_reaction_name.py`
