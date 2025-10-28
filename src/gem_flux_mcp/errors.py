@@ -529,3 +529,41 @@ def fba_infeasible_error(
             "Use get_compound_name to verify media composition",
         ],
     )
+
+
+def storage_collision_error(
+    attempted_id: str,
+    attempts: int,
+) -> dict[str, Any]:
+    """Construct STORAGE_COLLISION error response.
+
+    Args:
+        attempted_id: The ID that caused collision
+        attempts: Number of attempts made to resolve collision
+
+    Returns:
+        Error response dictionary
+    """
+    error = ServerError(
+        message=f"Failed to generate unique ID after {attempts} attempts",
+        error_code="STORAGE_COLLISION",
+        details={
+            "attempted_id": attempted_id,
+            "attempts": attempts,
+        },
+        suggestions=[
+            "This is extremely rare - contact support if it persists",
+            "Try again - collision resolution should succeed on retry",
+        ],
+    )
+
+    return {
+        "success": False,
+        "error_type": "server_error",
+        "error_code": error.error_code,
+        "jsonrpc_error_code": error.jsonrpc_error_code,
+        "message": error.message,
+        "details": error.details,
+        "suggestions": error.suggestions,
+        "timestamp": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+    }

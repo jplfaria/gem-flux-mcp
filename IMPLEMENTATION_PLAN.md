@@ -222,12 +222,19 @@ README, examples, deployment guide, final validation
 
 ### Phase 3: Session Storage
 
-- [ ] **Task 21**: Implement model storage module
-  - Create `src/gem_flux_mcp/storage/models.py`
-  - Implement in-memory dict storage: `models: dict[str, cobra.Model] = {}`
-  - Implement `store_model(model_id, model)` function
-  - Implement `retrieve_model(model_id)` function
-  - Implement `list_model_ids()` function
+- [x] **Task 21**: Implement model storage module
+  - ✅ Created `src/gem_flux_mcp/storage/models.py` (84 statements, 96.43% coverage)
+  - ✅ Implemented in-memory dict storage: `MODEL_STORAGE: dict[str, Any] = {}`
+  - ✅ Implemented `store_model(model_id, model)` function with collision detection
+  - ✅ Implemented `retrieve_model(model_id)` function with error handling
+  - ✅ Implemented `list_model_ids()` function (sorted alphabetically)
+  - ✅ Implemented `model_exists()`, `delete_model()`, `clear_all_models()`, `get_model_count()` helper functions
+  - ✅ Implemented `generate_model_id(state)` for auto-generated IDs
+  - ✅ Implemented `generate_model_id_from_name()` with collision handling
+  - ✅ Implemented `transform_state_suffix()` for gapfilling state transitions
+  - ✅ Added `storage_collision_error()` to errors.py
+  - ✅ 38 comprehensive unit tests in tests/unit/test_model_storage.py (all passing)
+  - ✅ Full test suite: 279 tests passing, 96.71% coverage
 
 - [ ] **Task 22**: Implement model ID generation
   - Implement `generate_model_id(state="draft")` function
