@@ -341,12 +341,20 @@ README, examples, deployment guide, final validation
   - ✅ 32 comprehensive unit tests in tests/unit/test_get_reaction_name.py (all passing)
   - ✅ Full test suite: 418 tests passing (386 + 32 new), 97.57% coverage
 
-- [ ] **Task 34**: Implement search_reactions tool
-  - Create `src/gem_flux_mcp/tools/search_reactions.py`
-  - Input: `{"query": "hexokinase", "limit": 10}`
-  - Search in order: exact ID, exact name, exact abbreviation, EC number, partial name, aliases, pathways
-  - Rank results: exact matches first, then partial
-  - Return: list of reaction objects with match_field and match_type
+- [x] **Task 34**: Implement search_reactions tool
+  - ✅ Added to `src/gem_flux_mcp/tools/reaction_lookup.py` (222 statements, 94.59% coverage)
+  - ✅ Implemented `SearchReactionsRequest` and `SearchReactionsResponse` models
+  - ✅ Implemented `ReactionSearchResult` model for individual search results
+  - ✅ Implemented `search_reactions()` function with priority-based matching (O(n) linear search)
+  - ✅ Search priority order: exact ID → exact name → exact abbreviation → EC number → partial name → aliases → pathways
+  - ✅ Duplicate removal keeps highest priority match only
+  - ✅ Alphabetical sorting within same priority level
+  - ✅ Truncation flag when more results exist beyond limit
+  - ✅ Suggestions included when no results found
+  - ✅ Results include formatted equation and parsed EC numbers
+  - ✅ 25 comprehensive unit tests in tests/unit/test_search_reactions.py (all passing)
+  - ✅ Fixed DatabaseIndex to handle empty DataFrames (added empty check before .str operations)
+  - ✅ Full test suite: 443 tests passing (418 + 25 new), 97.02% coverage
 
 - [ ] **Task 35**: Implement equation formatting
   - Parse database equation with compound IDs

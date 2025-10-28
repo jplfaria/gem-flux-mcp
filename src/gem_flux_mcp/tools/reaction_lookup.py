@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from gem_flux_mcp.database import parse_aliases, validate_reaction_id
 from gem_flux_mcp.database.index import DatabaseIndex
-from gem_flux_mcp.errors import NotFoundError
+from gem_flux_mcp.errors import NotFoundError, ValidationError
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +79,73 @@ class GetReactionNameResponse(BaseModel):
     deltag: Optional[float] = Field(None, description="Standard Gibbs free energy change (kJ/mol)")
     deltagerr: Optional[float] = Field(None, description="Error estimate for deltag (kJ/mol)")
     aliases: dict[str, list[str]] = Field(..., description="Cross-references to external databases")
+
+
+class SearchReactionsRequest(BaseModel):
+    """Request format for search_reactions tool.
+
+    Search for reactions by name, enzyme name, EC number, or pathway.
+    """
+
+    query: str = Field(
+        ...,
+        min_length=1,
+        max_length=100,
+        description="Text to search for in reaction names, EC numbers, pathways, abbreviations, and aliases",
+    )
+    limit: int = Field(
+        default=10,
+        ge=1,
+        le=100,
+        description="Maximum number of results to return (default: 10, max: 100)",
+    )
+
+    @field_validator("query", mode="before")
+    @classmethod
+    def validate_query(cls, v: str) -> str:
+        """Validate query is non-empty after trimming."""
+        if not v or not isinstance(v, str):
+            raise ValueError("Search query must be a non-empty string")
+
+        v = v.strip()
+        if not v:
+            raise ValueError("Search query cannot be empty after trimming whitespace")
+
+        return v
+
+
+class ReactionSearchResult(BaseModel):
+    """Single reaction search result with match metadata."""
+
+    id: str = Field(..., description="ModelSEED reaction ID")
+    name: str = Field(..., description="Human-readable reaction name")
+    equation: str = Field(..., description="Reaction equation with human-readable compound names")
+    ec_numbers: list[str] = Field(..., description="Enzyme Commission numbers")
+    match_field: str = Field(
+        ...,
+        description="Field where match was found (name, abbreviation, ec_numbers, pathways, aliases, id)",
+    )
+    match_type: str = Field(
+        ..., description="Type of match (exact or partial)"
+    )
+
+
+class SearchReactionsResponse(BaseModel):
+    """Response format for successful search_reactions operation."""
+
+    success: bool = Field(default=True)
+    query: str = Field(..., description="The search query as processed")
+    num_results: int = Field(..., description="Number of results returned")
+    results: list[ReactionSearchResult] = Field(
+        ..., description="List of matching reactions"
+    )
+    truncated: bool = Field(
+        ...,
+        description="True if more results exist beyond limit, False otherwise",
+    )
+    suggestions: Optional[list[str]] = Field(
+        default=None, description="Suggestions when no results found"
+    )
 
 
 # =============================================================================
@@ -382,5 +449,181 @@ def get_reaction_name(
     )
 
     logger.info(f"Successfully retrieved reaction: {reaction_id} ({response.name})")
+
+    return response.model_dump()
+
+
+def search_reactions(request: SearchReactionsRequest, db_index: DatabaseIndex) -> dict:
+    """Search for reactions by name, enzyme, EC number, pathway, or alias.
+
+    This function implements the search_reactions MCP tool as specified in
+    009-reaction-lookup-tools.md.
+
+    Args:
+        request: SearchReactionsRequest with query and optional limit
+        db_index: DatabaseIndex instance with loaded reactions database
+
+    Returns:
+        Dictionary with search results (SearchReactionsResponse format)
+
+    Performance:
+        - Expected time: 10-100 milliseconds per search
+        - Uses O(n) linear search (acceptable for MVP)
+
+    Search Strategy (spec 009):
+        1. Exact ID match
+        2. Exact name match (case-insensitive)
+        3. Exact abbreviation match (case-insensitive)
+        4. EC number match (exact)
+        5. Partial name match (case-insensitive)
+        6. Alias match (case-insensitive)
+        7. Pathway match (case-insensitive)
+
+    Example:
+        >>> request = SearchReactionsRequest(query="hexokinase", limit=5)
+        >>> response = search_reactions(request, db_index)
+        >>> print(f"Found {response['num_results']} reactions")
+        Found 3 reactions
+
+    Spec Reference:
+        - 009-reaction-lookup-tools.md: Tool specification (Task 34)
+        - 007-database-integration.md: Search operations
+    """
+    query = request.query.strip().lower()
+    limit = request.limit
+
+    logger.info(f"Searching reactions: query='{query}', limit={limit}")
+
+    # Track all matches with their priority and metadata
+    matches: list[tuple[int, pd.Series, str, str]] = []
+    # Format: (priority, reaction_record, match_field, match_type)
+    # Priority: lower number = higher priority (1 = exact ID, 2 = exact name, etc.)
+
+    reactions_df = db_index.reactions_df
+
+    # Step 1: Exact ID match (priority 1)
+    if db_index.reaction_exists(query):
+        reaction = db_index.get_reaction_by_id(query)
+        if reaction is not None:
+            matches.append((1, reaction, "id", "exact"))
+            logger.debug(f"Found exact ID match: {query}")
+
+    # Step 2: Exact name match (priority 2)
+    exact_name_matches = reactions_df[reactions_df["name_lower"] == query]
+    for _, reaction in exact_name_matches.iterrows():
+        matches.append((2, reaction, "name", "exact"))
+    if len(exact_name_matches) > 0:
+        logger.debug(f"Found {len(exact_name_matches)} exact name matches")
+
+    # Step 3: Exact abbreviation match (priority 3)
+    exact_abbr_matches = reactions_df[reactions_df["abbreviation_lower"] == query]
+    for _, reaction in exact_abbr_matches.iterrows():
+        matches.append((3, reaction, "abbreviation", "exact"))
+    if len(exact_abbr_matches) > 0:
+        logger.debug(f"Found {len(exact_abbr_matches)} exact abbreviation matches")
+
+    # Step 4: EC number match (priority 4)
+    # Search in ec_numbers column (case-insensitive)
+    ec_matches = reactions_df[
+        reactions_df["ec_numbers"].str.lower().str.contains(query, na=False, regex=False)
+    ]
+    for _, reaction in ec_matches.iterrows():
+        matches.append((4, reaction, "ec_numbers", "exact"))
+    if len(ec_matches) > 0:
+        logger.debug(f"Found {len(ec_matches)} EC number matches")
+
+    # Step 5: Partial name match (priority 5)
+    partial_name_matches = reactions_df[
+        reactions_df["name_lower"].str.contains(query, na=False, regex=False)
+        & (reactions_df["name_lower"] != query)  # Exclude exact matches already found
+    ]
+    for _, reaction in partial_name_matches.iterrows():
+        matches.append((5, reaction, "name", "partial"))
+    if len(partial_name_matches) > 0:
+        logger.debug(f"Found {len(partial_name_matches)} partial name matches")
+
+    # Step 6: Alias match (priority 6)
+    # Check if query appears in aliases column (case-insensitive)
+    alias_matches = reactions_df[
+        reactions_df["aliases"].str.lower().str.contains(query, na=False, regex=False)
+    ]
+    for _, reaction in alias_matches.iterrows():
+        matches.append((6, reaction, "aliases", "partial"))
+    if len(alias_matches) > 0:
+        logger.debug(f"Found {len(alias_matches)} alias matches")
+
+    # Step 7: Pathway match (priority 7)
+    # Check if query appears in pathways column (case-insensitive)
+    pathway_matches = reactions_df[
+        reactions_df["pathways"].str.lower().str.contains(query, na=False, regex=False)
+    ]
+    for _, reaction in pathway_matches.iterrows():
+        matches.append((7, reaction, "pathways", "partial"))
+    if len(pathway_matches) > 0:
+        logger.debug(f"Found {len(pathway_matches)} pathway matches")
+
+    # Remove duplicates (keep first occurrence with highest priority)
+    seen_ids = set()
+    unique_matches = []
+    for priority, reaction, match_field, match_type in sorted(matches, key=lambda x: x[0]):
+        reaction_id = reaction.name  # pandas Series.name is the index value
+        if reaction_id not in seen_ids:
+            seen_ids.add(reaction_id)
+            unique_matches.append((priority, reaction, match_field, match_type))
+
+    # Sort by priority, then alphabetically by name
+    unique_matches.sort(key=lambda x: (x[0], x[1]["name"].lower()))
+
+    # Check if truncated
+    total_matches = len(unique_matches)
+    truncated = total_matches > limit
+
+    # Limit results
+    limited_matches = unique_matches[:limit]
+
+    # Build results list
+    results = []
+    for _, reaction, match_field, match_type in limited_matches:
+        # Format equation for human readability
+        equation_with_ids = reaction.get("equation", "")
+        definition = reaction.get("definition", "")
+        equation = format_equation_readable(equation_with_ids, definition)
+
+        # Parse EC numbers
+        ec_numbers_raw = reaction.get("ec_numbers", "")
+        ec_numbers = parse_ec_numbers(ec_numbers_raw)
+
+        result = ReactionSearchResult(
+            id=reaction.name,  # pandas Series.name is the index
+            name=reaction["name"],
+            equation=equation,
+            ec_numbers=ec_numbers,
+            match_field=match_field,
+            match_type=match_type,
+        )
+        results.append(result)
+
+    # Build response
+    response = SearchReactionsResponse(
+        query=query,
+        num_results=len(results),
+        results=results,
+        truncated=truncated,
+    )
+
+    # Add suggestions if no results
+    if len(results) == 0:
+        response.suggestions = [
+            "Try a more general search term",
+            "Check spelling of reaction name or enzyme",
+            "Search by EC number (e.g., 2.7.1.1)",
+            "Search by pathway name (e.g., Glycolysis)",
+            "Search by database ID from other sources (KEGG, BiGG, MetaCyc)",
+        ]
+
+    logger.info(
+        f"Search complete: {len(results)} results returned "
+        f"({total_matches} total matches, truncated={truncated})"
+    )
 
     return response.model_dump()

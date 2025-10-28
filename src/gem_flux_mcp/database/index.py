@@ -50,15 +50,23 @@ class DatabaseIndex:
 
         # Create lowercase name columns for case-insensitive searching
         # (spec 007: Search Operations)
-        self.compounds_df["name_lower"] = self.compounds_df["name"].str.lower()
-        self.compounds_df["abbreviation_lower"] = self.compounds_df[
-            "abbreviation"
-        ].str.lower()
+        if not compounds_df.empty:
+            self.compounds_df["name_lower"] = self.compounds_df["name"].str.lower()
+            self.compounds_df["abbreviation_lower"] = self.compounds_df[
+                "abbreviation"
+            ].str.lower()
+        else:
+            self.compounds_df["name_lower"] = pd.Series([], dtype=str)
+            self.compounds_df["abbreviation_lower"] = pd.Series([], dtype=str)
 
-        self.reactions_df["name_lower"] = self.reactions_df["name"].str.lower()
-        self.reactions_df["abbreviation_lower"] = self.reactions_df[
-            "abbreviation"
-        ].str.lower()
+        if not reactions_df.empty:
+            self.reactions_df["name_lower"] = self.reactions_df["name"].str.lower()
+            self.reactions_df["abbreviation_lower"] = self.reactions_df[
+                "abbreviation"
+            ].str.lower()
+        else:
+            self.reactions_df["name_lower"] = pd.Series([], dtype=str)
+            self.reactions_df["abbreviation_lower"] = pd.Series([], dtype=str)
 
         logger.info(
             f"Initialized database index with {len(compounds_df)} compounds "
