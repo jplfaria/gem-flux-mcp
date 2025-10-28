@@ -830,11 +830,13 @@ README, examples, deployment guide, final validation
 
 ### Phase 9: Integration & Testing
 
-- [ ] **Task 81**: Write integration test: Complete workflow
+- [x] **Task 81**: Write integration test: Complete workflow
   - Test: build_media → build_model → gapfill_model → run_fba
   - Verify model progresses through states: .draft → .draft.gf
   - Verify FBA returns optimal growth rate
   - Verify all intermediate results stored correctly
+  - Implementation: tests/integration/test_phase11_complete_workflow.py
+  - Tests: test_full_workflow_build_gapfill_fba, test_workflow_with_custom_media, test_end_to_end_error_handling
 
 - [ ] **Task 82**: Write integration test: Database lookups
   - Test: search_compounds → get_compound_name
