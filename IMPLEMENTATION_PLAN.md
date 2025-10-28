@@ -867,11 +867,22 @@ README, examples, deployment guide, final validation
   - ✅ test_validation_error_structure: Tests validation error structure
   - ✅ All 9 tests passing
 
-- [ ] **Task 85**: Write integration test: Model ID transformations
-  - Test: build_model creates .draft suffix
-  - Test: gapfill_model transforms .draft → .draft.gf
-  - Test: Re-gapfilling appends .gf: .draft.gf → .draft.gf.gf
-  - Test: User-provided names preserved
+- [x] **Task 85**: Write integration test: Model ID transformations
+  - ✅ Created `tests/integration/test_phase14_model_id_transformations.py` with 12 comprehensive tests
+  - ✅ test_build_model_creates_draft_suffix: Verifies build_model creates .draft suffix
+  - ✅ test_build_model_user_provided_name_has_draft_suffix: Verifies user names preserved with .draft
+  - ✅ test_build_model_collision_handling: Tests timestamp addition on name collisions
+  - ✅ test_gapfill_transforms_draft_to_draft_gf: Verifies .draft → .draft.gf transformation
+  - ✅ test_gapfill_preserves_user_provided_name: User names preserved through gapfilling
+  - ✅ test_regapfill_appends_gf_suffix: Verifies .draft.gf → .draft.gf.gf
+  - ✅ test_multiple_regapfilling_iterations: Tests 4 iterations of gapfilling
+  - ✅ test_gapfill_gf_to_gf_gf: Tests .gf → .gf.gf (no .draft)
+  - ✅ test_complete_transformation_workflow: Full workflow for auto and user IDs
+  - ✅ test_transform_state_suffix_edge_cases: Edge cases (dots, long names, multiple .gf)
+  - ✅ test_state_suffix_idempotency: Deterministic transformations
+  - ✅ test_model_id_transformations_with_storage_lifecycle: Integration with storage ops
+  - ✅ Updated test_expectations.json with Phase 14 (all 12 tests marked as must_pass)
+  - ✅ All 12 tests passing
 
 - [ ] **Task 86**: Implement test expectations file
   - Create `tests/integration/test_expectations.json`

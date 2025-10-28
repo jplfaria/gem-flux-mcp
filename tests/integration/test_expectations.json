@@ -134,5 +134,24 @@
     ],
     "may_fail": [],
     "description": "JSON-RPC 2.0 error handling and edge case coverage"
+  },
+  "phase_14": {
+    "name": "Model ID Transformations",
+    "must_pass": [
+      "test_build_model_creates_draft_suffix",
+      "test_build_model_user_provided_name_has_draft_suffix",
+      "test_build_model_collision_handling",
+      "test_gapfill_transforms_draft_to_draft_gf",
+      "test_gapfill_preserves_user_provided_name",
+      "test_regapfill_appends_gf_suffix",
+      "test_multiple_regapfilling_iterations",
+      "test_gapfill_gf_to_gf_gf",
+      "test_complete_transformation_workflow",
+      "test_transform_state_suffix_edge_cases",
+      "test_state_suffix_idempotency",
+      "test_model_id_transformations_with_storage_lifecycle"
+    ],
+    "may_fail": [],
+    "description": "Model ID state suffix transformations during gapfilling according to spec 002-data-formats.md"
   }
 }
