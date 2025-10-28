@@ -1,5 +1,10 @@
 # Deep Implementation Review Prompt
 
+**IMPORTANT**: When using this prompt, also provide the log file path like:
+```
+Log file: .implementation_logs/iteration_X_success_YYYY-MM-DD_HH-MM-SS.log
+```
+
 Review the most recent implementation log and perform a comprehensive code quality analysis:
 
 **TASK:** Perform Option D analysis (Phase Boundary Reviews + Spot Checks for critical tools)
@@ -79,7 +84,31 @@ Review the most recent implementation log and perform a comprehensive code quali
 
 ## Usage Instructions
 
-- Use this prompt after each iteration log is shared
+**How to use this prompt:**
+
+1. After iteration completes, you'll see:
+   ```
+   Log saved to: .implementation_logs/iteration_X_success_YYYY-MM-DD_HH-MM-SS.log
+   ```
+
+2. Run these commands together:
+   ```bash
+   cat .prompts/deep-review.md
+   echo ""
+   echo "Log file: .implementation_logs/iteration_X_success_YYYY-MM-DD_HH-MM-SS.log"
+   ```
+
+3. Paste the output to Claude
+
+**Alternative (even better):**
+```bash
+cat .prompts/deep-review.md && echo -e "\n---\nLog file: $(ls -t .implementation_logs/iteration_*_success_*.log | head -1)"
+```
+This automatically finds the most recent success log!
+
+**What happens:**
+- Claude reads the prompt instructions
+- Claude automatically finds and reads the specified log file
 - Auto-detects phase boundaries and adjusts depth accordingly
 - Provides findings without disrupting implementation loop
 - Save findings to decide when/if to apply changes
