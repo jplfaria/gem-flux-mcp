@@ -211,12 +211,12 @@ README, examples, deployment guide, final validation
   - ✅ Coverage: 100% for atp_loader.py (30 statements, 0 missed)
   - ✅ Full test suite: 241 tests passing, 96.72% coverage
 
-- [ ] **Task 20**: Write template loader unit tests
-  - Test successful template loading
-  - Test handling of missing template files
-  - Test handling of invalid JSON
-  - Test template validation
-  - Mock MSTemplateBuilder for testing
+- [x] **Task 20**: Write template loader unit tests
+  - ✅ 32 comprehensive unit tests in tests/unit/test_template_loader.py (31 passing, 1 skipped)
+  - ✅ Coverage: 96% for templates/loader.py (75 statements, 3 missed)
+  - ✅ Tests cover: validate_template, load_template, load_templates, get_template, validate_template_name, list_available_templates
+  - ✅ All error cases tested: missing files, invalid JSON, build failures, validation failures
+  - ✅ MSTemplateBuilder properly mocked for unit testing
 
 ---
 
