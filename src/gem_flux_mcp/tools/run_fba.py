@@ -107,87 +107,10 @@ def validate_fba_inputs(
         )
 
 
-def apply_media_to_model(model: Any, media_data: Any) -> None:
-    """Apply media constraints to model exchange reactions.
-
-    This function uses the same media application method as gapfill_model to ensure
-    consistency. It calls media.get_media_constraints() to get exchange reaction
-    bounds and applies them directly to the model reactions.
-
-    Args:
-        model: COBRApy Model object (modified in place)
-        media_data: MSMedia object or media dict with bounds information
-                   MSMedia object: has get_media_constraints() method
-                   Dict format: {"bounds": {"cpd00027": (-5, 100), ...}, ...}
-
-    Side Effects:
-        Modifies model exchange reaction bounds in place
-    """
-    # Use MSMedia.get_media_constraints() method (same as gapfill_model)
-    # This returns dict of {reaction_id: (lower_bound, upper_bound)}
-    # Example: {"EX_cpd00027_e0": (-5.0, 100.0), "EX_cpd00007_e0": (-10.0, 100.0)}
-
-    if hasattr(media_data, "get_media_constraints"):
-        # MSMedia object - build medium dict for .medium property
-        # This uses COBRApy's canonical media application method
-        import math
-        medium = {}
-        media_constraints = media_data.get_media_constraints(cmp="e0")
-
-        for compound_id, (lower_bound, upper_bound) in media_constraints.items():
-            # Convert compound ID to exchange reaction ID
-            # compound_id format: "cpd00027_e0"
-            # reaction_id format: "EX_cpd00027_e0"
-            exchange_rxn_id = f"EX_{compound_id}"
-
-            if exchange_rxn_id in model.reactions:
-                # .medium property expects POSITIVE uptake rates
-                # Negative lower_bound (e.g., -5.0) becomes positive uptake rate (5.0)
-                medium[exchange_rxn_id] = math.fabs(lower_bound)
-            else:
-                logger.debug(f"Exchange reaction {exchange_rxn_id} not in model")
-
-        # Apply using .medium property (closes all exchanges first)
-        model.medium = medium
-        logger.info(f"Applied media to {len(medium)} exchange reactions using .medium property")
-
-    elif isinstance(media_data, dict):
-        # Dict format - two sub-formats supported:
-        # 1. Test mock format: {"bounds": {"cpd00027": (-5, 100), ...}}
-        # 2. Predefined media format: {"compounds": {"cpd00027_e0": (-5.0, 100.0), ...}}
-        import math
-        medium = {}
-
-        # Try predefined media format first (has "compounds" key)
-        if "compounds" in media_data:
-            bounds_dict = media_data["compounds"]
-        else:
-            # Fall back to test mock format (has "bounds" key)
-            bounds_dict = media_data.get("bounds", {})
-
-        for cpd_id, (lower_bound, upper_bound) in bounds_dict.items():
-            # For dict media: cpd_id might not have compartment, add "_e0" if missing
-            if not cpd_id.endswith("_e0"):
-                cpd_id_with_comp = f"{cpd_id}_e0"
-            else:
-                cpd_id_with_comp = cpd_id
-
-            # Convert compound ID to exchange reaction ID
-            exchange_rxn_id = f"EX_{cpd_id_with_comp}"
-
-            if exchange_rxn_id in model.reactions:
-                # .medium property expects POSITIVE uptake rates
-                medium[exchange_rxn_id] = math.fabs(lower_bound)
-            else:
-                logger.debug(f"Exchange reaction {exchange_rxn_id} not in model")
-
-        # Apply using .medium property (closes all exchanges first)
-        model.medium = medium
-        logger.info(f"Applied media to {len(medium)} exchange reactions using .medium property")
-
-    else:
-        logger.warning(f"Unknown media_data type: {type(media_data)}")
-        logger.warning("No media constraints applied - model will use existing bounds")
+# Media application is now handled by shared utility
+# See: src/gem_flux_mcp/utils/media.py
+# This alias maintains backwards compatibility
+from gem_flux_mcp.utils.media import apply_media_to_model
 
 
 def get_compound_name_safe(db_index: DatabaseIndex, compound_id: str) -> str:

@@ -154,7 +154,7 @@ def validate_gapfill_inputs(
 def check_baseline_growth(model: Any, media: Any, objective: str = "bio1") -> float:
     """Check model's growth rate before gapfilling.
 
-    Uses COBRApy's .medium property for correct media application.
+    Uses shared media utility for correct media application.
 
     Args:
         model: COBRApy Model object
@@ -164,28 +164,11 @@ def check_baseline_growth(model: Any, media: Any, objective: str = "bio1") -> fl
     Returns:
         Current growth rate (objective value)
     """
-    import math
+    from gem_flux_mcp.utils.media import apply_media_to_model
 
     try:
-        # Apply media constraints using .medium property
-        if hasattr(media, "get_media_constraints"):
-            # MSMedia object - build medium dict
-            medium = {}
-            media_constraints = media.get_media_constraints(cmp="e0")
-
-            for compound_id, (lower_bound, upper_bound) in media_constraints.items():
-                # Convert compound ID to exchange reaction ID
-                exchange_rxn_id = f"EX_{compound_id}"
-
-                if exchange_rxn_id in model.reactions:
-                    # .medium property expects POSITIVE uptake rates
-                    medium[exchange_rxn_id] = math.fabs(lower_bound)
-                else:
-                    logger.debug(f"Exchange reaction {exchange_rxn_id} not in model")
-
-            # Apply media using .medium property (closes all exchanges first)
-            model.medium = medium
-            logger.debug(f"Applied media to {len(medium)} exchange reactions")
+        # Apply media constraints using shared utility
+        apply_media_to_model(model, media, compartment="e0")
 
         # Set objective explicitly (critical for correct growth rate calculation)
         if objective in model.reactions:
