@@ -151,7 +151,7 @@ def validate_gapfill_inputs(
         # 3. ModelSEEDpy itself doesn't require biomass for gapfilling
 
 
-def check_baseline_growth(model: Any, media: Any) -> float:
+def check_baseline_growth(model: Any, media: Any, objective: str = "bio1") -> float:
     """Check model's growth rate before gapfilling.
 
     Uses COBRApy's .medium property for correct media application.
@@ -159,6 +159,7 @@ def check_baseline_growth(model: Any, media: Any) -> float:
     Args:
         model: COBRApy Model object
         media: MSMedia object
+        objective: Objective reaction ID to optimize (default: "bio1" for biomass)
 
     Returns:
         Current growth rate (objective value)
@@ -185,6 +186,14 @@ def check_baseline_growth(model: Any, media: Any) -> float:
             # Apply media using .medium property (closes all exchanges first)
             model.medium = medium
             logger.debug(f"Applied media to {len(medium)} exchange reactions")
+
+        # Set objective explicitly (critical for correct growth rate calculation)
+        if objective in model.reactions:
+            model.objective = objective
+            model.objective_direction = "max"
+            logger.debug(f"Set objective to {objective} (maximize)")
+        else:
+            logger.warning(f"Objective reaction {objective} not found in model, using current objective")
 
         # Run FBA
         solution = model.optimize()
@@ -406,11 +415,61 @@ def integrate_gapfill_solution(
     # Process new reactions
     new_reactions = solution.get('new', {})
     for rxn_id, direction in new_reactions.items():
-        # Skip exchange reactions (handled separately by MSBuilder)
-        if rxn_id.startswith('EX_'):
-            continue
-
         try:
+            # Handle exchange reactions specially
+            if rxn_id.startswith('EX_'):
+                # Exchange reactions are essential for biomass precursors!
+                # Add them to the model if they don't exist
+                if rxn_id not in model.reactions:
+                    logger.debug(f"Gapfilling added exchange reaction: {rxn_id}")
+                    # Exchange reactions should already be created by MSBuilder
+                    # If gapfilling wants to add one, it means it's needed
+                    # Extract compound ID from exchange reaction ID
+                    # Format: EX_cpd00027_e0 → cpd00027_e0
+                    compound_id = rxn_id[3:]  # Remove "EX_" prefix
+
+                    # Create exchange reaction using COBRApy
+                    from cobra import Reaction, Metabolite
+                    exch_rxn = Reaction(rxn_id)
+                    exch_rxn.name = f"Exchange for {compound_id}"
+
+                    # Get or create the metabolite
+                    if compound_id in model.metabolites:
+                        metabolite = model.metabolites.get_by_id(compound_id)
+                    else:
+                        # Create metabolite if it doesn't exist
+                        metabolite = Metabolite(compound_id, compartment='e0')
+                        logger.debug(f"Created metabolite {compound_id} for exchange reaction")
+
+                    # Exchange reaction: nothing → compound (import)
+                    exch_rxn.add_metabolites({metabolite: 1.0})
+
+                    # Set bounds based on direction from gapfilling
+                    lb, ub = get_reaction_constraints_from_direction(direction)
+                    exch_rxn.lower_bound = lb
+                    exch_rxn.upper_bound = ub
+
+                    # Add to model
+                    model.add_reactions([exch_rxn])
+
+                    added_reactions.append({
+                        "id": rxn_id,
+                        "direction": direction,
+                        "bounds": [lb, ub],
+                    })
+
+                    logger.info(f"Added exchange reaction: {rxn_id} (direction: {direction})")
+                else:
+                    # Exchange already exists, just update bounds
+                    existing_rxn = model.reactions.get_by_id(rxn_id)
+                    lb, ub = get_reaction_constraints_from_direction(direction)
+                    existing_rxn.lower_bound = lb
+                    existing_rxn.upper_bound = ub
+                    logger.debug(f"Updated existing exchange reaction {rxn_id} bounds to ({lb}, {ub})")
+
+                continue  # Don't try to get from template
+
+            # For non-exchange reactions, get from template
             # Convert model reaction ID (indexed) to template reaction ID (non-indexed)
             # Model uses: rxn05481_c0, Template uses: rxn05481_c
             # Strip trailing '0' to convert indexed (_c0) to non-indexed (_c)
@@ -555,8 +614,8 @@ def gapfill_model(
         model = copy.deepcopy(original_model)
         logger.info(f"Created working copy of model {model_id}")
 
-        # Step 4: Check baseline growth
-        growth_rate_before = check_baseline_growth(model, media)
+        # Step 4: Check baseline growth with bio1 objective
+        growth_rate_before = check_baseline_growth(model, media, objective="bio1")
 
         # If already meets target, skip gapfilling
         if growth_rate_before >= target_growth_rate:
@@ -626,8 +685,8 @@ def gapfill_model(
                 solution = genomescale_stats["solution"]
                 added_reactions = integrate_gapfill_solution(model, template, solution)
 
-        # Step 8: Verify final growth rate
-        growth_rate_after = check_baseline_growth(model, media)
+        # Step 8: Verify final growth rate with bio1 objective
+        growth_rate_after = check_baseline_growth(model, media, objective="bio1")
         gapfilling_successful = growth_rate_after >= target_growth_rate
 
         if not gapfilling_successful:
