@@ -146,9 +146,15 @@ def apply_media_to_model(model: Any, media_data: Any) -> None:
     # Value is positive (absolute value of lower bound = max uptake)
     medium = {}
     for cpd_id, (lower_bound, upper_bound) in bounds_dict.items():
-        # cpd_id already includes compartment suffix (e.g., "cpd00027_e0")
+        # For MSMedia: cpd_id already includes compartment (e.g., "cpd00027_e0")
+        # For dict media: cpd_id might not have compartment, need to add "_e0"
+        if not cpd_id.endswith("_e0"):
+            cpd_id_with_comp = f"{cpd_id}_e0"
+        else:
+            cpd_id_with_comp = cpd_id
+
         # Convert compound ID to exchange reaction ID
-        rxn_id = f"EX_{cpd_id}"
+        rxn_id = f"EX_{cpd_id_with_comp}"
 
         # Check if exchange reaction exists in model
         if rxn_id in model.reactions:

@@ -390,6 +390,7 @@ def test_run_fba_optimal(
     result = run_fba(
         model_id="model_001.gf",
         media_id="media_001",
+        db_index=mock_db_index,
         objective="bio1",
         maximize=True,
         flux_threshold=1e-6,
@@ -436,6 +437,7 @@ def test_run_fba_minimize(
     result = run_fba(
         model_id="model_001.gf",
         media_id="media_001",
+        db_index=mock_db_index,
         objective="bio1",
         maximize=False,  # Minimize
         flux_threshold=1e-6,
@@ -478,6 +480,7 @@ def test_run_fba_infeasible(
     result = run_fba(
         model_id="model_001.gf",
         media_id="media_001",
+        db_index=mock_db_index,
     )
 
     # Check error response
@@ -514,6 +517,7 @@ def test_run_fba_unbounded(
     result = run_fba(
         model_id="model_001.gf",
         media_id="media_001",
+        db_index=mock_db_index,
     )
 
     # Check error response
@@ -548,6 +552,7 @@ def test_run_fba_invalid_objective(
     result = run_fba(
         model_id="model_001.gf",
         media_id="media_001",
+        db_index=mock_db_index,
         objective="invalid_rxn",
     )
 
@@ -582,6 +587,7 @@ def test_run_fba_custom_threshold(
     result = run_fba(
         model_id="model_001.gf",
         media_id="media_001",
+        db_index=mock_db_index,
         flux_threshold=1.0,  # High threshold
     )
 
@@ -620,6 +626,7 @@ def test_run_fba_preserves_original_model(
     result = run_fba(
         model_id="model_001.gf",
         media_id="media_001",
+        db_index=mock_db_index,
     )
 
     # Check deepcopy was called
