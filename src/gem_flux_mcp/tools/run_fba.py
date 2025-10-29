@@ -146,11 +146,9 @@ def apply_media_to_model(model: Any, media_data: Any) -> None:
     # Value is positive (absolute value of lower bound = max uptake)
     medium = {}
     for cpd_id, (lower_bound, upper_bound) in bounds_dict.items():
-        # Add extracellular compartment suffix
-        cpd_id_e0 = f"{cpd_id}_e0"
-
+        # cpd_id already includes compartment suffix (e.g., "cpd00027_e0")
         # Convert compound ID to exchange reaction ID
-        rxn_id = f"EX_{cpd_id_e0}"
+        rxn_id = f"EX_{cpd_id}"
 
         # Check if exchange reaction exists in model
         if rxn_id in model.reactions:
@@ -303,6 +301,7 @@ def extract_fluxes(
 def run_fba(
     model_id: str,
     media_id: str,
+    db_index: DatabaseIndex,
     objective: str = "bio1",
     maximize: bool = True,
     flux_threshold: float = 1e-6,
@@ -312,6 +311,7 @@ def run_fba(
     Args:
         model_id: Model identifier from session storage
         media_id: Media identifier from session storage
+        db_index: Database index for compound/reaction name lookups
         objective: Objective reaction to optimize (default: "bio1")
         maximize: Whether to maximize (True) or minimize (False) objective
         flux_threshold: Minimum absolute flux to report (default: 1e-6)
@@ -445,10 +445,7 @@ def run_fba(
         # Step 8: Extract fluxes and build response
         logger.info(f"FBA optimal: objective_value={solution.objective_value:.6f}")
 
-        # Get database index for name lookups
-        db_index = DatabaseIndex.get_instance()
-
-        # Extract and organize fluxes
+        # Extract and organize fluxes (using db_index parameter)
         flux_data = extract_fluxes(solution, flux_threshold, db_index)
 
         # Build summary statistics
