@@ -110,34 +110,35 @@ Handle common errors and recover gracefully.
 
 ### IMPORTANT: Running the Notebooks
 
-The notebooks need to import the `gem_flux_mcp` package. You have two options:
+The notebooks need to import the `gem_flux_mcp` package. **Use Option 1** (recommended):
 
-#### Option 1: Add Setup Cell (Recommended for Development)
-
-Add this as the **FIRST** cell in each notebook:
-
-```python
-# Setup: Add parent directory to Python path
-import sys
-from pathlib import Path
-repo_root = Path.cwd().parent
-sys.path.insert(0, str(repo_root))
-print(f"✓ Added {repo_root} to Python path")
-```
-
-Then run all cells normally.
-
-#### Option 2: Install Package in Editable Mode
+#### Option 1: Run Jupyter with UV (Recommended)
 
 From the repository root:
 
 ```bash
-uv pip install -e .
-# OR
-pip install -e .
+# Start Jupyter using UV's environment
+uv run jupyter notebook
+
+# Or start JupyterLab
+uv run jupyter lab
 ```
 
-Then notebooks will work without the setup cell.
+This automatically uses the correct Python environment with all dependencies installed.
+
+#### Option 2: Install Package in Editable Mode
+
+If you prefer to use a system Jupyter installation:
+
+```bash
+# From repository root
+uv pip install -e .
+
+# Then start Jupyter normally
+jupyter notebook
+```
+
+The package will be importable in all notebooks.
 
 ### Quick Start
 
