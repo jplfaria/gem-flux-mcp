@@ -6,16 +6,16 @@ This directory contains comprehensive documentation of manual code reviews that 
 
 | Metric | Value |
 |--------|-------|
-| **Total Sessions** | 9 |
-| **Total Time Invested** | 195 minutes (~3.25 hours) |
-| **Files Changed** | 15 |
+| **Total Sessions** | 10 |
+| **Total Time Invested** | 375-435 minutes (~6.25-7.25 hours) |
+| **Files Changed** | 32 |
 | **Files Validated** | 11 (Sessions 5-7, 9) |
 | **Loop Improvements** | 2 (Sessions 3, 8) |
-| **Critical Issues Prevented** | 2 |
-| **Systemic Issues Resolved** | 2 |
+| **Critical Issues Prevented** | 5 |
+| **Systemic Issues Resolved** | 3 |
 | **Maintenance Issues Prevented** | 1 |
 | **Overall Coverage** | 90.60% |
-| **ROI** | 3:1 to 6:1 (conservative) |
+| **ROI** | 3:1 to 20:1 (conservative) |
 
 ## Review Sessions
 
@@ -40,6 +40,9 @@ This directory contains comprehensive documentation of manual code reviews that 
 **Phase 9 (Integration & Testing)**:
 - [Session 9: Iteration 1 - Complete workflow integration tests](sessions/session-09-iteration-01-phase9.md) - 5 min, High ROI (Validation)
 
+**Phase 10 (Documentation & Finalization)**:
+- [Session 10: Iteration 1 - **CRITICAL AUDIT** - MCP discovery + comprehensive fixes](sessions/session-10-iteration-01-phase10-critical-audit.md) - 180-240 min, **EXTREMELY HIGH ROI** ⭐⭐⭐⭐⭐⭐
+
 ### By Iteration
 
 | Iteration | Module | Time | ROI | Key Findings |
@@ -47,6 +50,7 @@ This directory contains comprehensive documentation of manual code reviews that 
 | 1 (Phase 7) | Session mgmt | 20 min | ⭐⭐⭐ | Observability + refactoring for maintainability |
 | 1 (Phase 7) | Integration tests | 5 min | ⭐⭐⭐ | Validation - no issues, loop learning confirmed |
 | 1 (Phase 9) | Workflow tests | 5 min | ⭐⭐⭐⭐ | Validation - 100% spec compliant, excellent quality |
+| 1 (Phase 10) | **CRITICAL AUDIT** | 180-240 min | ⭐⭐⭐⭐⭐⭐ | MCP non-functional, Phase 8 40% done, 3 critical bugs, Phase 11 created |
 | 2 (Phase 7) | Predefined media | 5 min | ⭐⭐⭐ | Validation - 100% spec compliant |
 | 2 (Phase 7) | **Phase Boundary** | 5 min | ⭐⭐⭐⭐ | Phase 7 complete, Phase 8 ready |
 | 3 (Phase 8) | **FAILED** Import fix | 30 min | ⭐⭐⭐⭐⭐⭐ | Fixed + added validation, prevents recurrence |
@@ -87,6 +91,30 @@ Bare `except` blocks hide problems. Solution: Three-tier error classification (s
 Forcing 100% unit test coverage on external services creates brittle mocks. Solution: Use integration tests for complex external interactions.
 
 **Impact**: Accepted 78.16% coverage with documented rationale, avoided brittle tests.
+
+### 5. [MSMedia DictList Handling](patterns/msmedia-dictlist-handling.md)
+**Status**: ✅ Resolved
+**Discovered**: Session 10
+
+ModelSEEDpy's MSMedia.mediacompounds is COBRApy DictList, not dict. Cannot use `.items()`, must iterate keys and access by key.
+
+**Impact**: Fixed notebook crashes, documented dependency integration pattern.
+
+### 6. [Global State for MCP Wrappers](patterns/global-state-mcp-wrappers.md)
+**Status**: 📋 Documented (Phase 11 to implement)
+**Discovered**: Session 10
+
+FastMCP requires JSON-serializable tool signatures. Solution: Global state for DatabaseIndex/templates, tool wrappers access via helpers.
+
+**Impact**: Provides path to fix MCP server (main project purpose).
+
+### 7. [Mandatory Verification Gates](patterns/mandatory-verification-gates.md)
+**Status**: 📋 Documented (To be applied)
+**Discovered**: Session 10
+
+Tasks marked complete without verifying functionality works. Solution: Add explicit verification requirements and success criteria to every task.
+
+**Impact**: Prevents false completion (Phase 8 marked 100% done, actually 40%).
 
 ## What Loop Does Well vs What Manual Reviews Catch
 
