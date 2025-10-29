@@ -282,7 +282,7 @@ def list_available_templates() -> list[dict[str, Any]]:
     """List all available templates with metadata.
 
     Returns:
-        List of dicts with template info (name, num_reactions, num_metabolites, etc.)
+        List of dicts with template info (name, num_reactions, num_compounds, etc.)
     """
     templates_info = []
 
@@ -290,7 +290,7 @@ def list_available_templates() -> list[dict[str, Any]]:
         templates_info.append({
             "name": name,
             "num_reactions": len(template.reactions),
-            "num_metabolites": len(template.metabolites),
+            "num_compounds": len(template.compounds),  # Templates use .compounds, not .metabolites
             "compartments": template.compartments,
             "version": getattr(template, 'version', 'unknown')
         })
