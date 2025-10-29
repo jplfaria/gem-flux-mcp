@@ -237,7 +237,7 @@
     "last_updated": "2025-10-28",
     "total_phases": 15,
     "implemented_phases": 6,
-    "total_must_pass_tests": 112,
+    "total_must_pass_tests": 117,
     "total_may_fail_tests": 7,
     "notes": [
       "Phases 1-9 are placeholder specifications for future implementation",
