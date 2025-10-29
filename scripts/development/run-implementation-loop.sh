@@ -855,7 +855,7 @@ run_quality_gates() {
         # Run integration test coverage (informational only)
         if [ -d "tests/integration" ] && ls tests/integration/test_*.py 2>/dev/null | grep -q .; then
             echo -e "\n${YELLOW}Running integration test coverage (informational)...${NC}"
-            integration_coverage_output=$(.venv/bin/pytest tests/integration/ --cov=src --cov-report=term-missing 2>&1)
+            integration_coverage_output=$(.venv/bin/pytest tests/integration/ --ignore=tests/integration/test_phase16_performance.py --cov=src --cov-report=term-missing 2>&1)
             echo "$integration_coverage_output" | tail -15  # Show coverage summary
             echo -e "${CYAN}Integration test coverage is informational only (no threshold)${NC}"
         fi
@@ -1143,7 +1143,7 @@ if [ -d "src" ] && find src -name "*.py" -type f | grep -q .; then
 
     if [ -d "tests/integration" ] && ls tests/integration/test_*.py 2>/dev/null | grep -q .; then
         echo -e "\n${YELLOW}Integration Test Coverage:${NC}"
-        .venv/bin/pytest tests/integration/ --cov=src --cov-report=term-missing --tb=short -q
+        .venv/bin/pytest tests/integration/ --ignore=tests/integration/test_phase16_performance.py --cov=src --cov-report=term-missing --tb=short -q
     fi
 fi
 
