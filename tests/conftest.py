@@ -263,12 +263,12 @@ def mock_mstemplate():
 
     # Mock template statistics
     template.num_reactions = 2035
-    template.num_metabolites = 1542
+    template.num_compounds = 1542  # Templates use .compounds, not .metabolites
     template.compartments = ["c0", "e0", "p0"]
 
-    # Mock reaction list
+    # Mock reaction and compound lists
     template.reactions = [Mock(id=f"rxn{i:05d}") for i in range(1, 21)]
-    template.metabolites = [Mock(id=f"cpd{i:05d}") for i in range(1, 21)]
+    template.compounds = [Mock(id=f"cpd{i:05d}") for i in range(1, 21)]  # Templates use .compounds
 
     return template
 
@@ -283,12 +283,12 @@ def mock_mstemplate_core():
 
     # Mock template statistics
     template.num_reactions = 452
-    template.num_metabolites = 325
+    template.num_compounds = 325  # Templates use .compounds, not .metabolites
     template.compartments = ["c0", "e0"]
 
-    # Mock reaction list (smaller than GramNegative)
+    # Mock reaction and compound lists (smaller than GramNegative)
     template.reactions = [Mock(id=f"rxn{i:05d}") for i in range(1, 11)]
-    template.metabolites = [Mock(id=f"cpd{i:05d}") for i in range(1, 11)]
+    template.compounds = [Mock(id=f"cpd{i:05d}") for i in range(1, 11)]  # Templates use .compounds
 
     return template
 
@@ -1015,6 +1015,9 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "slow: mark test as slow running"
     )
+    config.addinivalue_line(
+        "markers", "real_llm: mark test as requiring real LLM API calls (expensive, slow, requires argo-proxy)"
+    )
 
 
 def pytest_collection_modifyitems(config, items):
@@ -1027,3 +1030,24 @@ def pytest_collection_modifyitems(config, items):
         # Mark slow tests (those involving actual ModelSEEDpy operations)
         if any(keyword in item.nodeid for keyword in ["workflow", "end_to_end", "gapfill"]):
             item.add_marker(pytest.mark.slow)
+
+
+# ============================================================================
+# Argo LLM Integration Fixtures (Phase 11.5)
+# ============================================================================
+
+@pytest.fixture
+def argo_available():
+    """Check if argo-proxy is available on localhost:8000.
+
+    Skips test if argo-proxy is not running.
+    Used for real LLM integration tests.
+    """
+    import socket
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    result = sock.connect_ex(('localhost', 8000))
+    sock.close()
+
+    if result != 0:
+        pytest.skip("argo-proxy not running on localhost:8000")

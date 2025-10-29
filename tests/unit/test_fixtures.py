@@ -272,7 +272,7 @@ class TestModelSEEDpyMocks:
         """Test MSTemplate mock."""
         assert mock_mstemplate.id == "GramNegative"
         assert mock_mstemplate.num_reactions == 2035
-        assert mock_mstemplate.num_metabolites == 1542
+        assert mock_mstemplate.num_compounds == 1542  # Templates use .compounds, not .metabolites
         assert len(mock_mstemplate.compartments) == 3
         assert len(mock_mstemplate.reactions) == 20
 
@@ -280,7 +280,7 @@ class TestModelSEEDpyMocks:
         """Test Core MSTemplate mock."""
         assert mock_mstemplate_core.id == "Core"
         assert mock_mstemplate_core.num_reactions == 452
-        assert mock_mstemplate_core.num_metabolites == 325
+        assert mock_mstemplate_core.num_compounds == 325  # Templates use .compounds, not .metabolites
         assert len(mock_mstemplate_core.compartments) == 2
 
 

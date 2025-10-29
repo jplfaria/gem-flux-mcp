@@ -103,7 +103,10 @@ The `gapfill_model` tool adds missing reactions to a draft metabolic model to en
 2. `media_id` must exist in current session
 3. `target_growth_rate` must be positive number > 0
 4. `gapfill_mode` must be one of: "full", "atp_only", "genomescale_only"
-5. Model must have biomass reaction (typically bio1)
+5. Model biomass reaction check (warning only):
+   - If model has no biomass reaction, log warning but allow gapfilling
+   - This accommodates offline model building (annotate_with_rast=False) which produces empty models
+   - Gapfilling empty models may not be meaningful, but is allowed for testing/API correctness
 
 **Validation Behavior**:
 - If model_id not found, return error with list of available models
@@ -591,21 +594,10 @@ When gapfilling achieves growth but below target:
 }
 ```
 
-**Model Has No Biomass Reaction**:
-```json
-{
-  "success": false,
-  "error_type": "ModelConfigurationError",
-  "message": "Model does not have a biomass reaction",
-  "details": {
-    "model_id": "model_001",
-    "expected_reaction_id": "bio1",
-    "has_biomass": false,
-    "num_reactions": 856
-  },
-  "suggestion": "Model must have a biomass reaction to perform gapfilling. This should be automatically added by build_model. If missing, rebuild the model."
-}
-```
+**Model Has No Biomass Reaction** (Warning only, not an error):
+- If model has no biomass reaction, a warning is logged but gapfilling proceeds
+- This accommodates offline model building (annotate_with_rast=False) which may produce empty models
+- Note: Gapfilling empty models may not produce meaningful results, but is allowed for testing purposes
 
 **Gapfilling Timeout**:
 ```json
@@ -1291,7 +1283,7 @@ def integrate_gapfill_solution(template, model, solution):
 3. Negative target growth rate
 4. Zero target growth rate
 5. Invalid gapfill_mode
-6. Model without biomass reaction
+6. Model without biomass reaction (warning only, not error)
 
 **Edge Cases**:
 1. Model already at target growth (0 reactions added)

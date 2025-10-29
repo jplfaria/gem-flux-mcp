@@ -163,28 +163,121 @@ FastMCP tools expose metabolic modeling capabilities through the MCP protocol:
 ### Example Tool Structure
 
 ```python
-from fastmcp import FastMCP
-from pydantic import BaseModel
+"""Media builder tool for ModelSEED media creation."""
+
+from pydantic import BaseModel, Field, field_validator
+from gem_flux_mcp.database.index import DatabaseIndex
+from gem_flux_mcp.storage.media import generate_media_id, store_media
+from gem_flux_mcp.errors import invalid_compound_ids_error
 
 class BuildMediaRequest(BaseModel):
-    compounds: list[str]
+    """Request format for build_media tool."""
+
+    compounds: list[str] = Field(
+        ...,
+        min_length=1,
+        description="List of ModelSEED compound IDs"
+    )
+    default_uptake: float = Field(
+        default=100.0,
+        gt=0.0,
+        description="Default uptake rate (mmol/gDW/h)"
+    )
+    custom_bounds: dict[str, tuple[float, float]] = Field(
+        default_factory=dict,
+        description="Custom bounds for specific compounds"
+    )
+
+    @field_validator("compounds", mode="before")
+    @classmethod
+    def validate_compounds_list(cls, v: list[str]) -> list[str]:
+        """Validate and clean compound IDs."""
+        if not v or not isinstance(v, list):
+            raise ValueError("Compounds list must be non-empty")
+        return [cpd.strip().lower() for cpd in v]
+
+class BuildMediaResponse(BaseModel):
+    """Response from build_media tool."""
+    success: bool
     media_id: str
+    compounds: list[dict]
+    num_compounds: int
+    media_type: str
 
-mcp = FastMCP("Gem-Flux")
+def build_media(
+    request: BuildMediaRequest,
+    db_index: DatabaseIndex
+) -> BuildMediaResponse:
+    """Create growth media from ModelSEED compound IDs.
 
-@mcp.tool()
-async def build_media(request: BuildMediaRequest) -> dict:
-    """Create growth media from compounds."""
-    try:
-        # Load compounds from database
-        # Create MSMedia object
-        # Store in session
-        return {"media_id": request.media_id, "compounds": ...}
-    except Exception as e:
-        return {"error": str(e), "code": -32603}
+    This tool validates compound IDs, applies bounds, creates MSMedia
+    objects, and stores them in session storage.
+
+    Args:
+        request: Validated request with compounds and bounds
+        db_index: Database index for compound validation
+
+    Returns:
+        BuildMediaResponse with media_id and metadata
+
+    Raises:
+        ValidationError: Invalid compound IDs or bounds
+    """
+    # Validate all compound IDs exist in database
+    invalid_ids = []
+    for cpd_id in request.compounds:
+        if not db_index.compound_exists(cpd_id):
+            invalid_ids.append(cpd_id)
+
+    if invalid_ids:
+        raise invalid_compound_ids_error(invalid_ids)
+
+    # Generate unique media ID
+    media_id = generate_media_id()
+
+    # Create media bounds dictionary
+    media_bounds = {}
+    for cpd_id in request.compounds:
+        if cpd_id in request.custom_bounds:
+            media_bounds[f"{cpd_id}_e0"] = request.custom_bounds[cpd_id]
+        else:
+            media_bounds[f"{cpd_id}_e0"] = (-request.default_uptake, 100.0)
+
+    # Store in session (MSMedia creation is placeholder for MVP)
+    store_media(media_id, media_bounds)
+
+    # Enrich response with compound names
+    enriched_compounds = []
+    for cpd_id in request.compounds:
+        cpd_row = db_index.get_compound_by_id(cpd_id)
+        enriched_compounds.append({
+            "id": cpd_id,
+            "name": cpd_row["name"],
+            "formula": cpd_row["formula"],
+            "bounds": media_bounds.get(f"{cpd_id}_e0", (0, 0))
+        })
+
+    # Classify media type (heuristic)
+    media_type = "minimal" if len(request.compounds) < 50 else "rich"
+
+    return BuildMediaResponse(
+        success=True,
+        media_id=media_id,
+        compounds=enriched_compounds,
+        num_compounds=len(request.compounds),
+        media_type=media_type
+    )
 ```
 
-**Key Pattern:** FastMCP decorator + Pydantic validation + session storage.
+**Key Patterns:**
+- **Pydantic validation**: Request/Response models with validators
+- **Database access**: Tools receive DatabaseIndex parameter
+- **Session storage**: Use `generate_*_id()` and `store_*()` functions
+- **Error handling**: Raise custom exceptions (ValidationError, NotFoundError)
+- **Type safety**: Full type hints for all parameters and returns
+- **Enrichment**: Add human-readable names from database to responses
+
+**Note**: Tools are NOT decorated with `@mcp.tool()` directly. MCP wrappers will be created in Phase 11 (`mcp_tools.py`) to avoid Pydantic schema conflicts.
 
 ## 🧬 ModelSEEDpy Integration
 

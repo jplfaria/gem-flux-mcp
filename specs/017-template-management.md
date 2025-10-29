@@ -68,13 +68,15 @@ Templates are JSON files with the following top-level structure:
   "name": "Gram-Negative Bacteria Template",
   "version": "6.0",
   "reactions": [...],  // Array of ~2000 reaction objects
-  "metabolites": [...],  // Array of metabolite definitions
+  "metabolites": [...],  // Array of metabolite definitions (becomes .compounds attribute in MSTemplate)
   "biomass": {...},  // Biomass reaction composition
   "pathways": [...],  // Pathway organization
   "compartments": ["c0", "e0", "p0"],
   "complexes": [...]  // Protein complexes and gene associations
 }
 ```
+
+**Note**: In the raw JSON, metabolites are called "metabolites", but when parsed by `MSTemplateBuilder`, they become available as `template.compounds` (not `template.metabolites`). Always use `template.compounds` when accessing the MSTemplate object.
 
 ### File Characteristics
 
@@ -126,7 +128,7 @@ Templates are JSON files with the following top-level structure:
 **Step 4: Log Template Status**
 1. Log successfully loaded templates
 2. Log template versions
-3. Log template statistics (num reactions, metabolites)
+3. Log template statistics (num reactions, compounds)
 4. Confirm template cache ready
 
 ### Template Loading Algorithm
@@ -270,7 +272,7 @@ def list_available_templates() -> list[dict]:
         templates_info.append({
             "name": name,
             "num_reactions": len(template.reactions),
-            "num_metabolites": len(template.metabolites),
+            "num_compounds": len(template.compounds),  # Templates use .compounds, not .metabolites
             "compartments": template.compartments,
             "version": getattr(template, 'version', 'unknown')
         })
@@ -282,7 +284,7 @@ def list_available_templates() -> list[dict]:
 #   {
 #     "name": "GramNegative",
 #     "num_reactions": 2035,
-#     "num_metabolites": 1542,
+#     "num_compounds": 1542,  # Templates use .compounds, not .metabolites
 #     "compartments": ["c0", "e0", "p0"],
 #     "version": "6.0"
 #   },

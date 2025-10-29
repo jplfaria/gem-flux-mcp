@@ -841,6 +841,93 @@ AI → User: "That model doesn't exist (server restarted and cleared storage).
 
 **Future Behavior**: Each session maintains separate namespace or user-scoped storage
 
+## Testing Considerations
+
+### Storage Lifecycle in Tests
+
+Session storage is process-scoped and persists across test boundaries unless explicitly cleared.
+
+**Best Practices:**
+
+1. **Clear storage between tests** using `autouse` fixtures:
+   ```python
+   @pytest.fixture(autouse=True)
+   def cleanup_storage():
+       MODEL_STORAGE.clear()
+       MEDIA_STORAGE.clear()
+       yield
+       MODEL_STORAGE.clear()
+       MEDIA_STORAGE.clear()
+   ```
+
+2. **Verify storage operations** in test fixtures:
+   ```python
+   store_model(model_id, model)
+   assert model_exists(model_id), "Storage verification failed"
+   ```
+
+3. **Use appropriate fixture scopes**:
+   - `scope="module"` for expensive shared setup (databases, templates)
+   - `scope="function"` (default) for test-specific state (models, media)
+
+### Storage State Guarantees
+
+- **Within a single test**: Storage state persists for the duration of the test
+- **Between tests**: No guarantees unless explicit cleanup is implemented
+- **Across test modules**: Storage persists unless cleared
+- **Test isolation**: Tests must manage their own storage state
+
+### Integration Test Patterns
+
+See `docs/testing/integration-test-patterns.md` for detailed examples and common patterns.
+
+**Example - Proper Storage Management:**
+
+```python
+@pytest.fixture(autouse=True)
+def setup_storage():
+    """Clear and initialize storage for each test."""
+    MODEL_STORAGE.clear()
+    MEDIA_STORAGE.clear()
+
+    # Optional: Load known state
+    load_predefined_media()
+
+    yield
+
+    # Cleanup
+    MODEL_STORAGE.clear()
+    MEDIA_STORAGE.clear()
+
+@pytest.fixture
+def test_model():
+    """Create and verify test model."""
+    model = build_test_model()
+    model_id = "test_model.draft"
+    store_model(model_id, model)
+
+    # Verify storage succeeded
+    assert model_exists(model_id), "Model storage failed"
+
+    yield model_id
+
+    # Cleanup handled by autouse fixture
+```
+
+**Common Pitfalls:**
+
+1. ❌ **Assuming clean storage** - Storage may contain data from previous tests
+2. ❌ **No storage verification** - Silent failures leave storage empty
+3. ❌ **Wrong fixture scope** - Module-scoped fixtures share state across tests
+4. ❌ **Incomplete cleanup** - Forgetting to clear both MODEL_STORAGE and MEDIA_STORAGE
+
+**Solutions:**
+
+1. ✅ Always clear storage at start of each test (autouse fixture)
+2. ✅ Verify storage operations with assertions
+3. ✅ Use function scope for test-specific state
+4. ✅ Clear all storage types in cleanup fixtures
+
 ## Related Specifications
 
 - **001-system-overview.md**: Overall session management architecture

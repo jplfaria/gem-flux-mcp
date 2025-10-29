@@ -29,7 +29,7 @@ def validate_template(template: MSTemplate, template_name: str) -> None:
 
     Verifies that the template has required components:
     - Reactions list (non-empty)
-    - Metabolites list (non-empty)
+    - Compounds list (non-empty) - Note: MSTemplate uses .compounds, not .metabolites
     - Compartments list (non-empty)
 
     Args:

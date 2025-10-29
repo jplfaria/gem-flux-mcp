@@ -154,7 +154,15 @@ The package will be importable in all notebooks.
 
 3. **Open a notebook** (01, 02, 03, or 04)
 
-4. **Run all cells** - imports will work automatically!
+4. **Use the notebook_setup helper** in your first cell:
+   ```python
+   from notebook_setup import quick_setup
+
+   # One-line setup: clears session + loads everything
+   db_index, templates, atp_media, predefined_media = quick_setup()
+   ```
+
+5. **Run all cells** - environment is ready!
    uv sync
    ```
 3. **Database and templates downloaded**:
@@ -249,6 +257,36 @@ Four media compositions available immediately:
 ---
 
 ## 💡 Tips and Tricks
+
+### 0. Use the Notebook Setup Helper (Recommended!)
+
+The `notebook_setup.py` module handles all environment setup automatically:
+
+```python
+from notebook_setup import quick_setup
+
+# One-line setup: clears session + loads everything
+db_index, templates, atp_media, predefined_media = quick_setup()
+
+# Now ready to use!
+# - db_index: DatabaseIndex for compound/reaction lookups
+# - templates: Dict of loaded MSTemplate objects
+# - atp_media: Dict of ATP test media
+# - predefined_media: Dict of predefined media (glucose_minimal_aerobic, etc.)
+```
+
+**Benefits**:
+- Automatically handles working directory (changes to repo root)
+- Loads all components with correct paths
+- Clears session storage for fresh start
+- One import, ready to go!
+
+**Alternative**: Manual setup without clearing session:
+```python
+from notebook_setup import setup_environment
+
+db_index, templates, atp_media, predefined_media = setup_environment()
+```
 
 ### 1. Use Predefined Media
 ```python

@@ -72,7 +72,7 @@ def mock_template():
     """Mock ModelSEED template."""
     template = Mock()
     template.reactions = [Mock() for _ in range(100)]
-    template.metabolites = [Mock() for _ in range(80)]
+    template.compounds = [Mock() for _ in range(80)]  # Templates use .compounds, not .metabolites
     template.compartments = ["c0", "e0"]
     return template
 
@@ -405,7 +405,7 @@ class TestBuildModel:
         # Setup mocks
         mock_validate_template.return_value = True
         mock_get_template.return_value = mock_template
-        mock_msgenome_class.from_dict.return_value = mock_genome
+        mock_msgenome_class.from_protein_sequences_hash.return_value = mock_genome
         mock_msbuilder_class.return_value = mock_builder
 
         # Call build_model

@@ -262,23 +262,72 @@
     ],
     "description": "Performance testing for startup time, database queries, and memory usage according to spec 015 (IMPLEMENTED - test_phase16_performance.py, Task 89)"
   },
+  "phase_17": {
+    "name": "Argo LLM Integration",
+    "must_pass": [
+      "test_mcp_to_openai_converter_basic",
+      "test_mcp_to_openai_converter_all_tools",
+      "test_mcp_to_openai_converter_removes_defaults",
+      "test_mcp_to_openai_converter_preserves_enum",
+      "test_mcp_to_openai_converter_deep_copy",
+      "test_mcp_to_openai_converter_nested_objects",
+      "test_argo_client_initialization",
+      "test_argo_client_message_history",
+      "test_argo_client_tool_call_logging",
+      "test_argo_client_reset"
+    ],
+    "may_fail": [
+      "test_streaming_basic",
+      "test_streaming_with_tool_calls",
+      "test_circuit_breaker",
+      "test_model_switching"
+    ],
+    "real_llm_tests": [
+      "test_build_media_with_argo",
+      "test_build_model_with_argo",
+      "test_gapfill_model_with_argo",
+      "test_run_fba_with_argo",
+      "test_complete_workflow_conversation",
+      "test_llm_parameter_understanding",
+      "test_llm_handles_tool_errors_gracefully",
+      "test_streaming_with_tool_calls"
+    ],
+    "description": "Argo Gateway LLM integration for natural language tool interaction (Phase 11.5 - NOT YET IMPLEMENTED)",
+    "requirements": [
+      "Requires argo-proxy running on localhost:8000 for real_llm_tests",
+      "Real LLM tests marked with @pytest.mark.real_llm",
+      "Real LLM tests skip gracefully if argo-proxy unavailable",
+      "Run with: pytest -m real_llm (only when argo-proxy available)",
+      "Skip with: pytest -m 'not real_llm' (default for CI)"
+    ],
+    "specifications": [
+      "specs/022-argo-llm-integration.md - ArgoMCPClient architecture",
+      "specs/023-mcp-tool-conversion.md - MCP to OpenAI conversion",
+      "specs/024-argo-real-llm-testing.md - Real LLM testing patterns"
+    ]
+  },
   "metadata": {
-    "last_updated": "2025-10-28",
-    "total_phases": 16,
+    "last_updated": "2025-10-29",
+    "total_phases": 17,
     "implemented_phases": 7,
-    "total_must_pass_tests": 125,
-    "total_may_fail_tests": 20,
+    "total_must_pass_tests": 135,
+    "total_may_fail_tests": 24,
+    "total_real_llm_tests": 8,
     "notes": [
       "Phases 1-9 are placeholder specifications for future implementation",
       "Phases 10-16 are currently implemented with integration tests",
+      "Phase 17 adds Argo LLM integration (Phase 11.5 in implementation plan)",
       "Phase 12 combines compound and reaction lookup tests (originally phases 8-9)",
       "Phase 15 implements Task 88: Comprehensive error handling test suite",
       "Phase 16 implements Task 89: Performance testing",
+      "Phase 17 implements Tasks 11.5.1-11.5.10: Argo LLM integration",
       "Performance tests in phase 12 are may_fail to avoid blocking on optimization work",
       "Performance tests in phase 16 have critical tests as must_pass and advanced tests as may_fail",
+      "Real LLM tests in phase 17 require argo-proxy and are run manually (not in CI)",
       "Template loading test is may_fail due to validation issues with actual templates",
       "All must_pass tests should pass before considering phase complete",
-      "May_fail tests are optional enhancements that can be implemented later"
+      "May_fail tests are optional enhancements that can be implemented later",
+      "Real_llm_tests require external services and are expensive/slow (not run in CI)"
     ]
   }
 }

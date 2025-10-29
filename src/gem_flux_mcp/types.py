@@ -139,7 +139,8 @@ class BuildModelRequest(BaseModel):
         if v is None:
             return v
 
-        valid_amino_acids = set("ACDEFGHIKLMNPQRSTVWY")
+        # Include U (selenocysteine) in valid amino acids
+        valid_amino_acids = set("ACDEFGHIKLMNPQRSTVWYU")
 
         for protein_id, sequence in v.items():
             sequence_upper = sequence.upper()
@@ -148,7 +149,7 @@ class BuildModelRequest(BaseModel):
             if invalid_chars:
                 raise ValueError(
                     f"Invalid amino acids in {protein_id}: {sorted(invalid_chars)}. "
-                    f"Valid alphabet: ACDEFGHIKLMNPQRSTVWY"
+                    f"Valid alphabet: ACDEFGHIKLMNPQRSTVWYU"
                 )
 
             if len(sequence) == 0:

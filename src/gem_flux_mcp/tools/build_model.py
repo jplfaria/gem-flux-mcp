@@ -37,8 +37,9 @@ from gem_flux_mcp.templates.loader import get_template, validate_template_name
 
 logger = get_logger(__name__)
 
-# Valid amino acid alphabet (standard 20 amino acids)
-VALID_AMINO_ACIDS = set("ACDEFGHIKLMNPQRSTVWY")
+# Valid amino acid alphabet (standard 20 amino acids + U for selenocysteine)
+# U (selenocysteine) and O (pyrrolysine) are rare but valid in some proteins
+VALID_AMINO_ACIDS = set("ACDEFGHIKLMNPQRSTVWYU")
 
 
 def validate_amino_acid_sequence(protein_id: str, sequence: str) -> tuple[bool, list[tuple[str, int]]]:
@@ -345,7 +346,7 @@ def create_genome_from_dict(
     else:
         # Offline mode: create genome directly from dict
         try:
-            genome = MSGenome.from_dict(protein_sequences)
+            genome = MSGenome.from_protein_sequences_hash(protein_sequences)
             logger.info(f"Created genome from dict (offline mode, {len(protein_sequences)} sequences)")
 
         except Exception as e:
@@ -378,13 +379,14 @@ def create_genome_from_fasta(
     """
     if annotate_with_rast:
         try:
-            # Submit FASTA to RAST API
-            rast_client = RastClient()
-            annotated_genome = rast_client.annotate(fasta_file_path)
+            # First create genome from FASTA
+            genome = MSGenome.from_fasta(fasta_file_path)
+            logger.info(f"Created genome from FASTA: {fasta_file_path}")
 
-            # Create genome from RAST results
-            genome = MSGenome.from_fasta(annotated_genome)
-            logger.info(f"Created genome from RAST annotation (FASTA: {fasta_file_path})")
+            # Then annotate with RAST
+            rast_client = RastClient()
+            rast_client.annotate_genome(genome)
+            logger.info(f"Annotated genome with RAST")
 
         except Exception as e:
             raise ValidationError(
@@ -666,6 +668,7 @@ async def build_model(
         "success": True,
         "model_id": model_id,
         "model_name": model_name,
+        "annotated_with_rast": annotate_with_rast,
         **stats,
     }
 

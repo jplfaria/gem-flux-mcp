@@ -128,36 +128,35 @@ def apply_media_to_model(model: Any, media_data: Any) -> None:
     # Example: {"EX_cpd00027_e0": (-5.0, 100.0), "EX_cpd00007_e0": (-10.0, 100.0)}
 
     if hasattr(media_data, "get_media_constraints"):
-        # MSMedia object - use get_media_constraints() method
-        # This is the CORRECT method used by gapfill_model
-        # NOTE: get_media_constraints() returns compound IDs with compartment (e.g., "cpd00027_e0")
-        # NOT exchange reaction IDs. We need to add "EX_" prefix to match model reactions.
+        # MSMedia object - build medium dict for .medium property
+        # This uses COBRApy's canonical media application method
+        import math
+        medium = {}
         media_constraints = media_data.get_media_constraints(cmp="e0")
 
-        # Apply each constraint to the model's exchange reactions
-        applied_count = 0
         for compound_id, (lower_bound, upper_bound) in media_constraints.items():
             # Convert compound ID to exchange reaction ID
             # compound_id format: "cpd00027_e0"
             # reaction_id format: "EX_cpd00027_e0"
-            reaction_id = f"EX_{compound_id}"
+            exchange_rxn_id = f"EX_{compound_id}"
 
-            if reaction_id in model.reactions:
-                reaction = model.reactions.get_by_id(reaction_id)
-                reaction.lower_bound = lower_bound
-                reaction.upper_bound = upper_bound
-                applied_count += 1
+            if exchange_rxn_id in model.reactions:
+                # .medium property expects POSITIVE uptake rates
+                # Negative lower_bound (e.g., -5.0) becomes positive uptake rate (5.0)
+                medium[exchange_rxn_id] = math.fabs(lower_bound)
             else:
-                logger.warning(
-                    f"Media compound {compound_id} has no exchange reaction {reaction_id} in model"
-                )
+                logger.debug(f"Exchange reaction {exchange_rxn_id} not in model")
 
-        logger.info(f"Applied media constraints to {applied_count} exchange reactions")
+        # Apply using .medium property (closes all exchanges first)
+        model.medium = medium
+        logger.info(f"Applied media to {len(medium)} exchange reactions using .medium property")
 
     elif isinstance(media_data, dict):
         # Dict format - two sub-formats supported:
         # 1. Test mock format: {"bounds": {"cpd00027": (-5, 100), ...}}
         # 2. Predefined media format: {"compounds": {"cpd00027_e0": (-5.0, 100.0), ...}}
+        import math
+        medium = {}
 
         # Try predefined media format first (has "compounds" key)
         if "compounds" in media_data:
@@ -166,7 +165,6 @@ def apply_media_to_model(model: Any, media_data: Any) -> None:
             # Fall back to test mock format (has "bounds" key)
             bounds_dict = media_data.get("bounds", {})
 
-        applied_count = 0
         for cpd_id, (lower_bound, upper_bound) in bounds_dict.items():
             # For dict media: cpd_id might not have compartment, add "_e0" if missing
             if not cpd_id.endswith("_e0"):
@@ -175,20 +173,17 @@ def apply_media_to_model(model: Any, media_data: Any) -> None:
                 cpd_id_with_comp = cpd_id
 
             # Convert compound ID to exchange reaction ID
-            rxn_id = f"EX_{cpd_id_with_comp}"
+            exchange_rxn_id = f"EX_{cpd_id_with_comp}"
 
-            # Apply bounds directly to reaction
-            if rxn_id in model.reactions:
-                reaction = model.reactions.get_by_id(rxn_id)
-                reaction.lower_bound = lower_bound
-                reaction.upper_bound = upper_bound
-                applied_count += 1
+            if exchange_rxn_id in model.reactions:
+                # .medium property expects POSITIVE uptake rates
+                medium[exchange_rxn_id] = math.fabs(lower_bound)
             else:
-                logger.warning(
-                    f"Media compound {cpd_id} has no exchange reaction {rxn_id} in model"
-                )
+                logger.debug(f"Exchange reaction {exchange_rxn_id} not in model")
 
-        logger.info(f"Applied media constraints to {applied_count} exchange reactions")
+        # Apply using .medium property (closes all exchanges first)
+        model.medium = medium
+        logger.info(f"Applied media to {len(medium)} exchange reactions using .medium property")
 
     else:
         logger.warning(f"Unknown media_data type: {type(media_data)}")

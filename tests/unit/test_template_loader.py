@@ -42,7 +42,7 @@ def mock_mstemplate():
     """Mock MSTemplate object."""
     template = Mock()
     template.reactions = [Mock(), Mock()]  # 2 reactions
-    template.metabolites = [Mock(), Mock()]  # 2 metabolites
+    template.compounds = [Mock(), Mock()]  # 2 compounds (templates use .compounds, not .metabolites)
     template.compartments = ["c0", "e0", "p0"]
     template.version = "6.0"
     return template
@@ -95,7 +95,7 @@ class TestValidateTemplate:
         """Test validation fails when template has no reactions."""
         template = Mock()
         template.reactions = []  # Empty reactions list
-        template.metabolites = [Mock()]
+        template.compounds = [Mock()]  # Templates use .compounds, not .metabolites
         template.compartments = ["c0", "e0"]
 
         with pytest.raises(DatabaseError) as exc_info:
@@ -106,8 +106,8 @@ class TestValidateTemplate:
 
     def test_validate_template_no_reactions_attribute(self):
         """Test validation fails when template missing reactions attribute."""
-        template = Mock(spec=['metabolites', 'compartments'])
-        template.metabolites = [Mock()]
+        template = Mock(spec=['compounds', 'compartments'])  # Templates use .compounds
+        template.compounds = [Mock()]  # Templates use .compounds, not .metabolites
         template.compartments = ["c0", "e0"]
 
         with pytest.raises(DatabaseError) as exc_info:
@@ -115,21 +115,21 @@ class TestValidateTemplate:
 
         assert "has no reactions" in str(exc_info.value)
 
-    def test_validate_template_no_metabolites(self):
-        """Test validation fails when template has no metabolites."""
+    def test_validate_template_no_compounds(self):
+        """Test validation fails when template has no compounds."""
         template = Mock()
         template.reactions = [Mock()]
-        template.metabolites = []  # Empty metabolites list
+        template.compounds = []  # Empty compounds list (templates use .compounds, not .metabolites)
         template.compartments = ["c0", "e0"]
 
         with pytest.raises(DatabaseError) as exc_info:
             validate_template(template, "TestTemplate")
 
-        assert "has no metabolites" in str(exc_info.value)
-        assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_METABOLITES"
+        assert "has no compounds" in str(exc_info.value)
+        assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_COMPOUNDS"
 
-    def test_validate_template_no_metabolites_attribute(self):
-        """Test validation fails when template missing metabolites attribute."""
+    def test_validate_template_no_compounds_attribute(self):
+        """Test validation fails when template missing compounds attribute."""
         template = Mock(spec=['reactions', 'compartments'])
         template.reactions = [Mock()]
         template.compartments = ["c0", "e0"]
@@ -137,13 +137,13 @@ class TestValidateTemplate:
         with pytest.raises(DatabaseError) as exc_info:
             validate_template(template, "TestTemplate")
 
-        assert "has no metabolites" in str(exc_info.value)
+        assert "has no compounds" in str(exc_info.value)
 
     def test_validate_template_no_compartments(self):
         """Test validation fails when template has no compartments."""
         template = Mock()
         template.reactions = [Mock()]
-        template.metabolites = [Mock()]
+        template.compounds = [Mock()]  # Templates use .compounds, not .metabolites
         template.compartments = []  # Empty compartments list
 
         with pytest.raises(DatabaseError) as exc_info:
@@ -154,9 +154,9 @@ class TestValidateTemplate:
 
     def test_validate_template_no_compartments_attribute(self):
         """Test validation fails when template missing compartments attribute."""
-        template = Mock(spec=['reactions', 'metabolites'])
+        template = Mock(spec=['reactions', 'compounds'])  # Templates use .compounds
         template.reactions = [Mock()]
-        template.metabolites = [Mock()]
+        template.compounds = [Mock()]  # Templates use .compounds, not .metabolites
 
         with pytest.raises(DatabaseError) as exc_info:
             validate_template(template, "TestTemplate")
@@ -166,12 +166,12 @@ class TestValidateTemplate:
     def test_validate_template_logs_statistics(self, mock_mstemplate):
         """Test validation succeeds for valid template with all components."""
         # Verify validation succeeds without raising errors
-        # This test ensures templates with reactions, metabolites, and compartments pass
+        # This test ensures templates with reactions, compounds, and compartments pass
         validate_template(mock_mstemplate, "GramNegative")  # Should not raise
 
         # Verify template has expected structure (functional test)
         assert len(mock_mstemplate.reactions) == 2
-        assert len(mock_mstemplate.metabolites) == 2
+        assert len(mock_mstemplate.compounds) == 2  # Templates use .compounds, not .metabolites
         assert len(mock_mstemplate.compartments) == 3
 
 
@@ -257,7 +257,7 @@ class TestLoadTemplate:
             mock_builder = Mock()
             invalid_template = Mock()
             invalid_template.reactions = []  # No reactions
-            invalid_template.metabolites = [Mock()]
+            invalid_template.compounds = [Mock()]  # Templates use .compounds, not .metabolites
             invalid_template.compartments = ["c0"]
             mock_builder.build.return_value = invalid_template
             MockBuilder.from_dict.return_value = mock_builder
@@ -268,17 +268,17 @@ class TestLoadTemplate:
             assert "has no reactions" in str(exc_info.value)
             assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_REACTIONS"
 
-    def test_load_template_validation_fails_no_metabolites(self, tmp_path, mock_template_dict):
-        """Test error when template validation fails (no metabolites)."""
+    def test_load_template_validation_fails_no_compounds(self, tmp_path, mock_template_dict):
+        """Test error when template validation fails (no compounds)."""
         template_path = tmp_path / "template.json"
         template_path.write_text(json.dumps(mock_template_dict))
 
-        # Mock MSTemplateBuilder to return template with no metabolites
+        # Mock MSTemplateBuilder to return template with no compounds
         with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
             mock_builder = Mock()
             invalid_template = Mock()
             invalid_template.reactions = [Mock()]
-            invalid_template.metabolites = []  # No metabolites
+            invalid_template.compounds = []  # No compounds (templates use .compounds, not .metabolites)
             invalid_template.compartments = ["c0"]
             mock_builder.build.return_value = invalid_template
             MockBuilder.from_dict.return_value = mock_builder
@@ -286,8 +286,8 @@ class TestLoadTemplate:
             with pytest.raises(DatabaseError) as exc_info:
                 load_template(template_path, "GramNegative")
 
-            assert "has no metabolites" in str(exc_info.value)
-            assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_METABOLITES"
+            assert "has no compounds" in str(exc_info.value)
+            assert exc_info.value.error_code == "INVALID_TEMPLATE_NO_COMPOUNDS"
 
     def test_load_template_validation_fails_no_compartments(self, tmp_path, mock_template_dict):
         """Test error when template validation fails (no compartments)."""
@@ -299,7 +299,7 @@ class TestLoadTemplate:
             mock_builder = Mock()
             invalid_template = Mock()
             invalid_template.reactions = [Mock()]
-            invalid_template.metabolites = [Mock()]
+            invalid_template.compounds = [Mock()]  # Templates use .compounds, not .metabolites
             invalid_template.compartments = []  # No compartments
             mock_builder.build.return_value = invalid_template
             MockBuilder.from_dict.return_value = mock_builder
@@ -508,7 +508,7 @@ class TestListAvailableTemplates:
         # Create mock GramNegative template
         gram_neg = Mock()
         gram_neg.reactions = [Mock()] * 2035  # 2035 reactions
-        gram_neg.metabolites = [Mock()] * 1542  # 1542 metabolites
+        gram_neg.compounds = [Mock()] * 1542  # 1542 compounds (templates use .compounds, not .metabolites)
         gram_neg.compartments = ["c0", "e0", "p0"]
         gram_neg.version = "6.0"
         TEMPLATE_CACHE["GramNegative"] = gram_neg
@@ -516,7 +516,7 @@ class TestListAvailableTemplates:
         # Create mock Core template
         core = Mock()
         core.reactions = [Mock()] * 452  # 452 reactions
-        core.metabolites = [Mock()] * 300  # 300 metabolites
+        core.compounds = [Mock()] * 300  # 300 compounds (templates use .compounds, not .metabolites)
         core.compartments = ["c0", "e0"]
         core.version = "5.2"
         TEMPLATE_CACHE["Core"] = core
@@ -534,14 +534,14 @@ class TestListAvailableTemplates:
         # Check GramNegative template info
         gram_neg_info = next(t for t in templates if t["name"] == "GramNegative")
         assert gram_neg_info["num_reactions"] == 2035
-        assert gram_neg_info["num_metabolites"] == 1542
+        assert gram_neg_info["num_compounds"] == 1542  # Templates use .compounds, not .metabolites
         assert gram_neg_info["compartments"] == ["c0", "e0", "p0"]
         assert gram_neg_info["version"] == "6.0"
 
         # Check Core template info
         core_info = next(t for t in templates if t["name"] == "Core")
         assert core_info["num_reactions"] == 452
-        assert core_info["num_metabolites"] == 300
+        assert core_info["num_compounds"] == 300  # Templates use .compounds, not .metabolites
         assert core_info["compartments"] == ["c0", "e0"]
         assert core_info["version"] == "5.2"
 
@@ -556,9 +556,9 @@ class TestListAvailableTemplates:
         """Test listing when template has no version attribute."""
         TEMPLATE_CACHE.clear()
 
-        mock_template = Mock(spec=['reactions', 'metabolites', 'compartments'])
+        mock_template = Mock(spec=['reactions', 'compounds', 'compartments'])  # Templates use .compounds
         mock_template.reactions = []
-        mock_template.metabolites = []
+        mock_template.compounds = []  # Templates use .compounds, not .metabolites
         mock_template.compartments = []
         # No version attribute
         TEMPLATE_CACHE["NoVersion"] = mock_template
