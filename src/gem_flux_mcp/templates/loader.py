@@ -47,14 +47,6 @@ def validate_template(template: MSTemplate, template_name: str) -> None:
             error_code="INVALID_TEMPLATE_NO_REACTIONS"
         )
 
-    # Check metabolites exist
-    if not hasattr(template, 'metabolites') or not template.metabolites:
-        raise DatabaseError(
-            message=f"Template '{template_name}' has no metabolites.\n"
-                    "A valid template must contain at least one metabolite.",
-            error_code="INVALID_TEMPLATE_NO_METABOLITES"
-        )
-
     # Check compartments exist
     if not hasattr(template, 'compartments') or not template.compartments:
         raise DatabaseError(
@@ -63,12 +55,20 @@ def validate_template(template: MSTemplate, template_name: str) -> None:
             error_code="INVALID_TEMPLATE_NO_COMPARTMENTS"
         )
 
+    # Note: Metabolites are not validated here because ModelSEEDpy templates
+    # derive metabolites from reactions dynamically during model building.
+    # The template won't have populated metabolites until it's used.
+
     # Log validation success with statistics
+    num_reactions = len(template.reactions)
+    num_metabolites = len(template.metabolites) if hasattr(template, 'metabolites') and template.metabolites else 0
+    num_compartments = len(template.compartments)
+
     logger.debug(
         f"Template '{template_name}' validated: "
-        f"{len(template.reactions)} reactions, "
-        f"{len(template.metabolites)} metabolites, "
-        f"{len(template.compartments)} compartments"
+        f"{num_reactions} reactions, "
+        f"{num_metabolites} metabolites (derived from reactions), "
+        f"{num_compartments} compartments"
     )
 
 
