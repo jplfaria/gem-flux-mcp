@@ -197,6 +197,7 @@
       "test_empty_compounds_list_error",
       "test_invalid_bounds_format_error",
       "test_bounds_out_of_order_error",
+      "test_negative_uptake_error",
       "test_invalid_protein_sequences_error",
       "test_empty_protein_sequences_error",
       "test_invalid_template_name_error",
@@ -236,7 +237,7 @@
     "last_updated": "2025-10-28",
     "total_phases": 15,
     "implemented_phases": 6,
-    "total_must_pass_tests": 111,
+    "total_must_pass_tests": 112,
     "total_may_fail_tests": 7,
     "notes": [
       "Phases 1-9 are placeholder specifications for future implementation",
