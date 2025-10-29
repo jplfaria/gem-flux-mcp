@@ -100,11 +100,11 @@ Handle common errors and recover gracefully.
    cd /path/to/gem-flux-mcp
    uv sync
    ```
-3. **Jupyter installed**:
+3. **JupyterLab installed** (better UI than Jupyter Notebook):
    ```bash
-   uv pip install jupyter
+   uv pip install jupyterlab
    # OR
-   pip install jupyter
+   pip install jupyterlab
    ```
 4. **Database and templates downloaded** (see main README.md)
 
@@ -112,39 +112,49 @@ Handle common errors and recover gracefully.
 
 The notebooks need to import the `gem_flux_mcp` package. **Use Option 1** (recommended):
 
-#### Option 1: Run Jupyter with UV (Recommended)
+#### Option 1: Run JupyterLab with UV (Recommended)
 
 From the repository root:
 
 ```bash
-# Start Jupyter using UV's environment
-uv run jupyter notebook
-
-# Or start JupyterLab
+# Start JupyterLab using UV's environment
 uv run jupyter lab
+
+# Or use classic Jupyter Notebook (older UI)
+uv run jupyter notebook
 ```
 
 This automatically uses the correct Python environment with all dependencies installed.
 
+**JupyterLab is recommended** - it has a much better UI with tabs, file browser, and modern interface.
+
 #### Option 2: Install Package in Editable Mode
 
-If you prefer to use a system Jupyter installation:
+If you prefer to use a system JupyterLab installation:
 
 ```bash
 # From repository root
 uv pip install -e .
 
-# Then start Jupyter normally
-jupyter notebook
+# Then start JupyterLab normally
+jupyter lab
 ```
 
 The package will be importable in all notebooks.
 
 ### Quick Start
 
-1. **Navigate to examples directory**:
+1. **Start JupyterLab**:
    ```bash
-   cd examples
+   # From repository root
+   uv run jupyter lab
+   ```
+
+2. **Navigate to examples directory** in the JupyterLab file browser
+
+3. **Open a notebook** (01, 02, 03, or 04)
+
+4. **Run all cells** - imports will work automatically!
    uv sync
    ```
 3. **Database and templates downloaded**:
