@@ -107,13 +107,14 @@ def validate_fba_inputs(
         )
 
 
-def apply_media_to_model(model: Any, media_data: dict) -> None:
+def apply_media_to_model(model: Any, media_data: Any) -> None:
     """Apply media constraints to model exchange reactions.
 
     Args:
         model: COBRApy Model object (modified in place)
-        media_data: Media dict with bounds information
-                   Format: {"bounds": {"cpd00027": (-5, 100), ...}, ...}
+        media_data: MSMedia object or media dict with bounds information
+                   MSMedia object: has mediacompounds attribute
+                   Dict format: {"bounds": {"cpd00027": (-5, 100), ...}, ...}
 
     Note:
         COBRApy requires specific medium format:
@@ -121,9 +122,24 @@ def apply_media_to_model(model: Any, media_data: dict) -> None:
         - Modify with new bounds
         - Reassign to model.medium
     """
-    # Get media bounds from dict
-    # Format: {"cpd00027": (-5, 100), ...}
-    bounds_dict = media_data.get("bounds", {})
+    # Handle both MSMedia objects and dicts
+    if hasattr(media_data, "mediacompounds"):
+        # MSMedia object - extract bounds from mediacompounds
+        # mediacompounds is a DictList of MediaCompound objects
+        bounds_dict = {}
+        for media_compound in media_data.mediacompounds:
+            # media_compound is a MediaCompound object with attributes:
+            # - id: compound ID (e.g., "cpd00027_e0")
+            # - minFlux: minimum flux (uptake, negative value)
+            # - maxFlux: maximum flux (secretion, positive value)
+            cpd_id = media_compound.id
+            bounds_dict[cpd_id] = (media_compound.minFlux, media_compound.maxFlux)
+    elif isinstance(media_data, dict):
+        # Dict format
+        bounds_dict = media_data.get("bounds", {})
+    else:
+        logger.warning(f"Unknown media_data type: {type(media_data)}")
+        bounds_dict = {}
 
     # Build COBRApy medium dictionary
     # Format: {"EX_cpd00027_e0": 5.0, ...}
