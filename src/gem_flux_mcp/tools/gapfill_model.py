@@ -397,58 +397,44 @@ def integrate_gapfill_solution(
 
     # Process new reactions
     new_reactions = solution.get('new', {})
+
+    # First, use MSBuilder to add any missing exchange reactions
+    # MSGapfill may suggest exchange reactions that don't exist yet
+    # Use the canonical ModelSEEDpy helper instead of manual creation
+    from modelseedpy.core.msbuilder import MSBuilder
+    exchange_reactions_to_add = [
+        rxn_id for rxn_id in new_reactions.keys()
+        if rxn_id.startswith('EX_') and rxn_id not in model.reactions
+    ]
+
+    if exchange_reactions_to_add:
+        logger.info(f"Adding {len(exchange_reactions_to_add)} exchange reactions using MSBuilder")
+        # MSBuilder.add_exchanges_to_model handles all the complexity:
+        # - Creates exchange reactions with correct stoichiometry
+        # - Sets appropriate bounds (default uptake_rate=100)
+        # - Links to existing or creates new metabolites
+        MSBuilder.add_exchanges_to_model(model, uptake_rate=100)
+        logger.info(f"MSBuilder added exchanges for {len(exchange_reactions_to_add)} compounds")
+
     for rxn_id, direction in new_reactions.items():
         try:
-            # Handle exchange reactions specially
+            # For exchange reactions, they should now exist (added by MSBuilder above)
+            # Just update their bounds based on gapfilling direction
             if rxn_id.startswith('EX_'):
-                # Exchange reactions are essential for biomass precursors!
-                # Add them to the model if they don't exist
-                if rxn_id not in model.reactions:
-                    logger.debug(f"Gapfilling added exchange reaction: {rxn_id}")
-                    # Exchange reactions should already be created by MSBuilder
-                    # If gapfilling wants to add one, it means it's needed
-                    # Extract compound ID from exchange reaction ID
-                    # Format: EX_cpd00027_e0 → cpd00027_e0
-                    compound_id = rxn_id[3:]  # Remove "EX_" prefix
-
-                    # Create exchange reaction using COBRApy
-                    from cobra import Reaction, Metabolite
-                    exch_rxn = Reaction(rxn_id)
-                    exch_rxn.name = f"Exchange for {compound_id}"
-
-                    # Get or create the metabolite
-                    if compound_id in model.metabolites:
-                        metabolite = model.metabolites.get_by_id(compound_id)
-                    else:
-                        # Create metabolite if it doesn't exist
-                        metabolite = Metabolite(compound_id, compartment='e0')
-                        logger.debug(f"Created metabolite {compound_id} for exchange reaction")
-
-                    # Exchange reaction: nothing → compound (import)
-                    exch_rxn.add_metabolites({metabolite: 1.0})
-
-                    # Set bounds based on direction from gapfilling
+                if rxn_id in model.reactions:
+                    existing_rxn = model.reactions.get_by_id(rxn_id)
                     lb, ub = get_reaction_constraints_from_direction(direction)
-                    exch_rxn.lower_bound = lb
-                    exch_rxn.upper_bound = ub
-
-                    # Add to model
-                    model.add_reactions([exch_rxn])
+                    existing_rxn.lower_bound = lb
+                    existing_rxn.upper_bound = ub
+                    logger.debug(f"Set exchange reaction {rxn_id} bounds to ({lb}, {ub})")
 
                     added_reactions.append({
                         "id": rxn_id,
                         "direction": direction,
                         "bounds": [lb, ub],
                     })
-
-                    logger.info(f"Added exchange reaction: {rxn_id} (direction: {direction})")
                 else:
-                    # Exchange already exists, just update bounds
-                    existing_rxn = model.reactions.get_by_id(rxn_id)
-                    lb, ub = get_reaction_constraints_from_direction(direction)
-                    existing_rxn.lower_bound = lb
-                    existing_rxn.upper_bound = ub
-                    logger.debug(f"Updated existing exchange reaction {rxn_id} bounds to ({lb}, {ub})")
+                    logger.warning(f"Exchange reaction {rxn_id} not found after MSBuilder.add_exchanges_to_model()")
 
                 continue  # Don't try to get from template
 

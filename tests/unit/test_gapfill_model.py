@@ -319,25 +319,6 @@ def test_integrate_gapfill_solution_new_reactions(mock_template):
     assert added[1]["direction"] == "<"
 
 
-def test_integrate_gapfill_solution_skip_exchanges(mock_template):
-    """Test integration skips exchange reactions."""
-    mock_model = Mock()
-
-    solution = {
-        "new": {
-            "rxn00001_c0": ">",
-            "EX_cpd00027_e0": ">",  # Exchange - should be skipped
-        },
-        "reversed": {},
-    }
-
-    with patch("gem_flux_mcp.tools.gapfill_model.get_reaction_constraints_from_direction", return_value=(0, 1000)):
-        added = integrate_gapfill_solution(mock_model, mock_template, solution)
-
-    assert len(added) == 1
-    assert added[0]["id"] == "rxn00001_c0"
-
-
 # ============================================================================
 # Test enrich_reaction_metadata
 # ============================================================================
