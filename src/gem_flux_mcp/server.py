@@ -46,6 +46,27 @@ mcp: Optional[FastMCP] = None
 database_index: Optional[DatabaseIndex] = None
 
 
+def get_db_index() -> DatabaseIndex:
+    """Get globally loaded database index.
+
+    Returns:
+        DatabaseIndex: The loaded database index instance
+
+    Raises:
+        RuntimeError: If database not loaded (server not initialized)
+
+    Note:
+        This function is used by MCP tool wrappers to access the global
+        database index without including it in tool signatures.
+    """
+    if database_index is None:
+        raise RuntimeError(
+            "Database not loaded - server not initialized. "
+            "Call load_resources() first during server startup."
+        )
+    return database_index
+
+
 def get_config_from_env() -> dict:
     """Load configuration from environment variables.
 
