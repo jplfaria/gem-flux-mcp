@@ -148,9 +148,16 @@ def apply_media_to_model(model: Any, media_data: Any) -> None:
         logger.info(f"Applied media constraints to {applied_count} exchange reactions")
 
     elif isinstance(media_data, dict):
-        # Dict format - used by test mocks
-        # Format: {"bounds": {"cpd00027": (-5, 100), "cpd00007": (-10, 100)}}
-        bounds_dict = media_data.get("bounds", {})
+        # Dict format - two sub-formats supported:
+        # 1. Test mock format: {"bounds": {"cpd00027": (-5, 100), ...}}
+        # 2. Predefined media format: {"compounds": {"cpd00027_e0": (-5.0, 100.0), ...}}
+
+        # Try predefined media format first (has "compounds" key)
+        if "compounds" in media_data:
+            bounds_dict = media_data["compounds"]
+        else:
+            # Fall back to test mock format (has "bounds" key)
+            bounds_dict = media_data.get("bounds", {})
 
         applied_count = 0
         for cpd_id, (lower_bound, upper_bound) in bounds_dict.items():
