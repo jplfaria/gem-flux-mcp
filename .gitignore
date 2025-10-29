@@ -87,3 +87,5 @@ data/database/reactions.tsv
 # Large template files (download from Fxe/ModelSEEDpy)
 data/templates/*.json
 # Keep README.md in repo to document sources
+*.ipynb_checkpoints/
+.ipynb_checkpoints/

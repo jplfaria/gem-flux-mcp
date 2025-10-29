@@ -100,6 +100,52 @@ Handle common errors and recover gracefully.
    cd /path/to/gem-flux-mcp
    uv sync
    ```
+3. **Jupyter installed**:
+   ```bash
+   uv pip install jupyter
+   # OR
+   pip install jupyter
+   ```
+4. **Database and templates downloaded** (see main README.md)
+
+### IMPORTANT: Running the Notebooks
+
+The notebooks need to import the `gem_flux_mcp` package. You have two options:
+
+#### Option 1: Add Setup Cell (Recommended for Development)
+
+Add this as the **FIRST** cell in each notebook:
+
+```python
+# Setup: Add parent directory to Python path
+import sys
+from pathlib import Path
+repo_root = Path.cwd().parent
+sys.path.insert(0, str(repo_root))
+print(f"✓ Added {repo_root} to Python path")
+```
+
+Then run all cells normally.
+
+#### Option 2: Install Package in Editable Mode
+
+From the repository root:
+
+```bash
+uv pip install -e .
+# OR
+pip install -e .
+```
+
+Then notebooks will work without the setup cell.
+
+### Quick Start
+
+1. **Navigate to examples directory**:
+   ```bash
+   cd examples
+   uv sync
+   ```
 3. **Database and templates downloaded**:
    - ModelSEED database in `data/database/`
    - Templates in `data/templates/`

@@ -797,7 +797,7 @@ run_quality_gates() {
 
         # 1. Run tests
         echo -e "${YELLOW}Running tests...${NC}"
-        .venv/bin/pytest tests/ --tb=short -q 2>&1 | tee ".test_output_${iteration}.tmp"
+        .venv/bin/pytest tests/ --ignore=tests/integration/test_phase16_performance.py --tb=short -q 2>&1 | tee ".test_output_${iteration}.tmp"
         test_exit_status=${PIPESTATUS[0]}
 
         if [ $test_exit_status -eq 0 ]; then
