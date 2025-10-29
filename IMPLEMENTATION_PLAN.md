@@ -22,34 +22,41 @@ This plan implements the **Gem-Flux MCP Server**, a Model Context Protocol serve
 
 ## Implementation Phases
 
-### Phase 1: Foundation & Infrastructure (Tasks 1-10)
+### Phase 1: Foundation & Infrastructure (Tasks 1-10) ✅
 Core project setup, dependencies, and basic infrastructure
 
-### Phase 2: Database & Templates (Tasks 11-20)
+### Phase 2: Database & Templates (Tasks 11-20) ✅
 ModelSEED database loading, template management, and data access
 
-### Phase 3: Session Storage (Tasks 21-30)
+### Phase 3: Session Storage (Tasks 21-30) ✅
 In-memory model/media storage with .gf suffix handling
 
-### Phase 4: Database Lookup Tools (Tasks 31-40)
+### Phase 4: Database Lookup Tools (Tasks 31-40) ✅
 Compound and reaction lookup/search tools
 
-### Phase 5: Core MCP Tools - Part 1 (Tasks 41-50)
+### Phase 5: Core MCP Tools - Part 1 (Tasks 41-50) ✅
 build_media and build_model tools
 
-### Phase 6: Core MCP Tools - Part 2 (Tasks 51-60)
+### Phase 6: Core MCP Tools - Part 2 (Tasks 51-60) ✅
 gapfill_model and run_fba tools
 
-### Phase 7: Session Management Tools (Tasks 61-70)
+### Phase 7: Session Management Tools (Tasks 61-70) ✅
 list_models, delete_model, list_media tools
 
-### Phase 8: MCP Server Setup (Tasks 71-80)
-FastMCP server initialization, tool registration, startup/shutdown
+### Phase 11: MCP Server Integration (CRITICAL) ❌ NOT STARTED
+Complete MCP server using global state pattern (blocks agent usage)
+**Priority**: MUST complete before Phase 8 - enables LLM/agent tool access
+**Note**: This phase was created after discovering Phase 8 approach was incorrect
 
-### Phase 9: Integration & Testing (Tasks 81-90)
+### Phase 8: MCP Server Setup (Tasks 71-80) ⚠️ INCOMPLETE (40% complete)
+FastMCP server initialization, tool registration, startup/shutdown
+**Status**: Server skeleton exists but crashes. Phase 11 must be done first.
+**Blocked by**: Phase 11 (requires global state pattern)
+
+### Phase 9: Integration & Testing (Tasks 81-90) ✅
 End-to-end workflows, integration tests, error handling
 
-### Phase 10: Documentation & Finalization (Tasks 91-100)
+### Phase 10: Documentation & Finalization (Tasks 91-100) ⏸️ PENDING
 README, examples, deployment guide, final validation
 
 ---
@@ -749,17 +756,23 @@ README, examples, deployment guide, final validation
 
 ---
 
-### Phase 8: MCP Server Setup
+### Phase 8: MCP Server Setup (PARTIALLY COMPLETE - SEE PHASE 11)
 
-- [x] **Task 71**: Implement FastMCP server initialization
-  - Create `src/gem_flux_mcp/server.py`
-  - Import FastMCP framework
-  - Create MCP server instance: `mcp = FastMCP("gem-flux-mcp")`
-  - Set server metadata (name, version, description)
-  - Set protocol_version: "2025-06-18" (latest MCP protocol)
-  - Configure capabilities: tools=True, resources=False, prompts=False, logging=True
+⚠️ **STATUS**: Phase 8 is 40% complete. Server skeleton exists but does NOT work.
+- Server crashes on startup with Pydantic schema errors
+- Tools NOT registered with @mcp.tool() decorators
+- MCP protocol integration incomplete
+- **See Phase 11 for correct implementation approach**
+
+- [ ] **Task 71**: Implement FastMCP server initialization
+  - ⚠️ **INCOMPLETE**: Server file exists but crashes on startup
+  - ⚠️ Pydantic cannot generate schemas for DatabaseIndex parameter
+  - ✅ File created: `src/gem_flux_mcp/server.py`
+  - ❌ Server does NOT start successfully
+  - **Solution**: See Phase 11 Task 11.2 (global state pattern)
 
 - [x] **Task 72**: Implement resource loading on startup
+  - ✅ **COMPLETE**: Database and template loading works correctly
   - Phase 1: Load ModelSEED database (compounds.tsv, reactions.tsv)
   - Phase 2: Load ModelSEED templates (GramNegative, GramPositive, Core)
   - Phase 3: Load ATP gapfilling media (54 default media)
@@ -767,31 +780,31 @@ README, examples, deployment guide, final validation
   - Log loading statistics and timing
   - Exit with error if critical resources fail to load
 
-- [x] **Task 73**: Implement tool registration with FastMCP
-  - Register all 8 MVP tools using `@mcp.tool()` decorator
-  - Tools: build_media, build_model, gapfill_model, run_fba, get_compound_name, get_reaction_name, search_compounds, search_reactions
-  - Add session management tools: list_models, delete_model, list_media
-  - Use type hints for automatic schema generation
-  - Document each tool with comprehensive docstrings
-  - Log tool registration statistics
+- [ ] **Task 73**: Implement tool registration with FastMCP
+  - ⚠️ **NOT IMPLEMENTED**: No @mcp.tool() decorators added to any tools
+  - ⚠️ **CRITICAL BLOCKER**: Tools not accessible via MCP protocol
+  - ❌ Tools are plain Python functions without MCP decorators
+  - ❌ DatabaseIndex in signatures causes Pydantic errors
+  - **Solution**: See Phase 11 Task 11.1 (create mcp_tools.py wrappers)
 
 - [x] **Task 74**: Implement session storage initialization
+  - ✅ **COMPLETE**: MODEL_STORAGE and MEDIA_STORAGE work correctly
   - Initialize empty MODEL_STORAGE dict
   - Initialize empty MEDIA_STORAGE dict
   - Set up ID generation (timestamp + random)
   - Configure storage limits (100 models, 50 media)
   - Log initialization complete
 
-- [x] **Task 75**: Implement server startup sequence
-  - Parse environment variables for configuration
-  - Initialize logging (console + file)
-  - Load database, templates, media
-  - Initialize session storage
-  - Register tools
-  - Bind to host:port (default: localhost:8080)
-  - Log "Server ready" message
+- [ ] **Task 75**: Implement server startup sequence
+  - ⚠️ **INCOMPLETE**: Startup sequence fails at tool registration step
+  - ✅ Configuration parsing works
+  - ✅ Resource loading works
+  - ❌ Tool registration fails (no @mcp.tool() decorators)
+  - ❌ Server never reaches "ready" state
+  - **Solution**: See Phase 11 Task 11.2 (refactor server.py)
 
 - [x] **Task 76**: Implement graceful shutdown
+  - ✅ **COMPLETE**: Shutdown handlers work correctly
   - Handle SIGINT, SIGTERM signals
   - Stop accepting new requests
   - Wait for active requests to complete (timeout: 30s)
@@ -800,6 +813,7 @@ README, examples, deployment guide, final validation
   - Exit with code 0
 
 - [x] **Task 77**: Implement configuration via environment variables
+  - ✅ **COMPLETE**: Environment variable configuration works
   - `GEM_FLUX_HOST`: Host to bind (default: localhost)
   - `GEM_FLUX_PORT`: Port to listen (default: 8080)
   - `GEM_FLUX_DATABASE_DIR`: Database location (default: ./data/database)
@@ -807,24 +821,26 @@ README, examples, deployment guide, final validation
   - `GEM_FLUX_LOG_LEVEL`: Log level (default: INFO)
   - `GEM_FLUX_LOG_FILE`: Log file path (default: ./gem-flux.log)
 
-- [x] **Task 78**: Implement server error handling
-  - Startup errors: Database load failure, template load failure, port in use
-  - Runtime errors: Tool execution failures, invalid MCP requests
-  - Return JSON-RPC 2.0 compliant error responses
-  - Log errors with context
+- [ ] **Task 78**: Implement server error handling
+  - ⚠️ **INCOMPLETE**: Missing critical error handling for Pydantic schema issues
+  - ✅ Basic error handling exists for database/template loading
+  - ❌ Server crashes instead of returning proper error for schema failures
+  - **Solution**: Phase 11 approach eliminates schema errors
 
-- [x] **Task 79**: Write unit tests for server setup
-  - Test successful server initialization
-  - Test database loading failure
-  - Test template loading failure
-  - Test tool registration
-  - Test graceful shutdown
+- [ ] **Task 79**: Write unit tests for server setup
+  - ⚠️ **NOT DONE**: test_server.py exists but is incomplete/empty
+  - ❌ No tests for server initialization
+  - ❌ No tests for tool registration
+  - **Solution**: See Phase 11 Task 11.3 (MCP integration tests)
 
 - [x] **Task 80**: Create server startup script
+  - ✅ **COMPLETE**: Startup script exists and runs
+  - ⚠️ NOTE: Script works but server it starts crashes
   - Create `start-server.sh` with environment variable configuration
   - Create `pyproject.toml` script entry point
   - Document startup command: `uv run python -m gem_flux_mcp.server`
-  - Test server starts and accepts requests
+
+**Phase 8 Summary**: 5/10 tasks complete. Server skeleton exists but MCP integration broken. **See Phase 11 for correct implementation.**
 
 ---
 
@@ -1027,6 +1043,88 @@ README, examples, deployment guide, final validation
   - Identify any deviations or improvements
   - Document lessons learned
   - Plan Phase 2 (v0.2.0 persistence features)
+
+---
+
+### Phase 11: MCP Server Integration (CRITICAL PATH)
+
+⚠️ **STATUS**: NOT STARTED - Required to complete Phase 8
+**Priority**: CRITICAL - Blocks agent/LLM usage of tools
+**Estimated Effort**: 1-2 days focused work
+**Reference**: See `docs/PHASE_11_MCP_INTEGRATION_PLAN.md` for detailed implementation guide
+**Specification**: See `specs/021-mcp-tool-registration.md` for technical details
+
+**Problem**: Phase 8 MCP integration incomplete - server crashes, tools not registered
+**Solution**: Global state pattern + MCP tool wrappers
+
+- [ ] **Task 11.1**: Create MCP tool wrappers (2-3 hours)
+  - Create `src/gem_flux_mcp/mcp_tools.py` (NEW FILE)
+  - Wrap all 11 tools with @mcp.tool() decorators
+  - Remove DatabaseIndex from tool signatures (use global state instead)
+  - Add comprehensive docstrings for LLM consumption
+  - **Success**: All 11 wrappers created with proper type hints
+  - **Verification**: Import mcp_tools, check mcp.list_tools() shows 11 tools
+  - **Reference**: See Phase 11 plan Task 11.1 for complete code examples
+
+- [ ] **Task 11.2**: Refactor server.py for global state (1-2 hours)
+  - Implement global variables: `_db_index`, `_templates`
+  - Create accessor functions: `get_db_index()`, `get_templates()`
+  - Update `load_resources()` to populate globals
+  - Update `create_server()` to import mcp_tools module
+  - Remove manual tool registration (decorators handle it)
+  - **Success**: Server starts without Pydantic schema errors
+  - **Verification**: Run `uv run python -m gem_flux_mcp.server` - should log "Server ready"
+  - **Reference**: See Phase 11 plan Task 11.2 for complete refactored code
+
+- [ ] **Task 11.3**: Write MCP server integration tests (2-3 hours)
+  - Create `tests/integration/test_mcp_server_integration.py` (NEW FILE)
+  - Test: `test_server_starts_successfully` - No startup errors
+  - Test: `test_all_tools_registered` - All 11 tools in tool list
+  - Test: `test_tool_schemas_valid` - JSON schemas generated correctly
+  - Test: `test_build_media_via_mcp` - Can call tool through MCP protocol
+  - Test: `test_complete_workflow_via_mcp` - Full workflow via MCP
+  - Test: `test_concurrent_tool_calls` - Multiple simultaneous requests
+  - **Success**: All integration tests pass
+  - **Verification**: `pytest tests/integration/test_mcp_server_integration.py -v`
+  - **Reference**: See Phase 11 plan Task 11.3 for test specifications
+
+- [ ] **Task 11.4**: Update documentation (1 hour)
+  - Update `README.md` - Accurate MCP server status
+  - Create `docs/MCP_USAGE_GUIDE.md` (NEW FILE) - How to connect Claude/Cursor/Cline
+  - Update this file (IMPLEMENTATION_PLAN.md) - Mark Phase 11 complete when done
+  - **Success**: Documentation reflects working MCP server
+  - **Verification**: README shows correct MCP startup instructions
+  - **Reference**: See Phase 11 plan Task 11.4 for doc requirements
+
+- [ ] **Task 11.5**: Create MCP client test script (1 hour)
+  - Create `scripts/test_mcp_client.py` (NEW FILE)
+  - Script connects to server via MCP protocol
+  - Lists available tools
+  - Calls build_media tool
+  - Calls search_compounds tool
+  - Prints results to verify working
+  - **Success**: Script successfully calls tools and gets results
+  - **Verification**: `uv run python scripts/test_mcp_client.py` - shows tool results
+  - **MANDATORY GATE**: Phase 11 NOT complete until this script works!
+  - **Reference**: See Phase 11 plan Task 11.5 for complete script code
+
+**Phase 11 Success Criteria** (ALL must pass before marking complete):
+- [ ] Server starts: `uv run python -m gem_flux_mcp.server` runs without errors
+- [ ] No Pydantic schema errors in startup logs
+- [ ] All 11 tools registered: mcp.list_tools() shows all tools
+- [ ] Tool schemas generated: Each tool has valid JSON schema
+- [ ] MCP client can list tools
+- [ ] MCP client can call build_media
+- [ ] MCP client can call search_compounds
+- [ ] Complete workflow works via MCP: media → model → gapfill → FBA
+- [ ] Error responses are JSON-RPC compliant
+- [ ] Integration tests pass: test_mcp_server_integration.py
+- [ ] **Test client works: scripts/test_mcp_client.py successfully calls tools**
+- [ ] Real LLM client can connect (Claude Desktop / Cursor / Cline)
+
+**DO NOT mark Phase 11 complete until test_mcp_client.py works!**
+
+**Phase 11 Summary**: Complete MCP server integration using global state pattern to eliminate Pydantic schema errors. This is the CRITICAL PATH for enabling agent/LLM usage of metabolic modeling tools.
 
 ---
 
