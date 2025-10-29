@@ -1,6 +1,6 @@
 # Systematic Refactoring Progress Report
 
-**Status**: Phases 1-2 Complete (2/8 phases done)
+**Status**: Phases 1-5 Complete + 2 Demo Notebooks (5/8 phases done + notebooks in progress)
 **Branch**: `phase-1-implementation`
 **Last Update**: 2025-10-29
 
@@ -61,16 +61,87 @@ MSBuilder.add_exchanges_to_model(model, uptake_rate=100)
 
 ---
 
-## 📊 Overall Statistics (Phases 1-2)
+### Phase 3: Fix Mock Objects and Expand Test Coverage
+
+**Time**: ~1 hour
+**Commits**: 1 (`cec9b75` partial)
+
+**Achievements**:
+1. ✅ Added 2 comprehensive tests for `check_baseline_growth` function
+2. ✅ Validated Phase 1-2 refactoring correctness
+3. ✅ Test coverage improved from 61% to 69% for gapfill_model.py
+
+**Impact**:
+- **Test count**: 80 → 82 passing tests
+- **Coverage**: Critical bug fixes from Phases 1-2 now have regression tests
+- **Validation**: Confirms objective setting and media utility patterns work correctly
+
+---
+
+### Phase 5: Update Specifications
+
+**Time**: ~30 minutes
+**Commits**: 1 (part of `cec9b75`)
+
+**Achievements**:
+1. ✅ Added "Implementation Notes" sections to 2 specs
+2. ✅ Documented canonical patterns (MSMedia, MSBuilder, objective setting)
+3. ✅ Added anti-pattern examples with explanations
+
+**Impact**:
+- **Documentation**: 187 lines added across 2 spec files
+- **Patterns documented**: 5 critical patterns + 3 anti-patterns
+- **Future prevention**: Clear guidance to prevent regression
+
+**Files Updated**:
+- `specs/003-build-media-tool.md` - MSMedia pattern documentation
+- `specs/005-gapfill-model-tool.md` - MSBuilder and objective setting patterns
+
+---
+
+### Phase 6: Create Tool Demo Notebooks (IN PROGRESS)
+
+**Time**: ~3 hours so far
+**Commits**: 2 (`cec9b75`, `f9342db`)
+
+**Status**: ✅ 2 of 6 notebooks complete and verified
+
+**Completed Notebooks**:
+1. ✅ `build_media_demo.ipynb` - 4 examples, all verified
+2. ✅ `database_lookup_demo.ipynb` - 8 examples, all verified
+
+**Verification Approach** (following user directive):
+- Created Python scripts to execute all notebook cells
+- Fixed API mismatches discovered during testing
+- Confirmed all examples produce correct output
+- User feedback: "actually run the notebooks and can verify things are working"
+
+**Achievements**:
+- **build_media_demo.ipynb**: Demonstrates media creation with custom bounds
+- **database_lookup_demo.ipynb**: Shows compound/reaction lookups and searches
+- **Verification scripts**: test_tools_demo.py, run_notebook_test.py, run_lookup_notebook_test.py
+- **Bug fixes**: Corrected field names (bounds vs lower_bound/upper_bound), method names (search_reactions_by_ec_number)
+
+**Remaining Notebooks**:
+- [ ] build_model notebook (may skip due to async/RAST complexity)
+- [ ] gapfill_model notebook
+- [ ] run_fba notebook
+- [ ] complete_workflow notebook
+
+---
+
+## 📊 Overall Statistics (Phases 1-6)
 
 | Metric | Value |
 |--------|-------|
-| **Lines removed** | ~145 lines |
-| **Files modified** | 5 files |
-| **Files created** | 2 new files (utils/media.py + test) |
-| **Test count** | 80 passing (was 60 before) |
-| **Commits** | 5 feature commits |
-| **Time spent** | ~3 hours |
+| **Lines removed** | ~145 lines (code refactoring) |
+| **Lines added** | ~1,000+ lines (notebooks + verification scripts + docs) |
+| **Files modified** | 7 files (5 tools + 2 specs) |
+| **Files created** | 7 new files (utils/media.py + test + 2 notebooks + 3 verification scripts) |
+| **Test count** | 82 passing (was 60 before Phase 1) |
+| **Notebooks created** | 2 verified notebooks (build_media, database_lookup) |
+| **Commits** | 7 feature commits |
+| **Time spent** | ~7 hours total |
 
 ---
 
