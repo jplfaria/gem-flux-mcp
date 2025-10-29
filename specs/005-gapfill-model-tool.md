@@ -1330,6 +1330,118 @@ def integrate_gapfill_solution(template, model, solution):
 - `alternative_solutions`: Other reaction sets
 - `gapfilling_confidence`: Score added reactions
 
+## Implementation Notes (Post-MVP Refactoring)
+
+> **⚠️ CRITICAL**: The following patterns were established during Phase 2 refactoring (October 2025). These are MANDATORY patterns to prevent bugs.
+
+### ✅ Canonical Pattern: Exchange Reaction Creation
+
+**CORRECT** - Use ModelSEEDpy's MSBuilder helper:
+
+```python
+from modelseedpy.core.msbuilder import MSBuilder
+
+# When gapfilling suggests missing exchange reactions
+exchange_reactions_to_add = [
+    rxn_id for rxn_id in new_reactions.keys()
+    if rxn_id.startswith('EX_') and rxn_id not in model.reactions
+]
+
+if exchange_reactions_to_add:
+    # MSBuilder handles ALL complexity:
+    # - Correct stoichiometry
+    # - Metabolite creation/linking
+    # - Default bounds
+    # - All edge cases
+    MSBuilder.add_exchanges_to_model(model, uptake_rate=100)
+
+# Then update bounds based on gapfilling directions
+for rxn_id, direction in new_reactions.items():
+    if rxn_id.startswith('EX_'):
+        if rxn_id in model.reactions:
+            rxn = model.reactions.get_by_id(rxn_id)
+            lb, ub = get_reaction_constraints_from_direction(direction)
+            rxn.lower_bound = lb
+            rxn.upper_bound = ub
+```
+
+**❌ ANTI-PATTERN** - Do NOT manually create exchange reactions:
+
+```python
+# ❌ WRONG: Manual exchange creation with COBRApy
+from cobra import Reaction, Metabolite
+
+exch_rxn = Reaction(rxn_id)
+metabolite = Metabolite(compound_id, compartment='e0')
+exch_rxn.add_metabolites({metabolite: 1.0})
+exch_rxn.lower_bound = lb
+exch_rxn.upper_bound = ub
+model.add_reactions([exch_rxn])  # Duplicates MSBuilder logic, misses edge cases
+```
+
+**Why This Matters**:
+- MSBuilder is ModelSEEDpy's official helper for exchange creation
+- Manual creation duplicates internal logic and misses edge cases
+- MSBuilder handles metabolite linking, stoichiometry, all compartments
+- Reduces code by ~40 lines and eliminates bugs
+
+### ✅ Canonical Pattern: Media Application in check_baseline_growth()
+
+**CORRECT** - Use shared utility:
+
+```python
+from gem_flux_mcp.utils.media import apply_media_to_model
+
+def check_baseline_growth(model, media, objective="bio1"):
+    # Apply media using shared utility
+    apply_media_to_model(model, media, compartment="e0")
+
+    # CRITICAL: Set BOTH objective and direction
+    if objective in model.reactions:
+        model.objective = objective
+        model.objective_direction = "max"  # Don't forget this!
+
+    solution = model.optimize()
+    return solution.objective_value if solution.status == "optimal" else 0.0
+```
+
+**❌ ANTI-PATTERN** - Do NOT set only model.objective:
+
+```python
+# ❌ WRONG: Setting only objective (doesn't change direction!)
+model.objective = objective  # Direction stays at previous value!
+```
+
+**Why This Matters**:
+- COBRApy requires setting BOTH `model.objective` AND `model.objective_direction`
+- Setting only `model.objective` does NOT change the optimization direction
+- This was a critical bug that caused incorrect growth rate calculations
+
+### Key Implementation Details
+
+1. **Exchange Reactions**
+   - Always use `MSBuilder.add_exchanges_to_model()`
+   - Never manually create with COBRApy's Reaction/Metabolite classes
+
+2. **Media Application**
+   - Use `gem_flux_mcp.utils.media.apply_media_to_model()`
+   - Handles both MSMedia objects and dict formats
+
+3. **Objective Setting**
+   - Always set BOTH `model.objective` and `model.objective_direction`
+   - Default direction is "max" for growth/biomass objectives
+
+4. **Gapfilling Solution Integration**
+   - MSGapfill returns solution dict with 'new' and 'reversed' keys
+   - Exchange reactions ARE integrated (not skipped)
+   - Use MSBuilder for missing exchanges
+
+### Related Code
+
+- **Implementation**: `src/gem_flux_mcp/tools/gapfill_model.py`
+- **Shared Utility**: `src/gem_flux_mcp/utils/media.py`
+- **Tests**: `tests/unit/test_gapfill_model.py`
+
 ## Related Specifications
 
 - **001-system-overview.md**: Overall gapfilling workflow
@@ -1341,6 +1453,6 @@ def integrate_gapfill_solution(template, model, solution):
 
 ---
 
-**Document Status**: ✅ Ready for Implementation
-**Last Updated**: October 27, 2025
+**Document Status**: ✅ Ready for Implementation (Updated with refactoring patterns)
+**Last Updated**: October 29, 2025 (Post-Phase 2 refactoring)
 **Next Spec**: 006-run-fba-tool.md
