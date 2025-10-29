@@ -319,6 +319,63 @@ def test_integrate_gapfill_solution_new_reactions(mock_template):
     assert added[1]["direction"] == "<"
 
 
+def test_integrate_gapfill_solution_with_exchanges(mock_template):
+    """Test integration properly handles exchange reactions using MSBuilder.
+
+    Exchange reactions should be:
+    1. Identified as missing
+    2. Created using MSBuilder.add_exchanges_to_model()
+    3. Bounds updated based on gapfilling direction
+
+    This is the CORRECT behavior (not skipping exchanges).
+    """
+    # Create mock model with reactions collection
+    mock_model = Mock()
+    mock_reactions = Mock()
+
+    # Mock existing exchange reaction
+    existing_exchange = Mock()
+    existing_exchange.lower_bound = -100
+    existing_exchange.upper_bound = 100
+    mock_reactions.get_by_id = Mock(return_value=existing_exchange)
+
+    # Model has one exchange, missing another
+    mock_reactions.__contains__ = Mock(
+        side_effect=lambda x: x == "EX_cpd00007_e0"  # Oxygen exists
+    )
+    mock_model.reactions = mock_reactions
+
+    solution = {
+        "new": {
+            "rxn00001_c0": ">",  # Internal reaction
+            "EX_cpd00027_e0": ">",  # Exchange - missing (glucose)
+            "EX_cpd00007_e0": ">",  # Exchange - exists (oxygen)
+        },
+        "reversed": {},
+    }
+
+    # Mock MSBuilder.add_exchanges_to_model (imported inside function)
+    with patch("modelseedpy.core.msbuilder.MSBuilder") as mock_msbuilder:
+        with patch("gem_flux_mcp.tools.gapfill_model.get_reaction_constraints_from_direction") as mock_bounds:
+            # Return bounds for: oxygen exchange, internal reaction
+            mock_bounds.side_effect = [(0, 1000), (0, 1000)]
+
+            added = integrate_gapfill_solution(mock_model, mock_template, solution)
+
+    # Verify MSBuilder.add_exchanges_to_model was called once
+    mock_msbuilder.add_exchanges_to_model.assert_called_once_with(
+        mock_model, uptake_rate=100
+    )
+
+    # Verify exchange reactions were added to results
+    exchange_ids = [r["id"] for r in added if r["id"].startswith("EX_")]
+    assert "EX_cpd00007_e0" in exchange_ids  # Existing exchange updated
+
+    # Verify bounds were updated for existing exchange
+    assert existing_exchange.lower_bound == 0
+    assert existing_exchange.upper_bound == 1000
+
+
 # ============================================================================
 # Test enrich_reaction_metadata
 # ============================================================================
