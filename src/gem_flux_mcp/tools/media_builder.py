@@ -14,6 +14,7 @@ import logging
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field, field_validator
+from modelseedpy import MSMedia
 
 from gem_flux_mcp.database import validate_compound_id
 from gem_flux_mcp.database.index import DatabaseIndex
@@ -267,26 +268,19 @@ def build_media(request: BuildMediaRequest, db_index: DatabaseIndex) -> dict:
 
     logger.debug(f"Built bounds for {len(bounds_dict)} compounds")
 
-    # Step 3: Create MSMedia object
-    # For MVP, we'll create a simple dict representation
-    # TODO (CRITICAL - Required before Phase 6): Integrate ModelSEEDpy MSMedia.from_dict()
-    # Timeline: Must be completed before Task 51 (gapfill_model implementation)
-    # Reason: gapfill_model and run_fba tools require real MSMedia objects from ModelSEEDpy
-    # Integration: See spec 003-build-media-tool.md lines 320-340 for MSMedia.from_dict() pattern
-    # Current: Storing dict representation for Phase 5 unit testing only
-    media_data = {
-        "bounds": bounds_dict,
-        "default_uptake": request.default_uptake,
-        "num_compounds": len(request.compounds),
-    }
+    # Step 3: Create MSMedia object using ModelSEEDpy
+    # MSMedia.from_dict() expects compound IDs as keys and (lower, upper) tuples as values
+    media = MSMedia.from_dict(bounds_dict)
+    logger.info(f"Created MSMedia object with {len(bounds_dict)} compounds")
 
-    # Step 4: Generate unique media_id
+    # Step 4: Generate unique media_id and set it on the MSMedia object
     media_id = generate_media_id()
-    logger.info(f"Generated media_id: {media_id}")
+    media.id = media_id
+    logger.info(f"Assigned media_id: {media_id}")
 
-    # Step 5: Store in session storage
-    store_media(media_id, media_data)
-    logger.info(f"Stored media in session: {media_id}")
+    # Step 5: Store MSMedia object in session storage
+    store_media(media_id, media)
+    logger.info(f"Stored MSMedia object in session: {media_id}")
 
     # Step 6: Enrich with database metadata
     compounds_metadata = []

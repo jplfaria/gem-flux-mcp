@@ -302,11 +302,14 @@ class TestBuildMediaFunction:
         # Verify media exists in storage
         assert media_exists(media_id)
 
-        # Retrieve and verify stored media
+        # Retrieve and verify stored media is MSMedia object
         stored_media = retrieve_media(media_id)
         assert stored_media is not None
-        assert "bounds" in stored_media
-        assert len(stored_media["bounds"]) == 2
+        # MSMedia object should have get_media_constraints method
+        assert hasattr(stored_media, 'get_media_constraints')
+        # Verify we can get constraints (should have 2 compounds)
+        constraints = stored_media.get_media_constraints()
+        assert len(constraints) == 2
 
     def test_unique_media_id_generation(self, db_index):
         """Test each media gets unique ID."""
