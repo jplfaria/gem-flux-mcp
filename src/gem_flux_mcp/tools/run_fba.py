@@ -396,12 +396,17 @@ def run_fba(
             )
 
         # Step 5: Set objective
-        if not maximize:
-            # For minimization, set reaction coefficient to negative
-            model.objective = {objective: -1}
+        model.objective = objective
+
+        # Step 5b: Set optimization direction explicitly
+        # CRITICAL: COBRApy has two separate concepts:
+        # - model.objective: which reaction(s) to optimize
+        # - model.objective_direction: whether to maximize or minimize
+        # Setting model.objective alone doesn't change the direction!
+        if maximize:
+            model.objective_direction = "max"
         else:
-            # For maximization, set reaction coefficient to positive
-            model.objective = objective
+            model.objective_direction = "min"
 
         # Step 6: Execute FBA
         logger.info(f"Running FBA with objective={objective}, maximize={maximize}")
