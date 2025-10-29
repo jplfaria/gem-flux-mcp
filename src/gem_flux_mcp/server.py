@@ -44,6 +44,7 @@ mcp: Optional[FastMCP] = None
 
 # Global resource instances
 database_index: Optional[DatabaseIndex] = None
+templates: Optional[dict] = None
 
 
 def get_db_index() -> DatabaseIndex:
@@ -65,6 +66,28 @@ def get_db_index() -> DatabaseIndex:
             "Call load_resources() first during server startup."
         )
     return database_index
+
+
+def get_templates() -> dict:
+    """Get globally loaded templates dictionary.
+
+    Returns:
+        dict: Dictionary of loaded MSTemplate objects (e.g., GramNegative, Core)
+
+    Raises:
+        RuntimeError: If templates not loaded (server not initialized)
+
+    Note:
+        This function is used by MCP tool wrappers to access the global
+        templates dictionary without including it in tool signatures.
+        Templates are used by build_model tool for genome-scale reconstruction.
+    """
+    if templates is None:
+        raise RuntimeError(
+            "Templates not loaded - server not initialized. "
+            "Call load_resources() first during server startup."
+        )
+    return templates
 
 
 def get_config_from_env() -> dict:

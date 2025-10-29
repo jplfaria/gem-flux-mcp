@@ -57,7 +57,6 @@ def mock_media():
     """Create mock MSMedia object."""
     media = Mock()
     media.id = "media_001"
-    media.apply_to_model = Mock()
     media.get_media_constraints = Mock(return_value={"cpd00027_e0": (-5, 100)})
     return media
 
@@ -215,7 +214,13 @@ def test_validate_gapfill_inputs_invalid_mode():
 
 
 def test_validate_gapfill_inputs_no_biomass():
-    """Test validation fails when model has no biomass reaction."""
+    """Test validation with model lacking biomass reaction.
+
+    Per gapfill_model.py lines 142-147, missing biomass now logs WARNING
+    instead of raising ValidationError. This allows offline model building
+    (annotate_with_rast=False) and API correctness tests with empty models.
+    ModelSEEDpy itself doesn't require biomass for gapfilling.
+    """
     with patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True), \
          patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True), \
          patch("gem_flux_mcp.tools.gapfill_model.retrieve_model") as mock_retrieve:
@@ -225,16 +230,15 @@ def test_validate_gapfill_inputs_no_biomass():
         mock_model.reactions = []  # No biomass reaction
         mock_retrieve.return_value = mock_model
 
-        with pytest.raises(ValidationError) as exc_info:
-            validate_gapfill_inputs(
-                model_id="model_001.draft",
-                media_id="media_001",
-                target_growth_rate=0.01,
-                gapfill_mode="full",
-            )
-
-        assert exc_info.value.error_code == "NO_BIOMASS_REACTION"
-        assert "biomass" in exc_info.value.message.lower()
+        # Should NOT raise ValidationError - just logs warning and proceeds
+        # No exception means validation passed (with warning logged)
+        validate_gapfill_inputs(
+            model_id="model_001.draft",
+            media_id="media_001",
+            target_growth_rate=0.01,
+            gapfill_mode="full",
+        )
+        # Success - validation completed without raising exception
 
 
 # ============================================================================
@@ -250,7 +254,7 @@ def test_check_baseline_growth_optimal(mock_model, mock_media):
     growth_rate = check_baseline_growth(mock_model, mock_media)
 
     assert growth_rate == 0.5
-    mock_media.apply_to_model.assert_called_once_with(mock_model)
+    mock_media.get_media_constraints.assert_called()
     mock_model.optimize.assert_called_once()
 
 
