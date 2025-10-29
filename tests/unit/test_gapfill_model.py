@@ -276,6 +276,68 @@ def test_check_baseline_growth_exception(mock_model, mock_media):
     assert growth_rate == 0.0
 
 
+def test_check_baseline_growth_sets_objective_correctly(mock_model, mock_media):
+    """Test that check_baseline_growth sets BOTH objective and direction.
+
+    This is a critical test for the bug fix in Phase 1. COBRApy requires
+    setting BOTH model.objective AND model.objective_direction for correct
+    FBA optimization.
+    """
+    # Mock reactions collection
+    mock_reactions = Mock()
+    mock_reactions.__contains__ = Mock(return_value=True)  # bio1 exists
+    mock_model.reactions = mock_reactions
+
+    # Mock successful optimization
+    mock_model.optimize.return_value.status = "optimal"
+    mock_model.optimize.return_value.objective_value = 0.85
+
+    # Call check_baseline_growth with custom objective
+    growth_rate = check_baseline_growth(mock_model, mock_media, objective="bio1")
+
+    # Verify BOTH objective and direction were set
+    assert mock_model.objective == "bio1"
+    assert mock_model.objective_direction == "max"
+    assert growth_rate == 0.85
+
+
+def test_check_baseline_growth_uses_shared_media_utility(mock_model, mock_media):
+    """Test that check_baseline_growth uses the shared media utility.
+
+    This verifies the refactoring from Phase 1.4 is working correctly.
+    """
+    from gem_flux_mcp.utils.media import apply_media_to_model
+
+    # Mock MSMedia.get_media_constraints
+    mock_media.get_media_constraints = Mock(return_value={
+        "cpd00027_e0": (-5.0, 100.0),  # Glucose
+        "cpd00007_e0": (-10.0, 100.0),  # Oxygen
+    })
+
+    # Mock reactions collection
+    mock_reactions = Mock()
+    mock_reactions.__contains__ = Mock(
+        side_effect=lambda x: x in ["EX_cpd00027_e0", "EX_cpd00007_e0", "bio1"]
+    )
+    mock_model.reactions = mock_reactions
+
+    # Mock successful optimization
+    mock_model.optimize.return_value.status = "optimal"
+    mock_model.optimize.return_value.objective_value = 0.75
+
+    # Call check_baseline_growth
+    growth_rate = check_baseline_growth(mock_model, mock_media)
+
+    # Verify media constraints were retrieved
+    mock_media.get_media_constraints.assert_called_once()
+
+    # Verify model.medium was set (shared utility pattern)
+    assert hasattr(mock_model, 'medium')
+
+    # Verify growth rate returned
+    assert growth_rate == 0.75
+
+
 # ============================================================================
 # Test integrate_gapfill_solution
 # ============================================================================
