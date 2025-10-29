@@ -110,65 +110,75 @@ def validate_fba_inputs(
 def apply_media_to_model(model: Any, media_data: Any) -> None:
     """Apply media constraints to model exchange reactions.
 
+    This function uses the same media application method as gapfill_model to ensure
+    consistency. It calls media.get_media_constraints() to get exchange reaction
+    bounds and applies them directly to the model reactions.
+
     Args:
         model: COBRApy Model object (modified in place)
         media_data: MSMedia object or media dict with bounds information
-                   MSMedia object: has mediacompounds attribute
+                   MSMedia object: has get_media_constraints() method
                    Dict format: {"bounds": {"cpd00027": (-5, 100), ...}, ...}
 
-    Note:
-        COBRApy requires specific medium format:
-        - Retrieve current medium
-        - Modify with new bounds
-        - Reassign to model.medium
+    Side Effects:
+        Modifies model exchange reaction bounds in place
     """
-    # Handle both MSMedia objects and dicts
-    if hasattr(media_data, "mediacompounds"):
-        # MSMedia object - extract bounds from mediacompounds
-        # mediacompounds is a DictList of MediaCompound objects
-        bounds_dict = {}
-        for media_compound in media_data.mediacompounds:
-            # media_compound is a MediaCompound object with attributes:
-            # - id: compound ID (e.g., "cpd00027_e0")
-            # - minFlux: minimum flux (uptake, negative value)
-            # - maxFlux: maximum flux (secretion, positive value)
-            cpd_id = media_compound.id
-            bounds_dict[cpd_id] = (media_compound.minFlux, media_compound.maxFlux)
+    # Use MSMedia.get_media_constraints() method (same as gapfill_model)
+    # This returns dict of {reaction_id: (lower_bound, upper_bound)}
+    # Example: {"EX_cpd00027_e0": (-5.0, 100.0), "EX_cpd00007_e0": (-10.0, 100.0)}
+
+    if hasattr(media_data, "get_media_constraints"):
+        # MSMedia object - use get_media_constraints() method
+        # This is the CORRECT method used by gapfill_model
+        media_constraints = media_data.get_media_constraints(cmp="e0")
+
+        # Apply each constraint to the model's exchange reactions
+        applied_count = 0
+        for reaction_id, (lower_bound, upper_bound) in media_constraints.items():
+            if reaction_id in model.reactions:
+                reaction = model.reactions.get_by_id(reaction_id)
+                reaction.lower_bound = lower_bound
+                reaction.upper_bound = upper_bound
+                applied_count += 1
+            else:
+                logger.warning(
+                    f"Media exchange reaction {reaction_id} not found in model"
+                )
+
+        logger.info(f"Applied media constraints to {applied_count} exchange reactions")
+
     elif isinstance(media_data, dict):
-        # Dict format
+        # Dict format - used by test mocks
+        # Format: {"bounds": {"cpd00027": (-5, 100), "cpd00007": (-10, 100)}}
         bounds_dict = media_data.get("bounds", {})
+
+        applied_count = 0
+        for cpd_id, (lower_bound, upper_bound) in bounds_dict.items():
+            # For dict media: cpd_id might not have compartment, add "_e0" if missing
+            if not cpd_id.endswith("_e0"):
+                cpd_id_with_comp = f"{cpd_id}_e0"
+            else:
+                cpd_id_with_comp = cpd_id
+
+            # Convert compound ID to exchange reaction ID
+            rxn_id = f"EX_{cpd_id_with_comp}"
+
+            # Apply bounds directly to reaction
+            if rxn_id in model.reactions:
+                reaction = model.reactions.get_by_id(rxn_id)
+                reaction.lower_bound = lower_bound
+                reaction.upper_bound = upper_bound
+                applied_count += 1
+            else:
+                logger.warning(
+                    f"Media compound {cpd_id} has no exchange reaction {rxn_id} in model"
+                )
+
+        logger.info(f"Applied media constraints to {applied_count} exchange reactions")
+
     else:
         logger.warning(f"Unknown media_data type: {type(media_data)}")
-        bounds_dict = {}
-
-    # Build COBRApy medium dictionary
-    # Format: {"EX_cpd00027_e0": 5.0, ...}
-    # Value is positive (absolute value of lower bound = max uptake)
-    medium = {}
-    for cpd_id, (lower_bound, upper_bound) in bounds_dict.items():
-        # For MSMedia: cpd_id already includes compartment (e.g., "cpd00027_e0")
-        # For dict media: cpd_id might not have compartment, need to add "_e0"
-        if not cpd_id.endswith("_e0"):
-            cpd_id_with_comp = f"{cpd_id}_e0"
-        else:
-            cpd_id_with_comp = cpd_id
-
-        # Convert compound ID to exchange reaction ID
-        rxn_id = f"EX_{cpd_id_with_comp}"
-
-        # Check if exchange reaction exists in model
-        if rxn_id in model.reactions:
-            # COBRApy uses positive values for uptake bounds
-            medium[rxn_id] = abs(lower_bound)
-        else:
-            logger.warning(
-                f"Media compound {cpd_id} has no exchange reaction {rxn_id} in model"
-            )
-
-    # Apply medium to model
-    # CRITICAL: Must reassign medium, not modify in place
-    model.medium = medium
-    logger.info(f"Applied media with {len(medium)} exchange reactions")
+        logger.warning("No media constraints applied - model will use existing bounds")
 
 
 def get_compound_name_safe(db_index: DatabaseIndex, compound_id: str) -> str:

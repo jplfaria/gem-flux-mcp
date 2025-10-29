@@ -494,10 +494,11 @@ def run_fba(
         - Data formats: specs/002-data-formats.md
         - Error handling: specs/013-error-handling.md
     """
-    # run_fba doesn't use db_index
+    db_index = get_db_index()
     return _run_fba(
         model_id=model_id,
         media_id=media_id,
+        db_index=db_index,
         objective=objective,
         maximize=maximize,
         flux_threshold=flux_threshold,
