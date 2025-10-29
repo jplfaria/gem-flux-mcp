@@ -130,11 +130,18 @@ def apply_media_to_model(model: Any, media_data: Any) -> None:
     if hasattr(media_data, "get_media_constraints"):
         # MSMedia object - use get_media_constraints() method
         # This is the CORRECT method used by gapfill_model
+        # NOTE: get_media_constraints() returns compound IDs with compartment (e.g., "cpd00027_e0")
+        # NOT exchange reaction IDs. We need to add "EX_" prefix to match model reactions.
         media_constraints = media_data.get_media_constraints(cmp="e0")
 
         # Apply each constraint to the model's exchange reactions
         applied_count = 0
-        for reaction_id, (lower_bound, upper_bound) in media_constraints.items():
+        for compound_id, (lower_bound, upper_bound) in media_constraints.items():
+            # Convert compound ID to exchange reaction ID
+            # compound_id format: "cpd00027_e0"
+            # reaction_id format: "EX_cpd00027_e0"
+            reaction_id = f"EX_{compound_id}"
+
             if reaction_id in model.reactions:
                 reaction = model.reactions.get_by_id(reaction_id)
                 reaction.lower_bound = lower_bound
@@ -142,7 +149,7 @@ def apply_media_to_model(model: Any, media_data: Any) -> None:
                 applied_count += 1
             else:
                 logger.warning(
-                    f"Media exchange reaction {reaction_id} not found in model"
+                    f"Media compound {compound_id} has no exchange reaction {reaction_id} in model"
                 )
 
         logger.info(f"Applied media constraints to {applied_count} exchange reactions")

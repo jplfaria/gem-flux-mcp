@@ -76,13 +76,13 @@ def load_predefined_media(media_dir: str = "data/media") -> Dict[str, Any]:
             media_name = media_def["name"]
 
             # Convert to MSMedia-compatible format
-            # Convert compound bounds to dictionary with _e0 suffix
+            # MSMedia.from_dict() expects compound IDs WITHOUT compartment suffix
+            # It will add _e0 internally when creating exchange reactions
             compounds_dict = {}
             for cpd_id, cpd_data in media_def["compounds"].items():
-                # Add _e0 suffix for extracellular compartment
-                compound_key = f"{cpd_id}_e0"
+                # Do NOT add _e0 suffix - MSMedia.from_dict() adds it
                 bounds = tuple(cpd_data["bounds"])  # Convert to tuple
-                compounds_dict[compound_key] = bounds
+                compounds_dict[cpd_id] = bounds
 
             # Store as dictionary (MSMedia object will be created when used)
             predefined_media[media_name] = {
