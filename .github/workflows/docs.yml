@@ -1,0 +1,68 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'specs/**'
+      - '**.md'
+  workflow_dispatch:
+
+jobs:
+  validate-docs:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for broken links
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          config-file: '.github/markdown-link-check-config.json'
+        continue-on-error: true
+
+      - name: Validate spec completeness
+        run: |
+          echo "Checking specification files..."
+          spec_count=$(find specs/ -name "*.md" -type f | wc -l)
+          echo "Found $spec_count specification files"
+
+          # Verify critical specs exist
+          critical_specs=(
+            "001-system-overview.md"
+            "002-data-formats.md"
+            "003-build-media-tool.md"
+            "004-build-model-tool.md"
+            "005-gapfill-model-tool.md"
+            "006-run-fba-tool.md"
+          )
+
+          for spec in "${critical_specs[@]}"; do
+            if [ ! -f "specs/$spec" ]; then
+              echo "Error: Missing critical spec: $spec"
+              exit 1
+            fi
+            echo "✓ Found $spec"
+          done
+
+      - name: Validate README
+        run: |
+          if [ ! -f "README.md" ]; then
+            echo "Error: README.md not found"
+            exit 1
+          fi
+          echo "✓ README.md exists"
+
+  check-spelling:
+    name: Check Spelling
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check spelling in documentation
+        uses: rojopolis/spellcheck-github-actions@0.36.0
+        with:
+          config_path: .github/spellcheck-config.yml
+        continue-on-error: true

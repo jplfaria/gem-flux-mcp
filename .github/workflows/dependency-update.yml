@@ -1,0 +1,93 @@
+name: Dependency Update Check
+
+on:
+  schedule:
+    # Run every Monday at 9:00 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  check-updates:
+    name: Check for Dependency Updates
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install UV
+        uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install 3.11
+
+      - name: Check for dependency updates
+        run: |
+          echo "Checking for outdated dependencies..."
+          uv pip list --outdated || true
+
+      - name: Create update lock file
+        run: |
+          cp uv.lock uv.lock.backup
+          uv lock --upgrade
+
+      - name: Test with updated dependencies
+        run: |
+          uv sync --all-extras --dev
+          uv run pytest tests/ --cov=src --cov-fail-under=80
+        continue-on-error: true
+
+      - name: Compare lock files
+        run: |
+          if ! diff -q uv.lock uv.lock.backup > /dev/null; then
+            echo "Dependency updates available"
+            echo "UPDATES_AVAILABLE=true" >> $GITHUB_ENV
+          else
+            echo "No dependency updates"
+            echo "UPDATES_AVAILABLE=false" >> $GITHUB_ENV
+          fi
+
+      - name: Create issue for updates
+        if: env.UPDATES_AVAILABLE == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = '🔄 Dependency Updates Available';
+            const body = `## Dependency Updates Available
+
+            Automated dependency check found available updates.
+
+            ### Next Steps
+            1. Review the updated \`uv.lock\` file
+            2. Run tests locally: \`uv run pytest tests/\`
+            3. If tests pass, create a PR with the updates
+            4. If tests fail, investigate breaking changes
+
+            ### Commands
+            \`\`\`bash
+            uv lock --upgrade
+            uv sync --all-extras --dev
+            uv run pytest tests/
+            \`\`\`
+
+            This issue was automatically created by the dependency-update workflow.`;
+
+            // Check if issue already exists
+            const issues = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'dependencies'
+            });
+
+            const existingIssue = issues.data.find(issue => issue.title === title);
+
+            if (!existingIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['dependencies', 'maintenance']
+              });
+            }
