@@ -987,6 +987,9 @@ README, examples, deployment guide, final validation
   - **Files Modified**: src/gem_flux_mcp/mcp_tools.py (NEW), src/gem_flux_mcp/server.py (added get_db_index)
 
 - [ ] **Task 11.2**: Refactor server.py for global state (1-2 hours)
+  - **PRIORITY**: 🔴 CRITICAL - **BLOCKS STRUCTBIOREASONER INTEGRATION**
+  - **Impact**: StructBioReasoner is 95% compatible and waiting on this task
+  - **Reference**: See `specs-source/STRUCTBIOREASONER_COMPATIBILITY_ANALYSIS.md`
   - Implement global variables: `_db_index`, `_templates`
   - Create accessor functions: `get_db_index()`, `get_templates()`
   - Update `load_resources()` to populate globals
@@ -1045,6 +1048,169 @@ README, examples, deployment guide, final validation
 **DO NOT mark Phase 11 complete until test_mcp_client.py works!**
 
 **Phase 11 Summary**: Complete MCP server integration using global state pattern to eliminate Pydantic schema errors. This is the CRITICAL PATH for enabling agent/LLM usage of metabolic modeling tools.
+
+---
+
+### Phase 11.5: Argo LLM Integration (Tasks 11.5.1-11.5.10) ❌ NOT STARTED
+
+**Test Phase**: Tests for this phase are in `test_expectations.json` under `phase_17` (see line 265)
+**Purpose**: Enable natural language interaction with MCP tools via Argo Gateway LLMs
+**Priority**: HIGH - Enables team showcase and real-world agent usage
+**Estimated Effort**: 10-15 hours (implementation loop automated)
+**Prerequisite**: Phase 11 MUST be complete before starting (MCP server must work)
+**Specifications**:
+- `specs/022-argo-llm-integration.md` - ArgoMCPClient architecture
+- `specs/023-mcp-tool-conversion.md` - MCP to OpenAI conversion
+- `specs/024-argo-real-llm-testing.md` - Real LLM testing patterns
+
+**Context**: Two complementary showcase paths:
+- **Path 1**: Jupyter notebooks showcase Python library (existing: `examples/01_basic_workflow.ipynb`)
+- **Path 2**: Argo LLM + MCP showcase agent usage (this phase: `examples/argo_llm/*.py`)
+
+**BLOCKING REQUIREMENT**: Phase 11 Tasks 11.2-11.5 MUST complete before starting Phase 11.5. Cannot test LLM integration without working MCP server.
+
+- [ ] **Task 11.5.1**: Create MCPToOpenAIConverter class (2 hours)
+  - Create `src/gem_flux_mcp/argo/__init__.py`
+  - Create `src/gem_flux_mcp/argo/converter.py` with MCPToOpenAIConverter
+  - Implement `convert_tool()` - Convert single MCP tool to OpenAI format
+  - Implement `convert_all_tools()` - Convert list of MCP tools
+  - Implement `_remove_defaults()` - Recursively remove default values (OpenAI doesn't support)
+  - Handle edge cases: empty tools, no parameters, enums, nested objects
+  - **Success**: Converter transforms MCP schemas to valid OpenAI function format
+  - **Verification**: Unit tests pass for basic conversion, default removal, enum preservation
+  - **Reference**: See spec 023 for complete conversion algorithm and test cases
+  - **Files**: `src/gem_flux_mcp/argo/converter.py` (NEW), `tests/unit/test_mcp_to_openai_converter.py` (NEW)
+
+- [ ] **Task 11.5.2**: Implement ArgoMCPClient initialization (2-3 hours)
+  - Create `src/gem_flux_mcp/argo/client.py` with ArgoMCPClient class
+  - Implement `__init__()` - Initialize OpenAI client for argo-proxy
+  - Implement `initialize()` - Async: Connect to MCP server, fetch tools, convert to OpenAI format
+  - Implement `initialize_sync()` - Synchronous wrapper using asyncio.run()
+  - Implement `_connect_to_mcp_server()` - MCP stdio connection
+  - Implement `_fetch_mcp_tools()` - Get tool definitions from MCP server
+  - **Success**: Client connects to both argo-proxy and MCP server successfully
+  - **Verification**: `client.initialize_sync()` populates `self.mcp_tools_openai` with converted tools
+  - **Reference**: See spec 022 sections 3.1-3.2 for initialization details
+  - **Files**: `src/gem_flux_mcp/argo/client.py` (NEW)
+
+- [ ] **Task 11.5.3**: Implement ArgoMCPClient chat interface (3-4 hours)
+  - Implement `chat()` - Main interface for natural language interaction
+  - Implement tool calling loop: LLM → tool_calls → MCP execution → LLM → response
+  - Implement `_execute_mcp_tool()` - Execute tool via MCP client
+  - Implement `_execute_mcp_tool_safe()` - Error handling wrapper
+  - Implement `reset()` - Clear conversation history
+  - Add conversation state management: `self.messages`, `self.tool_calls_made`
+  - Handle max_turns limit to prevent infinite loops
+  - **Success**: Users can chat in natural language, LLM calls tools automatically
+  - **Verification**: `client.chat("Build a model")` triggers build_model tool call and returns coherent response
+  - **Reference**: See spec 022 section 3 for tool calling loop algorithm
+  - **Files**: `src/gem_flux_mcp/argo/client.py` (modify)
+
+- [ ] **Task 11.5.4**: Implement streaming interface (2 hours)
+  - Implement `chat_stream()` - Streaming response with tool calls
+  - Handle streaming chunks and accumulate tool calls
+  - Support `on_chunk` callback for real-time updates
+  - Yield text chunks as they arrive from LLM
+  - **Success**: Streaming shows real-time LLM responses
+  - **Verification**: `for chunk in client.chat_stream("Build a model"): print(chunk)` shows incremental output
+  - **Reference**: See spec 022 section 4 for streaming implementation
+  - **Files**: `src/gem_flux_mcp/argo/client.py` (modify)
+
+- [ ] **Task 11.5.5**: Write unit tests for converter and client (2 hours)
+  - Create `tests/unit/test_mcp_to_openai_converter.py`
+  - Test: `test_convert_basic_tool` - Basic conversion works
+  - Test: `test_removes_default_values` - Defaults removed
+  - Test: `test_preserves_enum` - Enums preserved
+  - Test: `test_deep_copy` - Original not modified
+  - Test: `test_nested_objects` - Nested defaults removed
+  - Create `tests/unit/test_argo_client_unit.py` (mocked, no real LLM)
+  - Test: `test_client_initialization` - Client creates successfully
+  - Test: `test_message_history_management` - Messages appended correctly
+  - Test: `test_tool_call_logging` - Tool calls logged
+  - Test: `test_reset_clears_state` - reset() works
+  - **Success**: All unit tests pass (fast, no real LLM calls)
+  - **Verification**: `pytest tests/unit/test_mcp_to_openai_converter.py tests/unit/test_argo_client_unit.py -v`
+  - **Reference**: See spec 023 section 5 and spec 024 section 4
+  - **Files**: `tests/unit/test_mcp_to_openai_converter.py` (NEW), `tests/unit/test_argo_client_unit.py` (NEW)
+
+- [ ] **Task 11.5.6**: Write real LLM integration tests (2-3 hours)
+  - Create `tests/integration/test_phase17_argo_llm_real.py`
+  - Add `@pytest.mark.real_llm` marker to all tests
+  - Test: `test_build_media_with_argo` - Simple tool call
+  - Test: `test_build_model_with_argo` - Async tool call
+  - Test: `test_gapfill_model_with_argo` - Complex parameters
+  - Test: `test_run_fba_with_argo` - FBA execution
+  - Test: `test_complete_workflow_conversation` - Multi-turn workflow
+  - Test: `test_llm_parameter_understanding` - Natural language → parameters (parametrized)
+  - Test: `test_llm_handles_tool_errors_gracefully` - Error recovery
+  - Test: `test_streaming_with_tool_calls` - Streaming functionality
+  - **Success**: All real LLM tests pass when argo-proxy is running
+  - **Verification**: `pytest -m real_llm tests/integration/test_phase17_argo_llm_real.py -v`
+  - **Note**: Tests skip gracefully if argo-proxy not available
+  - **Reference**: See spec 024 for complete test patterns and examples
+  - **Files**: `tests/integration/test_phase17_argo_llm_real.py` (NEW)
+
+- [ ] **Task 11.5.7**: Create tutorial example scripts (2 hours)
+  - Create `examples/argo_llm/01_simple_model_building.py`
+  - Example: Single tool call (build_model)
+  - Create `examples/argo_llm/02_complete_workflow.py`
+  - Example: Multi-turn conversation (build → gapfill → FBA)
+  - Create `examples/argo_llm/03_interactive_cli.py`
+  - Example: Command-line chat interface with streaming
+  - All scripts use ArgoMCPClient, show real usage patterns
+  - **Success**: Scripts demonstrate MCP + LLM integration clearly
+  - **Verification**: `uv run python examples/argo_llm/01_simple_model_building.py` runs and shows LLM response
+  - **Note**: Requires argo-proxy running on localhost:8000
+  - **Reference**: See spec 022 section 6 for usage examples
+  - **Files**: `examples/argo_llm/*.py` (3 NEW files)
+
+- [ ] **Task 11.5.8**: Update supporting files (1 hour)
+  - Update `pyproject.toml` - Add dependencies: `openai>=1.0.0`, `httpx>=0.28.0`
+  - Update `tests/conftest.py` - Add pytest marker for real_llm, add argo_available fixture
+  - Update `tests/integration/conftest.py` - Add argo_client fixture
+  - Update `src/gem_flux_mcp/__init__.py` - Export ArgoMCPClient, MCPToOpenAIConverter
+  - Update `README.md` - Add section on Argo LLM integration
+  - **Success**: All infrastructure files updated
+  - **Verification**: `import gem_flux_mcp; assert hasattr(gem_flux_mcp, 'ArgoMCPClient')`
+  - **Files**: `pyproject.toml`, `tests/conftest.py`, `tests/integration/conftest.py`, `src/gem_flux_mcp/__init__.py`, `README.md`
+
+- [ ] **Task 11.5.9**: Update test_expectations.json (30 min)
+  - Add phase_17 entry with must_pass, may_fail, real_llm_tests lists
+  - Update metadata: total_phases=17, total_must_pass_tests=133
+  - Add notes about real LLM testing requirements
+  - **Success**: test_expectations.json has complete phase_17 definition
+  - **Verification**: JSON is valid, phase_17 has all required fields
+  - **Reference**: See spec 024 section 4 for phase_17 configuration
+  - **Files**: `tests/integration/test_expectations.json`
+
+- [ ] **Task 11.5.10**: Create documentation (1 hour)
+  - Create `docs/ARGO_LLM_INTEGRATION_GUIDE.md`
+  - Document: How to set up argo-proxy (IMPORTANT: argo-proxy is a SEPARATE service, NOT a Python dependency)
+  - Document: argo-proxy installation via `pip install argo-proxy` (separate from our project)
+  - Document: Running argo-proxy as standalone service (`argo-proxy` command starts server on localhost:8000)
+  - Document: How to use ArgoMCPClient (assumes argo-proxy already running)
+  - Document: How to run real LLM tests
+  - Document: Troubleshooting common issues (argo-proxy not running, ANL network requirements)
+  - Update `IMPLEMENTATION_PLAN.md` - Mark Phase 11.5 complete
+  - **IMPORTANT NOTE**: argo-proxy is infrastructure (like a database), NOT a project dependency
+  - **DO NOT** add argo-proxy to pyproject.toml - users install it separately
+  - **SUCCESS**: Complete documentation for Argo integration
+  - **Verification**: Documentation clearly explains argo-proxy is a prerequisite service, not a dependency
+  - **Files**: `docs/ARGO_LLM_INTEGRATION_GUIDE.md` (NEW)
+
+**Phase 11.5 Success Criteria** (ALL must pass before marking complete):
+- [ ] MCPToOpenAIConverter converts all MCP tools to valid OpenAI format
+- [ ] ArgoMCPClient connects to both argo-proxy and MCP server
+- [ ] `client.chat("Build a model")` triggers tool call and returns response
+- [ ] Multi-turn conversations maintain context across turns
+- [ ] All unit tests pass (converter, client)
+- [ ] All real LLM tests pass when argo-proxy available (8 tests)
+- [ ] Real LLM tests skip gracefully when argo-proxy unavailable
+- [ ] Tutorial scripts run successfully and demonstrate usage
+- [ ] Streaming interface works with real-time chunks
+- [ ] Documentation complete and accurate
+
+**Phase 11.5 Summary**: Enable natural language interaction with metabolic modeling tools via Argo Gateway LLMs. This provides the second showcase path (MCP + LLM) complementary to Jupyter notebooks (Python library), demonstrating agent-driven workflows for team and stakeholders.
 
 ---
 

@@ -279,6 +279,46 @@ The server uses the **Model Context Protocol (MCP)** with JSON-RPC 2.0 transport
 }
 ```
 
+### Optional: Argo LLM Integration
+
+Gem-Flux MCP can be used with Large Language Models via Argo Gateway for natural language interaction.
+
+**Important**: `argo-proxy` is **NOT** a Python package dependency. It's a standalone service you install separately if you want LLM integration.
+
+**Gem-Flux MCP works without argo-proxy for:**
+- ✅ **Python library usage** - Direct Python API calls (Jupyter notebooks)
+- ✅ **MCP server usage** - Integration with MCP clients (StructBioReasoner, other agents)
+- ✅ **Direct tool calls** - JSON-RPC requests via MCP protocol
+
+**To enable LLM integration (optional):**
+
+1. Install argo-proxy separately:
+```bash
+pip install argo-proxy  # In a separate environment, NOT in gem-flux-mcp
+```
+
+2. Start argo-proxy:
+```bash
+argo-proxy  # Starts server on localhost:8000
+```
+
+3. Use ArgoMCPClient for natural language interaction:
+```python
+from gem_flux_mcp.argo_client import ArgoMCPClient
+
+client = ArgoMCPClient()
+client.initialize_sync()
+
+# Natural language → Tool calls → Results
+response = client.chat("Build a metabolic model for E. coli genome 83333.1")
+print(response)
+# "I've built a metabolic model with ID 'ecoli_83333.gf'..."
+```
+
+**Documentation**: See `docs/ARGO_LLM_INTEGRATION_GUIDE.md` for complete setup and usage.
+
+**Phase**: Phase 11.5 in `IMPLEMENTATION_PLAN.md` (Argo LLM Integration)
+
 ---
 
 ## MCP Tools
