@@ -309,12 +309,10 @@ def create_genome_from_dict(
         fasta_path = dict_to_fasta_file(protein_sequences)
 
         try:
-            # Submit to RAST API
+            # Create genome from FASTA, then annotate with RAST
+            genome = MSGenome.from_fasta(fasta_path)
             rast_client = RastClient()
-            annotated_genome = rast_client.annotate(fasta_path)
-
-            # Create genome from RAST results
-            genome = MSGenome.from_fasta(annotated_genome)
+            rast_client.annotate_genome(genome)  # Annotates in-place
             logger.info(f"Created genome from RAST annotation ({len(protein_sequences)} sequences)")
 
         except Exception as e:

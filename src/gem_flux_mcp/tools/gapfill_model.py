@@ -411,9 +411,9 @@ def integrate_gapfill_solution(
         logger.info(f"Adding {len(exchange_reactions_to_add)} exchange reactions using MSBuilder")
         # MSBuilder.add_exchanges_to_model handles all the complexity:
         # - Creates exchange reactions with correct stoichiometry
-        # - Sets appropriate bounds (default uptake_rate=100)
+        # - Sets appropriate bounds
         # - Links to existing or creates new metabolites
-        MSBuilder.add_exchanges_to_model(model, uptake_rate=100)
+        MSBuilder.add_exchanges_to_model(model, extra_cell='e0')
         logger.info(f"MSBuilder added exchanges for {len(exchange_reactions_to_add)} compounds")
 
     for rxn_id, direction in new_reactions.items():
@@ -662,9 +662,11 @@ def gapfill_model(
             # Gapfilling failed to achieve target
             logger.warning(f"Gapfilling failed: achieved {growth_rate_after:.6f} < target {target_growth_rate}")
 
-            # Check if it's truly infeasible or just didn't reach target
-            if growth_rate_after == 0.0:
-                # Complete failure - raise error
+            # For atp_only mode, zero growth is EXPECTED (no bio1 objective yet)
+            if gapfill_mode == "atp_only":
+                logger.info("ATP-only mode: zero growth expected (no biomass objective at this stage)")
+            elif growth_rate_after == 0.0:
+                # Complete failure in full or genomescale_only mode - raise error
                 raise gapfill_infeasible_error(
                     model_id=model_id,
                     media_id=media_id,
