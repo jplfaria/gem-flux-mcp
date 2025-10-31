@@ -1177,7 +1177,21 @@ Debug logs include:
 - `018-session-management-tools.md` - Session tools
 - `019-predefined-media-library.md` - Media library
 
+**Tool Documentation (docs/tools/):**
+- `docs/tools/README.md` - Tool overview and quick reference
+- `docs/tools/build_model.md` - Model building tool guide
+- `docs/tools/gapfill_model.md` - Gapfilling tool guide
+- `docs/tools/run_fba.md` - FBA execution tool guide
+- `docs/tools/build_media.md` - Media creation tool guide
+- `docs/tools/compound_lookup.md` - Compound lookup tools
+- `docs/tools/reaction_lookup.md` - Reaction lookup tools
+- `docs/tools/list_models.md` - Model listing tool
+- `docs/tools/list_media.md` - Media listing tool
+- `docs/tools/delete_model.md` - Model deletion tool
+
 **Development Guides (docs/):**
+- `docs/ATP_CORRECTION.md` - ATP correction feature guide
+- `docs/TESTING.md` - Testing guide and best practices
 - `docs/SESSION_LIFECYCLE.md` - Session management lifecycle
 - `IMPLEMENTATION_PLAN.md` - Complete implementation plan (100 tasks)
 - `CLAUDE.md` - AI co-scientist guidelines

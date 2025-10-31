@@ -292,7 +292,8 @@ def run_fba(
         model = copy.deepcopy(original_model)
 
         # Step 3: Apply media constraints
-        apply_media_to_model(model, media)
+        # Use reset_exchange_bounds=False to preserve gapfilled exchanges
+        apply_media_to_model(model, media, compartment="e0", reset_exchange_bounds=False)
 
         # Step 4: Verify objective reaction exists
         if objective not in model.reactions:
