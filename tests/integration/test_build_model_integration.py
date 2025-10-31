@@ -328,7 +328,311 @@ class TestBuildModelPerformance:
 @pytest.mark.asyncio
 @pytest.mark.slow
 class TestATPCorrectionIntegration:
-    """Integration tests for ATP correction gapfilling workflow."""
+    """Integration tests for ATP correction workflow in build_model and gapfill_model.
+
+    Tests verify:
+    1. ATP correction is applied by default in build_model
+    2. Test_conditions are stored alongside models
+    3. Gapfill_model reuses stored test_conditions (avoids redundant ATP correction)
+    4. Gapfill_model runs ATP correction when test_conditions not found
+    """
+
+    @pytest.mark.slow
+    async def test_build_model_atp_correction_applied_by_default(self, real_database):
+        """Test that ATP correction is applied by default in build_model.
+
+        Verifies:
+        - build_model applies ATP correction by default
+        - Response includes atp_correction statistics
+        - Test_conditions are stored in MODEL_STORAGE
+        - Model has more reactions after ATP correction
+        """
+        from gem_flux_mcp.storage.models import MODEL_STORAGE
+
+        protein_sequences = {
+            "prot1": "MRVLKFGGTSVANAERFLRVADILESNARQGQVATVLSAPAKITNHLVAMIEKTISGQDALPNISDAERIFAELLTGLAAAQPGFPLAQLKTFVDQEFAQIKHVLHGISLLGQCPDSINAALICR",
+            "prot2": "MVKVYAPASSANMSVGFDVLGAAVTPVDGALLGDVVTVEAAETFSLNNLGRFADKLPSEPRENIVYQCWERFCQELGKQIPVAMTLEKNMPIGSGLGSSACSVVAALMAMNEHCGKPLND",
+        }
+
+        print("\n=== Testing ATP correction in build_model ===")
+        print("Building model with ATP correction (default behavior)...")
+
+        response = await build_model(
+            protein_sequences=protein_sequences,
+            template="GramNegative",
+            model_name="atp_build_test",
+            annotate_with_rast=True
+        )
+
+        # Verify build succeeded
+        assert response["success"] is True
+        model_id = response["model_id"]
+        print(f"✓ Model built: {model_id}")
+
+        # Verify ATP correction was applied
+        assert "atp_correction" in response, "Response should include ATP correction statistics"
+        atp_stats = response["atp_correction"]
+
+        assert atp_stats["atp_correction_applied"] is True, "ATP correction should be applied by default"
+        assert atp_stats["reactions_after_correction"] > atp_stats["reactions_before_correction"], \
+            "ATP correction should add reactions"
+
+        reactions_added = atp_stats["reactions_added_by_correction"]
+        print(f"  ✓ ATP correction added {reactions_added} reactions")
+        print(f"    Before: {atp_stats['reactions_before_correction']}")
+        print(f"    After: {atp_stats['reactions_after_correction']}")
+
+        # Verify test_conditions were stored
+        test_conditions_id = f"{model_id}.test_conditions"
+        assert test_conditions_id in MODEL_STORAGE, \
+            f"Test conditions should be stored at {test_conditions_id}"
+
+        stored_test_conditions = MODEL_STORAGE[test_conditions_id]
+        assert isinstance(stored_test_conditions, list), "Test conditions should be a list"
+        assert len(stored_test_conditions) > 0, "Test conditions should not be empty"
+
+        print(f"  ✓ Stored {len(stored_test_conditions)} test conditions")
+        print(f"\n✓ ATP correction applied successfully in build_model")
+
+    @pytest.mark.slow
+    async def test_build_model_atp_correction_can_be_disabled(self, real_database):
+        """Test that ATP correction can be disabled in build_model.
+
+        Verifies:
+        - apply_atp_correction=False disables ATP correction
+        - Response indicates ATP correction was not applied
+        - Test_conditions are NOT stored
+        - Model is faster to build without ATP correction
+        """
+        from gem_flux_mcp.storage.models import MODEL_STORAGE
+        import time
+
+        protein_sequences = {
+            "prot1": "MRVLKFGGTSVANAERFLRVADILESNARQGQVATVLSAPAKITNHLVAMIEKTISGQDALPNISDAERIFAELLTGLAAAQPGFPLAQLKTFVDQEFAQIKHVLHGISLLGQCPDSINAALICR",
+        }
+
+        print("\n=== Testing ATP correction can be disabled ===")
+        print("Building model WITHOUT ATP correction...")
+
+        start_time = time.perf_counter()
+        response = await build_model(
+            protein_sequences=protein_sequences,
+            template="GramNegative",
+            model_name="no_atp_test",
+            annotate_with_rast=True,
+            apply_atp_correction=False  # Disable ATP correction
+        )
+        elapsed = time.perf_counter() - start_time
+
+        # Verify build succeeded
+        assert response["success"] is True
+        model_id = response["model_id"]
+        print(f"✓ Model built in {elapsed:.1f}s: {model_id}")
+
+        # Verify ATP correction was NOT applied
+        assert "atp_correction" in response
+        atp_stats = response["atp_correction"]
+        assert atp_stats["atp_correction_applied"] is False, "ATP correction should be disabled"
+
+        print(f"  ✓ ATP correction disabled as expected")
+
+        # Verify test_conditions were NOT stored
+        test_conditions_id = f"{model_id}.test_conditions"
+        assert test_conditions_id not in MODEL_STORAGE, \
+            f"Test conditions should NOT be stored when ATP correction is disabled"
+
+        print(f"  ✓ No test conditions stored (as expected)")
+        print(f"\n✓ ATP correction successfully disabled")
+
+    @pytest.mark.slow
+    async def test_gapfill_reuses_test_conditions_from_build_model(self, real_database):
+        """Test that gapfill_model reuses test_conditions from build_model.
+
+        Verifies:
+        - When model has stored test_conditions from build_model
+        - gapfill_model reuses them (doesn't run ATP correction again)
+        - Response indicates ATP correction was skipped
+        - Gapfilling still works correctly
+        """
+        from gem_flux_mcp.storage.models import MODEL_STORAGE
+
+        protein_sequences = {
+            "prot1": "MRVLKFGGTSVANAERFLRVADILESNARQGQVATVLSAPAKITNHLVAMIEKTISGQDALPNISDAERIFAELLTGLAAAQPGFPLAQLKTFVDQEFAQIKHVLHGISLLGQCPDSINAALICR",
+            "prot2": "MVKVYAPASSANMSVGFDVLGAAVTPVDGALLGDVVTVEAAETFSLNNLGRFADKLPSEPRENIVYQCWERFCQELGKQIPVAMTLEKNMPIGSGLGSSACSVVAALMAMNEHCGKPLND",
+        }
+
+        print("\n=== Testing test_conditions reuse in gapfill_model ===")
+
+        # Step 1: Build model WITH ATP correction
+        print("Step 1: Building model with ATP correction...")
+        build_response = await build_model(
+            protein_sequences=protein_sequences,
+            template="GramNegative",
+            model_name="reuse_test_model",
+            annotate_with_rast=True,
+            apply_atp_correction=True  # Enable ATP correction
+        )
+
+        assert build_response["success"] is True
+        model_id = build_response["model_id"]
+        assert build_response["atp_correction"]["atp_correction_applied"] is True
+
+        # Verify test_conditions were stored
+        test_conditions_id = f"{model_id}.test_conditions"
+        assert test_conditions_id in MODEL_STORAGE
+        num_stored_conditions = len(MODEL_STORAGE[test_conditions_id])
+        print(f"  ✓ Model built with {num_stored_conditions} test conditions stored")
+
+        # Step 2: Create minimal media
+        print("\nStep 2: Creating minimal media...")
+        media_request = BuildMediaRequest(
+            compounds=[
+                "cpd00027",  # D-Glucose
+                "cpd00007",  # O2
+                "cpd00001",  # H2O
+                "cpd00009",  # Phosphate
+                "cpd00011",  # CO2
+                "cpd00013",  # NH3
+                "cpd00048",  # SO4
+                "cpd00067",  # H+
+                "cpd00099",  # Cl-
+                "cpd00205",  # K+
+                "cpd00254",  # Mg2+
+                "cpd00971",  # Na+
+            ],
+            default_uptake=100.0,
+            custom_bounds={
+                "cpd00027": (-10.0, 100.0),
+                "cpd00007": (-20.0, 100.0),
+            }
+        )
+        media_response = build_media(media_request, real_database)
+        media_id = media_response["media_id"]
+        print(f"  ✓ Media created: {media_id}")
+
+        # Step 3: Run gapfilling (should reuse test_conditions)
+        print("\nStep 3: Gapfilling (should reuse test_conditions)...")
+        gapfill_result = gapfill_model(
+            model_id=model_id,
+            media_id=media_id,
+            db_index=real_database,
+            target_growth_rate=0.01,
+            gapfill_mode="full",
+        )
+
+        # Verify gapfilling succeeded
+        assert gapfill_result["success"] is True
+        print(f"  ✓ Gapfilling succeeded")
+
+        # Verify ATP correction was SKIPPED (test_conditions reused)
+        assert "atp_correction" in gapfill_result
+        atp_stats = gapfill_result["atp_correction"]
+
+        assert atp_stats["performed"] is False, "ATP correction should be skipped (test_conditions reused)"
+        assert "note" in atp_stats, "Should have note explaining why ATP correction was skipped"
+        assert "already applied" in atp_stats["note"].lower(), "Note should mention ATP correction was already applied"
+        assert "test_conditions_reused" in atp_stats, "Should report number of test_conditions reused"
+        assert atp_stats["test_conditions_reused"] == num_stored_conditions, \
+            f"Should reuse all {num_stored_conditions} stored test_conditions"
+
+        print(f"  ✓ ATP correction skipped (test_conditions reused)")
+        print(f"    Note: {atp_stats['note']}")
+        print(f"    Reused: {atp_stats['test_conditions_reused']} test conditions")
+
+        print(f"\n✓ Test_conditions successfully reused from build_model")
+
+    @pytest.mark.slow
+    async def test_gapfill_runs_atp_correction_when_needed(self, real_database):
+        """Test that gapfill_model runs ATP correction when test_conditions not found.
+
+        Verifies:
+        - When model lacks stored test_conditions (built without ATP correction)
+        - gapfill_model runs ATP correction as normal
+        - Response indicates ATP correction was performed
+        - Gapfilling works correctly
+        """
+        from gem_flux_mcp.storage.models import MODEL_STORAGE
+
+        protein_sequences = {
+            "prot1": "MRVLKFGGTSVANAERFLRVADILESNARQGQVATVLSAPAKITNHLVAMIEKTISGQDALPNISDAERIFAELLTGLAAAQPGFPLAQLKTFVDQEFAQIKHVLHGISLLGQCPDSINAALICR",
+            "prot2": "MVKVYAPASSANMSVGFDVLGAAVTPVDGALLGDVVTVEAAETFSLNNLGRFADKLPSEPRENIVYQCWERFCQELGKQIPVAMTLEKNMPIGSGLGSSACSVVAALMAMNEHCGKPLND",
+        }
+
+        print("\n=== Testing ATP correction runs when test_conditions not found ===")
+
+        # Step 1: Build model WITHOUT ATP correction
+        print("Step 1: Building model WITHOUT ATP correction...")
+        build_response = await build_model(
+            protein_sequences=protein_sequences,
+            template="GramNegative",
+            model_name="no_stored_conditions_test",
+            annotate_with_rast=True,
+            apply_atp_correction=False  # Disable ATP correction
+        )
+
+        assert build_response["success"] is True
+        model_id = build_response["model_id"]
+        assert build_response["atp_correction"]["atp_correction_applied"] is False
+
+        # Verify test_conditions were NOT stored
+        test_conditions_id = f"{model_id}.test_conditions"
+        assert test_conditions_id not in MODEL_STORAGE
+        print(f"  ✓ Model built WITHOUT ATP correction (no test_conditions stored)")
+
+        # Step 2: Create minimal media
+        print("\nStep 2: Creating minimal media...")
+        media_request = BuildMediaRequest(
+            compounds=[
+                "cpd00027",  # D-Glucose
+                "cpd00007",  # O2
+                "cpd00001",  # H2O
+                "cpd00009",  # Phosphate
+                "cpd00011",  # CO2
+                "cpd00013",  # NH3
+                "cpd00048",  # SO4
+                "cpd00067",  # H+
+                "cpd00099",  # Cl-
+                "cpd00205",  # K+
+                "cpd00254",  # Mg2+
+                "cpd00971",  # Na+
+            ],
+            default_uptake=100.0,
+            custom_bounds={
+                "cpd00027": (-10.0, 100.0),
+                "cpd00007": (-20.0, 100.0),
+            }
+        )
+        media_response = build_media(media_request, real_database)
+        media_id = media_response["media_id"]
+        print(f"  ✓ Media created: {media_id}")
+
+        # Step 3: Run gapfilling (should run ATP correction)
+        print("\nStep 3: Gapfilling (should run ATP correction)...")
+        gapfill_result = gapfill_model(
+            model_id=model_id,
+            media_id=media_id,
+            db_index=real_database,
+            target_growth_rate=0.01,
+            gapfill_mode="full",
+        )
+
+        # Verify gapfilling succeeded
+        assert gapfill_result["success"] is True
+        print(f"  ✓ Gapfilling succeeded")
+
+        # Verify ATP correction was PERFORMED
+        assert "atp_correction" in gapfill_result
+        atp_stats = gapfill_result["atp_correction"]
+
+        assert atp_stats["performed"] is True, "ATP correction should be performed (no stored test_conditions)"
+        assert "media_tested" in atp_stats, "Should report media tested"
+        assert atp_stats["media_tested"] == 54, "Should test 54 default media"
+
+        print(f"  ✓ ATP correction performed as expected")
+        print(f"    Media tested: {atp_stats['media_tested']}")
+        print(f"    Reactions added: {atp_stats.get('reactions_added', 0)}")
+
+        print(f"\n✓ ATP correction correctly performed when test_conditions not found")
 
     @pytest.mark.slow
     async def test_atp_correction_media_testing(self, ecoli_fasta_path, real_database):

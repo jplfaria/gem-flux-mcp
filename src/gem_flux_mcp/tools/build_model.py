@@ -34,6 +34,10 @@ from gem_flux_mcp.storage.models import (
     store_model,
 )
 from gem_flux_mcp.templates.loader import get_template, validate_template_name
+from gem_flux_mcp.utils.atp_correction import (
+    apply_atp_correction as do_atp_correction,
+    get_atp_correction_statistics,
+)
 
 logger = get_logger(__name__)
 
@@ -507,11 +511,24 @@ async def build_model(
     template: str = "GramNegative",
     model_name: Optional[str] = None,
     annotate_with_rast: bool = False,  # Default False for MVP (RAST not yet implemented)
+    apply_atp_correction: bool = True,  # Default True - ON by default for biologically realistic models
 ) -> dict[str, Any]:
     """Build a draft genome-scale metabolic model from protein sequences.
 
     This tool creates a draft metabolic model using template-based reconstruction.
     The resulting model typically requires gapfilling to enable growth.
+
+    ATP Correction (ON by default):
+    By default, this tool applies ATP correction to produce biologically realistic models
+    that match the published ModelSEED workflow. ATP correction:
+    - Tests ATP production across multiple media conditions
+    - Expands models to genome scale with additional reactions
+    - Creates test conditions for multi-media validation during gapfilling
+    - Results in more constrained, biologically realistic growth predictions
+
+    ATP correction takes longer (~3-5 minutes vs ~30 seconds) but produces scientifically
+    accurate models. You can disable it with apply_atp_correction=False for faster builds
+    during development or testing.
 
     Args:
         protein_sequences: Dict mapping protein IDs to sequences (mutually exclusive with fasta_file_path)
@@ -519,6 +536,7 @@ async def build_model(
         template: Template name ("GramNegative", "GramPositive", "Core")
         model_name: Optional custom model name
         annotate_with_rast: Use RAST annotation for improved mapping (default: False)
+        apply_atp_correction: Apply ATP correction for biologically realistic models (default: True)
 
     Returns:
         Dict with success status, model_id, and model statistics
@@ -527,7 +545,7 @@ async def build_model(
         ValidationError: If inputs invalid
         LibraryError: If model building fails
     """
-    logger.info(f"build_model called: template={template}, annotate_with_rast={annotate_with_rast}")
+    logger.info(f"build_model called: template={template}, annotate_with_rast={annotate_with_rast}, apply_atp_correction={apply_atp_correction}")
 
     # Step 1: Validate mutually exclusive inputs
     if protein_sequences is not None and fasta_file_path is not None:
@@ -640,6 +658,37 @@ async def build_model(
         logger.warning(f"Failed to add ATPM reaction: {e}")
         # Continue anyway - ATPM is optional
 
+    # Step 7.5: Apply ATP correction (if enabled)
+    test_conditions = None
+    atp_stats = None
+    if apply_atp_correction:
+        try:
+            logger.info("ATP correction enabled - applying workflow (this may take 3-5 minutes)...")
+            original_num_reactions = len(model.reactions)
+
+            # Load Core template for ATP correction
+            core_template = get_template("Core")
+
+            # Apply ATP correction workflow
+            model, test_conditions = do_atp_correction(model, core_template)
+
+            # Collect statistics
+            atp_stats = get_atp_correction_statistics(
+                original_num_reactions,
+                len(model.reactions),
+                test_conditions
+            )
+            logger.info(f"ATP correction completed: {atp_stats['reactions_added_by_correction']} reactions added")
+
+        except Exception as e:
+            logger.warning(f"ATP correction failed: {e}")
+            logger.warning("Continuing without ATP correction - model may have unrealistic growth rates")
+            test_conditions = None
+            atp_stats = None
+            # Continue anyway - ATP correction failure shouldn't break the tool
+    else:
+        logger.info("ATP correction disabled - model may have unrealistic growth rates")
+
     # Step 8: Generate model ID with .draft suffix
     if model_name:
         model_id = generate_model_id_from_name(model_name, state="draft")
@@ -650,6 +699,13 @@ async def build_model(
     try:
         store_model(model_id, model)
         logger.info(f"Stored model in session: {model_id}")
+
+        # Store test_conditions alongside model if ATP correction was applied
+        if test_conditions is not None:
+            test_conditions_id = f"{model_id}.test_conditions"
+            store_model(test_conditions_id, test_conditions)
+            logger.info(f"Stored ATP correction test_conditions: {test_conditions_id}")
+
     except Exception as e:
         raise LibraryError(
             message=f"Failed to store model in session: {e}",
@@ -669,6 +725,15 @@ async def build_model(
         "annotated_with_rast": annotate_with_rast,
         **stats,
     }
+
+    # Include ATP correction statistics if available
+    if atp_stats is not None:
+        response["atp_correction"] = atp_stats
+    else:
+        response["atp_correction"] = {
+            "atp_correction_applied": False,
+            "warning": "ATP correction disabled or failed - model may have unrealistic growth rates",
+        }
 
     logger.info(f"build_model completed successfully: {model_id}")
     return response

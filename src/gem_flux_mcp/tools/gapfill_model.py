@@ -8,6 +8,7 @@ gapfilling to enable growth in the target medium.
 
 Tool Capabilities:
     - Two-stage gapfilling (ATP correction + genome-scale)
+    - Automatic reuse of ATP test conditions from build_model
     - Minimal reaction set addition
     - Template-based reaction sourcing
     - Growth rate verification
@@ -15,11 +16,13 @@ Tool Capabilities:
 
 Gapfilling Stages:
     1. ATP Correction (MSATPCorrection):
-       - Tests ATP production across 54 default media
+       - Automatically reuses test conditions if model was ATP-corrected during build_model
+       - If not already done: tests ATP production across 54 default media
        - Adds reactions to fix ATP metabolism gaps
        - Expands model to genome-scale template
 
     2. Genome-Scale Gapfilling (MSGapfill):
+       - Uses ATP test conditions for multi-media validation
        - Adds minimal reactions for target medium
        - Ensures model reaches target growth rate
        - Auto-generates exchange reactions
@@ -383,6 +386,11 @@ def integrate_gapfill_solution(
 ) -> list[dict[str, Any]]:
     """Integrate gapfilling solution into model.
 
+    CRITICAL: Reactions must be added in this order:
+    1. Add non-exchange reactions from template (may introduce new metabolites)
+    2. Call MSBuilder.add_exchanges_to_model() to create exchanges for new metabolites
+    3. Set bounds on exchange reactions based on gapfill solution
+
     Args:
         model: COBRApy Model object to modify
         template: Template with reaction definitions
@@ -394,58 +402,22 @@ def integrate_gapfill_solution(
     logger.info("Integrating gapfilling solution into model...")
 
     added_reactions = []
-
-    # Process new reactions
     new_reactions = solution.get('new', {})
 
-    # First, use MSBuilder to add any missing exchange reactions
-    # MSGapfill may suggest exchange reactions that don't exist yet
-    # Use the canonical ModelSEEDpy helper instead of manual creation
-    from modelseedpy.core.msbuilder import MSBuilder
-    exchange_reactions_to_add = [
-        rxn_id for rxn_id in new_reactions.keys()
-        if rxn_id.startswith('EX_') and rxn_id not in model.reactions
-    ]
-
-    if exchange_reactions_to_add:
-        logger.info(f"Adding {len(exchange_reactions_to_add)} exchange reactions using MSBuilder")
-        # MSBuilder.add_exchanges_to_model handles all the complexity:
-        # - Creates exchange reactions with correct stoichiometry
-        # - Sets appropriate bounds
-        # - Links to existing or creates new metabolites
-        MSBuilder.add_exchanges_to_model(model, extra_cell='e0')
-        logger.info(f"MSBuilder added exchanges for {len(exchange_reactions_to_add)} compounds")
-
+    # STEP 1: Add non-exchange reactions first (these may introduce new metabolites)
+    logger.info("Step 1: Adding non-exchange reactions from template...")
     for rxn_id, direction in new_reactions.items():
+        # Skip exchange reactions for now - process them after MSBuilder
+        if rxn_id.startswith('EX_'):
+            continue
+
         try:
-            # For exchange reactions, they should now exist (added by MSBuilder above)
-            # Just update their bounds based on gapfilling direction
-            if rxn_id.startswith('EX_'):
-                if rxn_id in model.reactions:
-                    existing_rxn = model.reactions.get_by_id(rxn_id)
-                    lb, ub = get_reaction_constraints_from_direction(direction)
-                    existing_rxn.lower_bound = lb
-                    existing_rxn.upper_bound = ub
-                    logger.debug(f"Set exchange reaction {rxn_id} bounds to ({lb}, {ub})")
-
-                    added_reactions.append({
-                        "id": rxn_id,
-                        "direction": direction,
-                        "bounds": [lb, ub],
-                    })
-                else:
-                    logger.warning(f"Exchange reaction {rxn_id} not found after MSBuilder.add_exchanges_to_model()")
-
-                continue  # Don't try to get from template
-
-            # For non-exchange reactions, get from template
             # Convert model reaction ID (indexed) to template reaction ID (non-indexed)
             # Model uses: rxn05481_c0, Template uses: rxn05481_c
-            # Strip trailing '0' to convert indexed (_c0) to non-indexed (_c)
             if rxn_id.endswith('0'):
                 template_rxn_id = rxn_id[:-1]  # rxn05481_c0 → rxn05481_c
             else:
-                template_rxn_id = rxn_id  # Already in template format
+                template_rxn_id = rxn_id
 
             # Get reaction from template
             if template_rxn_id not in template.reactions:
@@ -477,6 +449,45 @@ def integrate_gapfill_solution(
         except Exception as e:
             logger.warning(f"Failed to add reaction {rxn_id}: {e}")
             continue
+
+    # STEP 2: Now that new reactions (and their metabolites) are in the model,
+    # call MSBuilder to create exchange reactions for any new metabolites
+    from modelseedpy.core.msbuilder import MSBuilder
+    exchange_reactions_in_solution = [
+        rxn_id for rxn_id in new_reactions.keys() if rxn_id.startswith('EX_')
+    ]
+
+    if exchange_reactions_in_solution:
+        logger.info(f"Step 2: Creating exchange reactions for new metabolites...")
+        # MSBuilder will create exchanges for all metabolites that don't have them yet
+        added_exchanges = MSBuilder.add_exchanges_to_model(model, extra_cell='e0')
+        logger.info(f"MSBuilder added {len(added_exchanges)} exchange reactions")
+
+        # STEP 3: Set bounds on exchange reactions based on gapfill solution
+        logger.info("Step 3: Setting bounds on exchange reactions...")
+        for rxn_id, direction in new_reactions.items():
+            if not rxn_id.startswith('EX_'):
+                continue
+
+            try:
+                if rxn_id in model.reactions:
+                    existing_rxn = model.reactions.get_by_id(rxn_id)
+                    lb, ub = get_reaction_constraints_from_direction(direction)
+                    existing_rxn.lower_bound = lb
+                    existing_rxn.upper_bound = ub
+                    logger.debug(f"Set exchange reaction {rxn_id} bounds to ({lb}, {ub})")
+
+                    added_reactions.append({
+                        "id": rxn_id,
+                        "direction": direction,
+                        "bounds": [lb, ub],
+                    })
+                else:
+                    logger.warning(f"Exchange reaction {rxn_id} not found after MSBuilder.add_exchanges_to_model()")
+
+            except Exception as e:
+                logger.warning(f"Failed to set bounds on exchange reaction {rxn_id}: {e}")
+                continue
 
     logger.info(f"Integrated {len(added_reactions)} reactions into model")
 
@@ -628,13 +639,33 @@ def gapfill_model(
         core_template = get_template("Core")
         logger.info(f"Loaded templates: {template_name}, Core")
 
-        # Step 6: Run ATP correction (if enabled)
+        # Step 6: Check for stored test_conditions from build_model ATP correction
+        test_conditions_id = f"{model_id}.test_conditions"
+        stored_test_conditions = None
+
+        if test_conditions_id in MODEL_STORAGE:
+            stored_test_conditions = MODEL_STORAGE[test_conditions_id]
+            logger.info(f"Found stored ATP test_conditions from build_model: {len(stored_test_conditions)} conditions")
+
+        # Step 6.5: Run ATP correction (if enabled and not already done)
         atp_stats = {"performed": False}
         tests = []
 
         if gapfill_mode in ["full", "atp_only"]:
-            atp_stats = run_atp_correction(model, core_template)
-            tests = atp_stats.get("tests", [])
+            if stored_test_conditions is not None:
+                # Use stored test_conditions from build_model - skip redundant ATP correction
+                tests = stored_test_conditions
+                atp_stats = {
+                    "performed": False,
+                    "note": "Skipped - ATP correction already applied during build_model",
+                    "test_conditions_reused": len(tests),
+                }
+                logger.info(f"Reusing {len(tests)} test_conditions from build_model ATP correction")
+            else:
+                # No stored test_conditions - run ATP correction now
+                logger.info("No stored test_conditions found - running ATP correction")
+                atp_stats = run_atp_correction(model, core_template)
+                tests = atp_stats.get("tests", [])
 
         # Step 7: Run genome-scale gapfilling (if enabled)
         genomescale_stats = {"performed": False}
@@ -708,6 +739,8 @@ def gapfill_model(
                 "media_failed": atp_stats.get("media_failed", 0),
                 "reactions_added": atp_stats.get("reactions_added", 0),
                 "failed_media_examples": atp_stats.get("failed_media_examples", []),
+                "test_conditions_reused": atp_stats.get("test_conditions_reused"),
+                "note": atp_stats.get("note"),
             },
             "genomescale_gapfill": {
                 "performed": genomescale_stats.get("performed", False),
