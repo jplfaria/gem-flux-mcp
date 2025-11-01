@@ -29,16 +29,35 @@ from gem_flux_mcp.errors import ValidationError, NotFoundError
 def mock_model():
     """Create mock COBRApy model."""
     model = Mock()
-    model.reactions = []
-    model.metabolites = []
 
-    # Add biomass reaction
+    # Create mock reactions list
     bio_rxn = Mock()
     bio_rxn.id = "bio1"
-    model.reactions.append(bio_rxn)
+    bio_rxn.lower_bound = 0.0
+    bio_rxn.upper_bound = 1000.0
+
+    # Add exchange reaction for cpd00027_e0 (matches mock_media fixture)
+    ex_rxn = Mock()
+    ex_rxn.id = "EX_cpd00027_e0"
+    ex_rxn.lower_bound = 0.0
+    ex_rxn.upper_bound = 1000.0
+
+    mock_reactions_list = [bio_rxn, ex_rxn]
+
+    # Create Mock for reactions that supports both iteration and 'in' operator
+    reactions_mock = Mock()
+    reactions_mock.__iter__ = Mock(return_value=iter(mock_reactions_list))
+    reactions_mock.__contains__ = Mock(side_effect=lambda x: x in [r.id for r in mock_reactions_list])
+    reactions_mock.append = Mock(side_effect=mock_reactions_list.append)
+    model.reactions = reactions_mock
+
+    model.metabolites = []
 
     # Add notes dict
     model.notes = {"template_used": "GramNegative"}
+
+    # Add .medium attribute (will be set by apply_media_to_model)
+    model.medium = {}
 
     # Mock optimize
     solution = Mock()
