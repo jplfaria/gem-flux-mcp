@@ -51,9 +51,27 @@ class TestLoadPredefinedMedia:
         media_dir = tmp_path / "media"
         media_dir.mkdir()
 
-        # Create test media file
+        # Create test media file with compounds WITHOUT _e0 suffix
+        # The loader will add the suffix
+        media_json = {
+            "name": "test_media",
+            "description": "Test media for unit tests",
+            "compounds": {
+                "cpd00027": {  # No _e0 suffix yet
+                    "name": "D-Glucose",
+                    "bounds": [-5.0, 100.0],
+                    "comment": "Carbon source"
+                },
+                "cpd00007": {  # No _e0 suffix yet
+                    "name": "O2",
+                    "bounds": [-10.0, 100.0],
+                    "comment": "Oxygen"
+                }
+            }
+        }
+
         media_file = media_dir / "test_media.json"
-        media_file.write_text(json.dumps(SAMPLE_MEDIA))
+        media_file.write_text(json.dumps(media_json))
 
         # Load predefined media
         result = load_predefined_media(str(media_dir))
@@ -64,7 +82,7 @@ class TestLoadPredefinedMedia:
         assert result["test_media"]["description"] == "Test media for unit tests"
         assert result["test_media"]["is_predefined"] is True
 
-        # Verify compounds have _e0 suffix
+        # Verify compounds have _e0 suffix added by loader
         compounds = result["test_media"]["compounds"]
         assert "cpd00027_e0" in compounds
         assert "cpd00007_e0" in compounds

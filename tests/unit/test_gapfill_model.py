@@ -314,12 +314,25 @@ def test_check_baseline_growth_uses_shared_media_utility(mock_model, mock_media)
         "cpd00007_e0": (-10.0, 100.0),  # Oxygen
     })
 
-    # Mock reactions collection
-    mock_reactions = Mock()
-    mock_reactions.__contains__ = Mock(
+    # Create mock reactions for iteration
+    mock_reactions = []
+    for rxn_id in ["EX_cpd00027_e0", "EX_cpd00007_e0", "bio1"]:
+        mock_rxn = Mock()
+        mock_rxn.id = rxn_id
+        mock_rxn.lower_bound = 0.0
+        mock_rxn.upper_bound = 1000.0
+        mock_reactions.append(mock_rxn)
+
+    # Make reactions both iterable and support 'in' operator
+    model_reactions = Mock()
+    model_reactions.__iter__ = Mock(return_value=iter(mock_reactions))
+    model_reactions.__contains__ = Mock(
         side_effect=lambda x: x in ["EX_cpd00027_e0", "EX_cpd00007_e0", "bio1"]
     )
-    mock_model.reactions = mock_reactions
+    mock_model.reactions = model_reactions
+
+    # Add .medium attribute (will be set by apply_media_to_model)
+    mock_model.medium = {}
 
     # Mock successful optimization
     mock_model.optimize.return_value.status = "optimal"

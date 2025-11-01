@@ -259,12 +259,12 @@ def test_apply_media_to_model_missing_exchange(mock_model, mock_media_data):
     # Add a compound with no exchange reaction
     mock_media_data["bounds"]["cpd99999"] = (-5, 100)
 
-    # Should complete without error even if exchange reaction missing
+    # Should complete without error - logs warning but continues with valid exchanges
     apply_media_to_model(mock_model, mock_media_data)
 
     # Verify model was still updated for valid compounds
     assert mock_model.medium is not None
-    # Should have the 2 valid exchanges, cpd99999 skipped
+    # Should have the 2 valid exchanges, cpd99999 logged as missing
     assert len(mock_model.medium) == 2
     assert "EX_cpd00027_e0" in mock_model.medium
     assert "EX_cpd00007_e0" in mock_model.medium
