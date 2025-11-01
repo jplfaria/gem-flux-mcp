@@ -52,17 +52,17 @@ class TestLoadPredefinedMedia:
         media_dir.mkdir()
 
         # Create test media file with compounds WITHOUT _e0 suffix
-        # The loader will add the suffix
+        # Loader stores compound IDs as-is (suffix added during media application)
         media_json = {
             "name": "test_media",
             "description": "Test media for unit tests",
             "compounds": {
-                "cpd00027": {  # No _e0 suffix yet
+                "cpd00027": {  # No _e0 suffix
                     "name": "D-Glucose",
                     "bounds": [-5.0, 100.0],
                     "comment": "Carbon source"
                 },
-                "cpd00007": {  # No _e0 suffix yet
+                "cpd00007": {  # No _e0 suffix
                     "name": "O2",
                     "bounds": [-10.0, 100.0],
                     "comment": "Oxygen"
@@ -82,12 +82,12 @@ class TestLoadPredefinedMedia:
         assert result["test_media"]["description"] == "Test media for unit tests"
         assert result["test_media"]["is_predefined"] is True
 
-        # Verify compounds have _e0 suffix added by loader
+        # Verify compounds stored as-is (suffix added during apply_media_to_model)
         compounds = result["test_media"]["compounds"]
-        assert "cpd00027_e0" in compounds
-        assert "cpd00007_e0" in compounds
-        assert compounds["cpd00027_e0"] == (-5.0, 100.0)
-        assert compounds["cpd00007_e0"] == (-10.0, 100.0)
+        assert "cpd00027" in compounds
+        assert "cpd00007" in compounds
+        assert compounds["cpd00027"] == (-5.0, 100.0)
+        assert compounds["cpd00007"] == (-10.0, 100.0)
 
     def test_load_multiple_media(self, tmp_path):
         """Test loading multiple media files."""

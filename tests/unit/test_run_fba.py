@@ -545,8 +545,14 @@ def test_run_fba_invalid_objective(
     mock_copy.deepcopy = Mock(return_value=mock_model)
     mock_db_class.get_instance = Mock(return_value=mock_db_index)
 
-    # Mock reactions to not contain invalid objective
-    mock_model.reactions.__contains__ = Mock(return_value=False)
+    # Mock reactions to contain exchange reactions but NOT invalid objective
+    # Exchange reactions exist for media application, but "invalid_rxn" doesn't
+    def mock_contains(rxn_id):
+        if rxn_id in ["EX_cpd00027_e0", "EX_cpd00007_e0", "bio1"]:
+            return True
+        return False
+
+    mock_model.reactions.__contains__ = Mock(side_effect=mock_contains)
 
     # Run FBA with invalid objective
     result = run_fba(

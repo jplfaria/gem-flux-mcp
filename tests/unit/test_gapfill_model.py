@@ -302,9 +302,18 @@ def test_check_baseline_growth_sets_objective_correctly(mock_model, mock_media):
     setting BOTH model.objective AND model.objective_direction for correct
     FBA optimization.
     """
-    # Mock reactions collection
+    # Mock reactions collection with proper iteration support
+    bio_rxn = Mock()
+    bio_rxn.id = "bio1"
+    ex_rxn1 = Mock()
+    ex_rxn1.id = "EX_cpd00027_e0"
+    ex_rxn2 = Mock()
+    ex_rxn2.id = "EX_cpd00007_e0"
+
+    mock_reactions_list = [bio_rxn, ex_rxn1, ex_rxn2]
     mock_reactions = Mock()
-    mock_reactions.__contains__ = Mock(return_value=True)  # bio1 exists
+    mock_reactions.__iter__ = Mock(return_value=iter(mock_reactions_list))
+    mock_reactions.__contains__ = Mock(side_effect=lambda x: x in [r.id for r in mock_reactions_list])
     mock_model.reactions = mock_reactions
 
     # Mock successful optimization
@@ -457,8 +466,9 @@ def test_integrate_gapfill_solution_with_exchanges(mock_template):
             added = integrate_gapfill_solution(mock_model, mock_template, solution)
 
     # Verify MSBuilder.add_exchanges_to_model was called once
+    # Note: Implementation uses extra_cell='e0' to specify compartment
     mock_msbuilder.add_exchanges_to_model.assert_called_once_with(
-        mock_model, uptake_rate=100
+        mock_model, extra_cell='e0'
     )
 
     # Verify exchange reactions were added to results
