@@ -595,6 +595,20 @@ class ListMediaResponse(BaseModel):
     user_created_media: int = Field(..., description="Count of user-created media")
 
 
+class DeleteMediaRequest(BaseModel):
+    """Request format for delete_media tool."""
+
+    media_id: str = Field(..., description="Media ID to delete")
+
+
+class DeleteMediaResponse(BaseModel):
+    """Response format for delete_media tool."""
+
+    success: bool = Field(default=True)
+    deleted_media_id: str = Field(..., description="Confirmation of deleted ID")
+    message: str = Field(default="Media deleted successfully")
+
+
 # =============================================================================
 # Error Response Types (spec: 013-error-handling.md)
 # =============================================================================

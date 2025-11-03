@@ -33,13 +33,19 @@ from gem_flux_mcp.tools.list_models import list_models
 from gem_flux_mcp.tools.delete_model import delete_model
 from gem_flux_mcp.tools.list_media import list_media
 
+# Import compound and reaction lookup types from their tool modules
+from gem_flux_mcp.tools.compound_lookup import (
+    GetCompoundNameRequest,
+    SearchCompoundsRequest
+)
+from gem_flux_mcp.tools.reaction_lookup import (
+    GetReactionNameRequest,
+    SearchReactionsRequest
+)
+
 # Import types
 from gem_flux_mcp.types import (
     BuildMediaRequest,
-    GetCompoundNameRequest,
-    SearchCompoundsRequest,
-    GetReactionNameRequest,
-    SearchReactionsRequest,
     ListModelsRequest,
     DeleteModelRequest
 )

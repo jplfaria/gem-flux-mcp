@@ -89,3 +89,6 @@ data/templates/*.json
 # Keep README.md in repo to document sources
 *.ipynb_checkpoints/
 .ipynb_checkpoints/
+
+# Debug and diagnostic scripts from tool development
+debug/

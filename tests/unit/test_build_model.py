@@ -449,10 +449,11 @@ class TestBuildModel:
         mock_msgenome_class.from_fasta.return_value = mock_genome
         mock_msbuilder_class.return_value = mock_builder
 
-        # Call build_model
+        # Call build_model (disable RAST for unit test simplicity)
         result = await build_model(
             fasta_file_path=temp_fasta_file,
             template="GramNegative",
+            annotate_with_rast=False,  # Skip RAST in unit test
         )
 
         # Verify result

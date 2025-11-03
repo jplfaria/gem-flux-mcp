@@ -510,13 +510,24 @@ async def build_model(
     fasta_file_path: Optional[str] = None,
     template: str = "GramNegative",
     model_name: Optional[str] = None,
-    annotate_with_rast: bool = False,  # Default False for MVP (RAST not yet implemented)
+    annotate_with_rast: bool = True,  # Default True - ON by default for improved reaction mapping
     apply_atp_correction: bool = True,  # Default True - ON by default for biologically realistic models
 ) -> dict[str, Any]:
     """Build a draft genome-scale metabolic model from protein sequences.
 
     This tool creates a draft metabolic model using template-based reconstruction.
     The resulting model typically requires gapfilling to enable growth.
+
+    RAST Annotation (ON by default):
+    By default, this tool uses RAST (Rapid Annotation using Subsystem Technology)
+    to annotate protein sequences. RAST annotation:
+    - Adds gene functional annotations and EC numbers
+    - Maps protein sequences to metabolic functions
+    - Improves reaction mapping accuracy
+    - Provides subsystem classifications
+
+    RAST annotation requires internet connectivity and may add processing time.
+    You can disable it with annotate_with_rast=False for offline or faster builds.
 
     ATP Correction (ON by default):
     By default, this tool applies ATP correction to produce biologically realistic models
@@ -535,7 +546,7 @@ async def build_model(
         fasta_file_path: Path to FASTA file with protein sequences (mutually exclusive with protein_sequences)
         template: Template name ("GramNegative", "GramPositive", "Core")
         model_name: Optional custom model name
-        annotate_with_rast: Use RAST annotation for improved mapping (default: False)
+        annotate_with_rast: Use RAST annotation for improved mapping (default: True)
         apply_atp_correction: Apply ATP correction for biologically realistic models (default: True)
 
     Returns:
