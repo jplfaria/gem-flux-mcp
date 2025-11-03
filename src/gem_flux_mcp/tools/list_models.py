@@ -155,6 +155,10 @@ def list_models(
         state_counts = {"draft": 0, "gapfilled": 0}
 
         for model_id in all_model_ids:
+            # Skip test_conditions entries (these are lists, not models)
+            if model_id.endswith(".test_conditions"):
+                continue
+
             model = MODEL_STORAGE[model_id]
             metadata = extract_model_metadata(model_id, model)
 
