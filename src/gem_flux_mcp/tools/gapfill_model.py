@@ -540,14 +540,13 @@ def enrich_reaction_metadata(
         }
         direction_str = direction_map.get(rxn["direction"], rxn["direction"])
 
+        # Simplified reaction info (remove long equation to save tokens)
         enriched.append({
             "id": rxn_id,
             "name": name,
-            "equation": equation,
             "direction": direction_str,
             "compartment": compartment,
-            "bounds": rxn["bounds"],
-            "source": "template_gapfill",
+            # "equation": equation,  # Removed to reduce response size - use get_reaction_name for details
         })
 
     return enriched
@@ -719,7 +718,15 @@ def gapfill_model(
         # Step 11: Enrich reaction metadata
         enriched_reactions = enrich_reaction_metadata(added_reactions, db_index)
 
-        # Step 12: Build response
+        # Step 12: Build response (limit reaction details to avoid token limit)
+        # For large gapfills (>20 reactions), only include summary + first 10 reactions
+        if len(enriched_reactions) > 20:
+            reactions_summary = enriched_reactions[:10]  # First 10 reactions
+            reactions_note = f"Showing first 10 of {len(enriched_reactions)} reactions. Use get_reaction_name to view others."
+        else:
+            reactions_summary = enriched_reactions
+            reactions_note = None
+
         return {
             "success": True,
             "model_id": new_model_id,
@@ -730,7 +737,8 @@ def gapfill_model(
             "target_growth_rate": target_growth_rate,
             "gapfilling_successful": gapfilling_successful,
             "num_reactions_added": len(enriched_reactions),
-            "reactions_added": enriched_reactions,
+            "reactions_added": reactions_summary,
+            "reactions_note": reactions_note,
             "exchange_reactions_added": [],  # TODO: Track exchange reactions
             "atp_correction": {
                 "performed": atp_stats.get("performed", False),

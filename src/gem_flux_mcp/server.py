@@ -181,6 +181,28 @@ def load_resources(config: dict) -> None:
     loaded_media = load_predefined_media()
     logger.info(f"Loaded {len(loaded_media)} predefined media compositions")
 
+    # Store predefined media in session storage so tools can access them
+    from gem_flux_mcp.storage.media import store_media
+    from modelseedpy.core.msmedia import MSMedia
+
+    for media_name, media_data in loaded_media.items():
+        try:
+            # Convert dict to MSMedia object
+            # media_data["compounds"] is a dict of {cpd_id: (lower, upper)}
+            compounds_dict = media_data["compounds"]
+            media_obj = MSMedia.from_dict(compounds_dict)
+            media_obj.id = media_name  # Set the ID to the media name
+
+            # Store MSMedia object using the media name as ID
+            store_media(media_name, media_obj)
+            logger.info(f"  ✓ Stored predefined media in session: {media_name} ({len(compounds_dict)} compounds)")
+        except Exception as e:
+            logger.error(f"  ✗ Failed to store predefined media {media_name}: {e}")
+            import traceback
+            logger.error(f"    Traceback: {traceback.format_exc()}")
+
+    logger.info(f"Predefined media available in session: {len(loaded_media)}")
+
     logger.info("=" * 60)
     logger.info("Resource loading complete")
     logger.info("=" * 60)

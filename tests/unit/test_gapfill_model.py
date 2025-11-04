@@ -520,7 +520,8 @@ def test_enrich_reaction_metadata_unknown_reaction():
 
     assert len(enriched) == 1
     assert enriched[0]["name"] == "Unknown reaction"
-    assert enriched[0]["equation"] == ""
+    # Note: equation field removed to reduce response size
+    assert "equation" not in enriched[0]
 
 
 def test_enrich_reaction_metadata_direction_mapping():
