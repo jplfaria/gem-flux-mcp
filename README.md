@@ -316,6 +316,40 @@ print(response)
 
 ---
 
+## Integration with StructBioReasoner
+
+Gem-Flux MCP was designed to integrate with [StructBioReasoner](https://github.com/jplfaria/StructBioReasoner), a multi-agent system for protein engineering and computational biology.
+
+**Integration Status**: ✅ **Fully Compatible** - Ready to use
+
+**What StructBioReasoner Provides**:
+- Multi-agent system for hypothesis generation
+- 10 specialized agents (structural, evolutionary, energetic analysis, etc.)
+- Paper2Agent system (converts papers into executable tools)
+- Integrated tools: PyMOL, BioPython, OpenMM, AlphaFold, Rosetta, ESM
+
+**How Gem-Flux Extends StructBioReasoner**:
+- **Metabolic Modeling Agent**: Build and analyze genome-scale metabolic models
+- **Metabolic Pathway Analysis**: Identify essential genes and pathways
+- **Growth Predictions**: Test organism growth on different media
+- **Flux Analysis**: Analyze metabolic flux distributions
+
+**Integration Guide**: See `docs/STRUCTBIOREASONER_INTEGRATION_GUIDE.md` for complete step-by-step instructions.
+
+**Quick Setup**:
+1. Clone StructBioReasoner repository
+2. Add Gem-Flux MCP server configuration
+3. Create MetabolicModeler agent (optional)
+4. Use gem-flux tools from any StructBioReasoner agent
+
+**Example Use Cases**:
+- **Protein Engineering + Metabolism**: Predict metabolic impact of enzyme mutations
+- **Pathway Analysis**: Identify essential reactions for bioengineering targets
+- **Comparative Genomics**: Compare metabolic capabilities across organisms
+- **Hypothesis Generation**: Combine structural analysis with metabolic modeling
+
+---
+
 ## MCP Tools
 
 ### Core Modeling Tools (4)

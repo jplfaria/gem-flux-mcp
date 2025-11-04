@@ -5,6 +5,29 @@ All notable changes to the Gem-Flux MCP Server will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-11-04
+
+### Added
+- **StructBioReasoner Integration** - Complete integration guide and README section
+  - Documentation of MCP protocol compatibility
+  - Step-by-step integration instructions
+  - Example MetabolicModeler agent implementation
+  - Use cases combining protein engineering with metabolic modeling
+
+### Changed
+- **StructBioReasoner Integration Guide** (`docs/STRUCTBIOREASONER_INTEGRATION_GUIDE.md`)
+  - Updated server command to use correct `python -m gem_flux_mcp` format
+  - Added compatibility status (✅ READY)
+  - Clarified MCP protocol compatibility details
+
+- **README.md** - Added "Integration with StructBioReasoner" section
+  - Overview of StructBioReasoner capabilities
+  - How Gem-Flux extends StructBioReasoner
+  - Quick setup instructions
+  - Example use cases
+
+---
+
 ## [0.1.0] - 2025-11-04
 
 ### Added

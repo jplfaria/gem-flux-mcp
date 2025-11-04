@@ -2,7 +2,15 @@
 
 **Purpose**: Step-by-step instructions for integrating gem-flux-mcp with StructBioReasoner after gem-flux-mcp is fully tested and complete.
 
-**Status**: Ready to use once gem-flux-mcp Phase 11+ is complete and validated.
+**Status**: ✅ **READY** - gem-flux-mcp v0.1.0 is fully compatible with StructBioReasoner
+
+**Compatibility**:
+- ✅ MCP Protocol: JSON-RPC 2.0 via stdio transport
+- ✅ Tool Registration: FastMCP decorators properly configured
+- ✅ Data Format: All tools return dict responses as expected
+- ✅ Server Lifecycle: Proper startup/shutdown handling
+
+**Repository**: https://github.com/jplfaria/gem-flux-mcp
 
 ---
 
@@ -48,7 +56,7 @@ SERVER_CONFIGS = {
 
     "gemflux": MCPServerConfig(
         name="gemflux",
-        command=["uv", "run", "python", "-m", "gem_flux_mcp.server"],
+        command=["uv", "--directory", "/path/to/gem-flux-mcp", "run", "python", "-m", "gem_flux_mcp"],
         description="Genome-scale metabolic modeling and flux balance analysis",
         capabilities=[
             # Growth media tools
