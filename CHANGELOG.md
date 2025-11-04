@@ -5,6 +5,29 @@ All notable changes to the Gem-Flux MCP Server will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] - 2025-11-04
+
+### Changed
+- **README.md** - Major simplification and restructuring (70% reduction)
+  - Reduced from 1,356 lines to 407 lines
+  - MCP Tools section reduced from 432 lines to 28 lines (95% reduction)
+  - Removed verbose tool documentation (link to `docs/tools/` instead)
+  - Streamlined Quick Start to 3 clear steps
+  - Focused on getting users running fast
+  - All detailed content moved to appropriate doc files
+
+### Added
+- **README_MIGRATION_NOTES.md** - Documentation of what was moved where
+- **README_COMPARISON.md** - Before/after comparison and metrics
+
+### Philosophy
+- Get users running in <5 minutes
+- README is for quick start, not comprehensive docs
+- Link to detailed documentation for deep dives
+- Follows GitHub best practices for README length
+
+---
+
 ## [0.1.1] - 2025-11-04
 
 ### Added
