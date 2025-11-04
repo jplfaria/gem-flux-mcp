@@ -552,6 +552,78 @@ def enrich_reaction_metadata(
     return enriched
 
 
+def categorize_reactions_by_pathway(enriched_reactions: list[dict]) -> dict:
+    """Categorize gapfilled reactions by biological pathway/function.
+
+    Uses keyword matching on reaction names to group reactions.
+    This is a heuristic approach suitable for giving LLMs an overview.
+
+    Args:
+        enriched_reactions: List of reaction dicts with id, name, direction, compartment
+
+    Returns:
+        Dict with pathway categories and counts
+    """
+    # Pathway keywords (case-insensitive matching)
+    pathway_keywords = {
+        "Glycolysis/Gluconeogenesis": ["glycolysis", "glucose", "fructose", "phosphofructo", "hexokinase", "pyruvate kinase"],
+        "TCA cycle": ["citrate", "isocitrate", "succinate", "fumarate", "malate", "oxaloacetate", "alpha-ketoglutarate", "TCA"],
+        "Pentose phosphate": ["pentose", "ribulose", "ribose", "xylulose", "transketolase", "transaldolase"],
+        "Amino acid metabolism": ["amino acid", "glutamate", "glutamine", "aspartate", "alanine", "serine", "glycine", "lysine", "arginine", "leucine", "valine"],
+        "Nucleotide metabolism": ["nucleotide", "purine", "pyrimidine", "AMP", "GMP", "CMP", "UMP", "IMP"],
+        "Lipid metabolism": ["lipid", "fatty acid", "acyl", "phospholipid", "glycerol"],
+        "Transport": ["transport", "exchange", "permease", "transporter", "_e0"],  # _e0 = extracellular
+        "Energy/ATP": ["ATP", "ADP", "NADH", "NADPH", "FAD", "electron", "respiration"],
+        "Cofactor/Vitamin": ["cofactor", "vitamin", "thiamine", "riboflavin", "folate", "coenzyme", "NAD biosynthesis"],
+    }
+
+    # Count reactions by pathway
+    pathway_counts = {pathway: 0 for pathway in pathway_keywords.keys()}
+    pathway_counts["Other/Unknown"] = 0
+    pathway_examples = {pathway: [] for pathway in pathway_keywords.keys()}
+    pathway_examples["Other/Unknown"] = []
+
+    for rxn in enriched_reactions:
+        name_lower = rxn["name"].lower()
+        rxn_id = rxn["id"]
+        matched = False
+
+        for pathway, keywords in pathway_keywords.items():
+            if any(keyword.lower() in name_lower or keyword.lower() in rxn_id.lower() for keyword in keywords):
+                pathway_counts[pathway] += 1
+                if len(pathway_examples[pathway]) < 3:  # Keep up to 3 examples per pathway
+                    pathway_examples[pathway].append({
+                        "id": rxn["id"],
+                        "name": rxn["name"]
+                    })
+                matched = True
+                break  # Only count in first matching pathway
+
+        if not matched:
+            pathway_counts["Other/Unknown"] += 1
+            if len(pathway_examples["Other/Unknown"]) < 3:
+                pathway_examples["Other/Unknown"].append({
+                    "id": rxn["id"],
+                    "name": rxn["name"]
+                })
+
+    # Build pathway summary (only include pathways with reactions)
+    pathways = []
+    for pathway, count in sorted(pathway_counts.items(), key=lambda x: x[1], reverse=True):
+        if count > 0:
+            pathways.append({
+                "pathway": pathway,
+                "reactions_added": count,
+                "examples": pathway_examples[pathway]
+            })
+
+    return {
+        "total_reactions": len(enriched_reactions),
+        "pathways": pathways,
+        "num_pathways_affected": len([p for p in pathways if p["pathway"] != "Other/Unknown"])
+    }
+
+
 def gapfill_model(
     model_id: str,
     media_id: str,
@@ -718,15 +790,10 @@ def gapfill_model(
         # Step 11: Enrich reaction metadata
         enriched_reactions = enrich_reaction_metadata(added_reactions, db_index)
 
-        # Step 12: Build response (limit reaction details to avoid token limit)
-        # For large gapfills (>20 reactions), only include summary + first 10 reactions
-        if len(enriched_reactions) > 20:
-            reactions_summary = enriched_reactions[:10]  # First 10 reactions
-            reactions_note = f"Showing first 10 of {len(enriched_reactions)} reactions. Use get_reaction_name to view others."
-        else:
-            reactions_summary = enriched_reactions
-            reactions_note = None
+        # Step 12: Categorize reactions by pathway
+        pathway_summary = categorize_reactions_by_pathway(enriched_reactions)
 
+        # Step 13: Build response with pathway-based summary
         return {
             "success": True,
             "model_id": new_model_id,
@@ -737,9 +804,11 @@ def gapfill_model(
             "target_growth_rate": target_growth_rate,
             "gapfilling_successful": gapfilling_successful,
             "num_reactions_added": len(enriched_reactions),
-            "reactions_added": reactions_summary,
-            "reactions_note": reactions_note,
-            "exchange_reactions_added": [],  # TODO: Track exchange reactions
+            "pathway_summary": pathway_summary,  # NEW: Biological pathway categorization
+            "interpretation": {
+                "overview": f"Added {len(enriched_reactions)} reactions across {pathway_summary['num_pathways_affected']} metabolic pathways to enable growth.",
+                "growth_status": "Model can now grow" if gapfilling_successful else f"Model cannot reach target growth ({growth_rate_after:.4f} < {target_growth_rate})",
+            },
             "atp_correction": {
                 "performed": atp_stats.get("performed", False),
                 "media_tested": atp_stats.get("media_tested", 0),

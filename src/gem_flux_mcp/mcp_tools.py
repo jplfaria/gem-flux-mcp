@@ -168,7 +168,7 @@ async def build_model(
     fasta_file_path: Optional[str] = None,
     template: str = "GramNegative",
     model_name: Optional[str] = None,
-    annotate_with_rast: bool = False,
+    annotate_with_rast: bool = True,  # Enable RAST by default for better models
 ) -> dict:
     """Build a draft genome-scale metabolic model from protein sequences.
 
