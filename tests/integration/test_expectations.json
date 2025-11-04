@@ -1,0 +1,333 @@
+{
+  "phase_1": {
+    "name": "Installation and Setup",
+    "must_pass": [],
+    "may_fail": [],
+    "description": "Project structure, dependencies, UV setup - no integration tests needed"
+  },
+  "phase_2": {
+    "name": "Database Integration",
+    "must_pass": [
+      "test_load_compounds_database",
+      "test_load_reactions_database",
+      "test_database_query_compound",
+      "test_database_query_reaction"
+    ],
+    "may_fail": [],
+    "description": "ModelSEED database loading foundation - all must pass (NOT YET IMPLEMENTED)"
+  },
+  "phase_3": {
+    "name": "Template Management and Model Storage",
+    "must_pass": [
+      "test_load_gram_negative_template",
+      "test_load_core_template",
+      "test_store_model_in_session",
+      "test_retrieve_model_from_session",
+      "test_model_id_gf_notation"
+    ],
+    "may_fail": [],
+    "description": "Template loading and session storage required before model building (NOT YET IMPLEMENTED)"
+  },
+  "phase_4": {
+    "name": "build_media Tool",
+    "must_pass": [
+      "test_build_media_from_compounds",
+      "test_build_media_validation",
+      "test_predefined_media_loading",
+      "test_media_storage"
+    ],
+    "may_fail": [
+      "test_media_export"
+    ],
+    "description": "Growth media creation from compounds (NOT YET IMPLEMENTED)"
+  },
+  "phase_5": {
+    "name": "build_model Tool",
+    "must_pass": [
+      "test_build_model_from_rast",
+      "test_build_model_from_fasta",
+      "test_build_model_from_dict",
+      "test_model_validation",
+      "test_model_id_conflicts_resolved"
+    ],
+    "may_fail": [
+      "test_model_export"
+    ],
+    "description": "Metabolic model building from genome data (RAST, FASTA, dict) (NOT YET IMPLEMENTED)"
+  },
+  "phase_6": {
+    "name": "gapfill_model Tool",
+    "must_pass": [
+      "test_gapfill_model_basic",
+      "test_gapfill_with_custom_media",
+      "test_gapfill_failure_handling",
+      "test_integrated_growth_check"
+    ],
+    "may_fail": [
+      "test_gapfill_optimization"
+    ],
+    "description": "Model gapfilling with media and failure handling (NOT YET IMPLEMENTED)"
+  },
+  "phase_7": {
+    "name": "run_fba Tool",
+    "must_pass": [
+      "test_run_fba_basic",
+      "test_run_fba_with_media",
+      "test_fba_solution_format",
+      "test_fba_error_handling"
+    ],
+    "may_fail": [
+      "test_fba_advanced_constraints"
+    ],
+    "description": "Flux balance analysis execution (NOT YET IMPLEMENTED)"
+  },
+  "phase_8": {
+    "name": "Compound Lookup Tools",
+    "must_pass": [
+      "test_search_compounds_by_name",
+      "test_get_compound_by_id",
+      "test_compound_details_retrieval"
+    ],
+    "may_fail": [],
+    "description": "Compound search and retrieval from ModelSEED database (NOT YET IMPLEMENTED - See phase_12 for actual implementation)"
+  },
+  "phase_9": {
+    "name": "Reaction Lookup Tools",
+    "must_pass": [
+      "test_search_reactions_by_name",
+      "test_get_reaction_by_id",
+      "test_reaction_details_retrieval"
+    ],
+    "may_fail": [],
+    "description": "Reaction search and retrieval from ModelSEED database (NOT YET IMPLEMENTED - See phase_12 for actual implementation)"
+  },
+  "phase_10": {
+    "name": "Session Management Tools",
+    "must_pass": [
+      "test_list_models",
+      "test_list_models_chronological_sorting",
+      "test_list_models_with_user_named_models",
+      "test_list_media",
+      "test_media_classification",
+      "test_delete_model",
+      "test_delete_model_workflow_integration",
+      "test_session_isolation"
+    ],
+    "may_fail": [],
+    "description": "Session-based model and media management (IMPLEMENTED - test_phase10_session_management.py)"
+  },
+  "phase_11": {
+    "name": "Complete Workflow Integration",
+    "must_pass": [
+      "test_full_workflow_build_gapfill_fba",
+      "test_workflow_with_custom_media",
+      "test_end_to_end_error_handling"
+    ],
+    "may_fail": [
+      "test_import_export_workflow"
+    ],
+    "description": "End-to-end workflow testing all tools together (IMPLEMENTED - test_phase11_complete_workflow.py)"
+  },
+  "phase_12": {
+    "name": "Database Lookup Tools (Compounds and Reactions)",
+    "must_pass": [
+      "test_search_compounds_by_formula",
+      "test_search_compounds_by_abbreviation",
+      "test_search_compounds_priority_ordering",
+      "test_search_compounds_no_results",
+      "test_search_compounds_to_lookup_workflow",
+      "test_compound_not_found_error",
+      "test_compound_metadata_enrichment",
+      "test_search_reactions_by_ec_number",
+      "test_search_reactions_by_pathway",
+      "test_search_reactions_priority_ordering",
+      "test_search_reactions_no_results",
+      "test_search_reactions_to_lookup_workflow",
+      "test_reaction_not_found_error",
+      "test_reaction_metadata_enrichment"
+    ],
+    "may_fail": [
+      "test_compound_lookup_performance",
+      "test_reaction_lookup_performance"
+    ],
+    "description": "Compound and reaction search/lookup from ModelSEED database (IMPLEMENTED - test_phase12_database_lookups.py)"
+  },
+  "phase_13": {
+    "name": "Error Handling and JSON-RPC Compliance",
+    "must_pass": [
+      "test_jsonrpc_error_compliance",
+      "test_validation_error_structure",
+      "test_error_details_structure",
+      "test_error_message_quality",
+      "test_invalid_model_id_handling",
+      "test_missing_database_handling",
+      "test_gapfill_failure_recovery",
+      "test_multiple_error_types",
+      "test_error_recovery_workflow"
+    ],
+    "may_fail": [],
+    "description": "JSON-RPC 2.0 error handling and edge case coverage (IMPLEMENTED - test_phase13_error_handling.py)"
+  },
+  "phase_14": {
+    "name": "Model ID State Suffix Transformations",
+    "must_pass": [
+      "test_build_model_creates_draft_suffix",
+      "test_build_model_user_provided_name_has_draft_suffix",
+      "test_build_model_collision_handling",
+      "test_gapfill_transforms_draft_to_draft_gf",
+      "test_gapfill_preserves_user_provided_name",
+      "test_regapfill_appends_gf_suffix",
+      "test_multiple_regapfilling_iterations",
+      "test_gapfill_gf_to_gf_gf",
+      "test_complete_transformation_workflow",
+      "test_transform_state_suffix_edge_cases",
+      "test_state_suffix_idempotency",
+      "test_model_id_transformations_with_storage_lifecycle"
+    ],
+    "may_fail": [],
+    "description": "Model ID state suffix transformations during gapfilling according to spec 002-data-formats.md (IMPLEMENTED - test_phase14_model_id_transformations.py)"
+  },
+  "phase_15": {
+    "name": "Comprehensive Error Handling Test Suite",
+    "must_pass": [
+      "test_all_error_types_have_valid_codes",
+      "test_error_response_has_all_required_fields",
+      "test_timestamp_format_is_iso8601",
+      "test_invalid_compound_ids_error",
+      "test_empty_compounds_list_error",
+      "test_invalid_bounds_format_error",
+      "test_bounds_out_of_order_error",
+      "test_negative_uptake_error",
+      "test_invalid_protein_sequences_error",
+      "test_empty_protein_sequences_error",
+      "test_invalid_template_name_error",
+      "test_modelseedpy_error",
+      "test_model_not_found_error",
+      "test_media_not_found_error",
+      "test_gapfill_infeasible_error",
+      "test_invalid_target_growth_error",
+      "test_fba_infeasible_error",
+      "test_fba_unbounded_error",
+      "test_cobrapy_solver_error",
+      "test_compound_not_found_error",
+      "test_reaction_not_found_error",
+      "test_invalid_id_format_error",
+      "test_empty_query_error",
+      "test_error_messages_are_concise",
+      "test_error_messages_contain_specific_ids",
+      "test_errors_have_actionable_suggestions",
+      "test_error_details_provide_context",
+      "test_model_not_found_shows_available_models",
+      "test_invalid_compound_shows_valid_examples",
+      "test_gapfill_infeasible_suggests_media_check",
+      "test_generic_error_catches_value_error",
+      "test_generic_error_includes_exception_details",
+      "test_generic_error_has_suggestions",
+      "test_error_with_empty_available_list",
+      "test_error_with_very_long_id",
+      "test_error_with_unicode_characters",
+      "test_error_with_special_characters_in_id",
+      "test_multiple_errors_in_sequence",
+      "test_all_error_codes_from_spec_are_covered"
+    ],
+    "may_fail": [],
+    "description": "Comprehensive error handling test suite covering all error types from spec 013-error-handling.md (IMPLEMENTED - test_phase15_comprehensive_error_handling.py)"
+  },
+  "phase_16": {
+    "name": "Performance Testing",
+    "must_pass": [
+      "test_database_loading_time",
+      "test_database_indexing_time",
+      "test_predefined_media_loading_time",
+      "test_total_startup_time",
+      "test_compound_lookup_single_performance",
+      "test_reaction_lookup_single_performance",
+      "test_compound_search_by_name_performance",
+      "test_reaction_search_by_name_performance"
+    ],
+    "may_fail": [
+      "test_template_loading_time",
+      "test_compound_lookup_batch_performance",
+      "test_reaction_lookup_batch_performance",
+      "test_compound_search_various_queries_performance",
+      "test_reaction_search_various_queries_performance",
+      "test_database_memory_footprint",
+      "test_repeated_lookups_no_memory_leak",
+      "test_repeated_searches_no_memory_leak",
+      "test_session_storage_cleanup",
+      "test_concurrent_compound_lookups_performance",
+      "test_mixed_operations_performance",
+      "test_sustained_lookup_load",
+      "test_sustained_search_load"
+    ],
+    "description": "Performance testing for startup time, database queries, and memory usage according to spec 015 (IMPLEMENTED - test_phase16_performance.py, Task 89)"
+  },
+  "phase_17": {
+    "name": "Argo LLM Integration",
+    "must_pass": [
+      "test_mcp_to_openai_converter_basic",
+      "test_mcp_to_openai_converter_all_tools",
+      "test_mcp_to_openai_converter_removes_defaults",
+      "test_mcp_to_openai_converter_preserves_enum",
+      "test_mcp_to_openai_converter_deep_copy",
+      "test_mcp_to_openai_converter_nested_objects",
+      "test_argo_client_initialization",
+      "test_argo_client_message_history",
+      "test_argo_client_tool_call_logging",
+      "test_argo_client_reset"
+    ],
+    "may_fail": [
+      "test_streaming_basic",
+      "test_streaming_with_tool_calls",
+      "test_circuit_breaker",
+      "test_model_switching"
+    ],
+    "real_llm_tests": [
+      "test_build_media_with_argo",
+      "test_build_model_with_argo",
+      "test_gapfill_model_with_argo",
+      "test_run_fba_with_argo",
+      "test_complete_workflow_conversation",
+      "test_llm_parameter_understanding",
+      "test_llm_handles_tool_errors_gracefully",
+      "test_streaming_with_tool_calls"
+    ],
+    "description": "Argo Gateway LLM integration for natural language tool interaction (Phase 11.5 - NOT YET IMPLEMENTED)",
+    "requirements": [
+      "Requires argo-proxy running on localhost:8000 for real_llm_tests",
+      "Real LLM tests marked with @pytest.mark.real_llm",
+      "Real LLM tests skip gracefully if argo-proxy unavailable",
+      "Run with: pytest -m real_llm (only when argo-proxy available)",
+      "Skip with: pytest -m 'not real_llm' (default for CI)"
+    ],
+    "specifications": [
+      "specs/022-argo-llm-integration.md - ArgoMCPClient architecture",
+      "specs/023-mcp-tool-conversion.md - MCP to OpenAI conversion",
+      "specs/024-argo-real-llm-testing.md - Real LLM testing patterns"
+    ]
+  },
+  "metadata": {
+    "last_updated": "2025-10-29",
+    "total_phases": 17,
+    "implemented_phases": 7,
+    "total_must_pass_tests": 135,
+    "total_may_fail_tests": 24,
+    "total_real_llm_tests": 8,
+    "notes": [
+      "Phases 1-9 are placeholder specifications for future implementation",
+      "Phases 10-16 are currently implemented with integration tests",
+      "Phase 17 adds Argo LLM integration (Phase 11.5 in implementation plan)",
+      "Phase 12 combines compound and reaction lookup tests (originally phases 8-9)",
+      "Phase 15 implements Task 88: Comprehensive error handling test suite",
+      "Phase 16 implements Task 89: Performance testing",
+      "Phase 17 implements Tasks 11.5.1-11.5.10: Argo LLM integration",
+      "Performance tests in phase 12 are may_fail to avoid blocking on optimization work",
+      "Performance tests in phase 16 have critical tests as must_pass and advanced tests as may_fail",
+      "Real LLM tests in phase 17 require argo-proxy and are run manually (not in CI)",
+      "Template loading test is may_fail due to validation issues with actual templates",
+      "All must_pass tests should pass before considering phase complete",
+      "May_fail tests are optional enhancements that can be implemented later",
+      "Real_llm_tests require external services and are expensive/slow (not run in CI)"
+    ]
+  }
+}

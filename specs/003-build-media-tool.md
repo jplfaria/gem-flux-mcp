@@ -759,6 +759,77 @@ Replace cpd00027 with:
 3. Create multiple media in same session
 4. Server restart clears media
 
+## Implementation Notes (Post-MVP Refactoring)
+
+> **⚠️ CRITICAL**: The following patterns were established during Phase 1-2 refactoring (October 2025). These are MANDATORY patterns to prevent bugs.
+
+### ✅ Canonical Pattern: MSMedia Object Creation
+
+**CORRECT** - Use ModelSEEDpy's MSMedia.from_dict():
+
+```python
+from modelseedpy import MSMedia
+
+# Create MSMedia object from bounds dictionary
+bounds_dict = {
+    "cpd00027": (-5.0, 100.0),  # Glucose
+    "cpd00007": (-10.0, 100.0),  # Oxygen
+}
+
+media = MSMedia.from_dict(bounds_dict)
+media.id = media_id  # Set ID separately
+store_media(media_id, media)  # Store MSMedia object
+```
+
+**❌ ANTI-PATTERN** - Do NOT store plain dicts:
+
+```python
+# ❌ WRONG: Storing dict instead of MSMedia object
+media_dict = {"bounds": bounds_dict}
+store_media(media_id, media_dict)  # Breaks gapfill_model and run_fba!
+```
+
+**Why This Matters**:
+- `gapfill_model` and `run_fba` expect MSMedia objects
+- MSMedia.get_media_constraints() method is required for media application
+- Storing dicts breaks the entire tool chain
+
+### ✅ Canonical Pattern: Media Application
+
+Media constraints are applied to models using the shared utility:
+
+```python
+from gem_flux_mcp.utils.media import apply_media_to_model
+
+# Works with MSMedia objects or dicts
+apply_media_to_model(model, media, compartment="e0")
+
+# Internally uses COBRApy's canonical .medium property
+# model.medium = {"EX_cpd00027_e0": 5.0, "EX_cpd00007_e0": 10.0}
+```
+
+**See**: `src/gem_flux_mcp/utils/media.py` for implementation
+
+### Key Implementation Details
+
+1. **MSMedia.from_dict() does NOT accept media_id parameter**
+   - Set `media.id` separately after creation
+
+2. **Session Storage**
+   - Store MSMedia objects (not dicts)
+   - Retrieved by `retrieve_media(media_id)`
+
+3. **Shared Utility**
+   - All media application uses `gem_flux_mcp.utils.media.apply_media_to_model()`
+   - Handles both MSMedia objects and dict formats
+   - Uses COBRApy's `.medium` property pattern
+
+### Related Code
+
+- **Implementation**: `src/gem_flux_mcp/tools/media_builder.py`
+- **Shared Utility**: `src/gem_flux_mcp/utils/media.py`
+- **Tests**: `tests/unit/test_media_builder.py`, `tests/unit/test_media_utils.py`
+
 ## Related Specifications
 
 - **001-system-overview.md**: Overall architecture and ModelSEED identifier system
@@ -770,6 +841,6 @@ Replace cpd00027 with:
 
 ---
 
-**Document Status**: ✅ Ready for Implementation
-**Last Updated**: October 27, 2025
+**Document Status**: ✅ Ready for Implementation (Updated with refactoring patterns)
+**Last Updated**: October 29, 2025 (Post-Phase 1-2 refactoring)
 **Next Spec**: 004-build-model-tool.md

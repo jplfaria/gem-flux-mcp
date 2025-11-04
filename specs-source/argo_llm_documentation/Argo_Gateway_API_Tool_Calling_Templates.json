@@ -1,0 +1,389 @@
+Argo Gateway API Tool Calling Templates
+Return to the Argo Gateway API doc. Return to the Vibe Coding doc. IN PROGRESS: The below examples are for the /chat endpoint — this works for all LLM vendors. In the /streaming endpoint, only OpenAI models are fully functional. The tool calling for Gemini and Claude models needs some more debugging in streaming mode (they handling things a little differently). I will include separate templates below when all the /streaming endpoint LLMs are ready.
+
+All return objects will be consistent with current Chat endpoint return format, with an additional field of tool_calls if the tools parameter is included in the API call:
+
+json
+{
+  "response": {
+    "content": TEXT RESPONSE, IF PROVIDED BY THE LLM,
+    "tool_calls": [
+      DICTIONARY LIST OF ONE OR MORE TOOL/FUNCTION CALLS
+    ]
+  }
+}
+IMPORTANT: Each LLM vendor requires a tailored structure for their tool calling. The Argo Gateway API will accept and process these variations. However, the user is required to ensure they are passing in the correct tool/function calling structure in the tools parameter in the Argo API call.
+
+Chat - with Messages Object
+url = https://apps-dev.inside.anl.gov/argoapi/api/v1/resource/chat/
+
+Start here: Template Python Script
+
+OpenAI
+Learn more about function calling with OpenAI LLMs: https://platform.openai.com/docs/guides/function-calling?api-mode=chat
+
+Example:
+
+python
+data = {
+    "user": "<**ENTER YOUR ANL DOMAIN USERNAME**>",
+    "model": "gpt4o",
+    "messages": [
+        {"role": "system",
+         "content": "You are an LLM-based AI assistant with the name Argo that supports users at Argonne National Lab."},
+        {"role": "user",
+         "content": "What is 8 plus 5?"}
+    ],
+    "stop": [],
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "tools": [
+        {
+            "type": "function",
+            "function": {
+                "name": "add",
+                "description": "Add two numbers together.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "a": {"type": "number", "description": "First number"},
+                        "b": {"type": "number", "description": "Second number"}
+                    },
+                    "required": ["a", "b"]
+                }
+            }
+        }
+    ],
+    "tool_choice":"auto",
+}
+Return object:
+
+json
+{
+  "response": {
+    "content": null,
+    "tool_calls": [
+      {
+        "id": "call_oSUkDwcOqkNulrSjCfCpRRQI",
+        "function": {
+          "arguments": "{\"a\":8,\"b\":5}",
+          "name": "add"
+        },
+        "type": "function"
+      }
+    ]
+  }
+}
+Google (Gemini)
+Learn more about function calling with Gemini: https://ai.google.dev/gemini-api/docs/function-calling
+
+NOTE: You should pass your function parameters as a JSON object as in the example below. The Argo Gateway API takes care of formatting your function call into the Function and Tool object definitions described in the Google Gemini documentation.
+
+Example with passing 2 tools:
+
+python
+data = {
+    "user": "<**ENTER YOUR ANL DOMAIN USERNAME**>",
+    "model": "gemini25flash",
+    "messages": [
+        {"role": "system",
+         "content": "You are an LLM-based AI assistant with the name Argo that supports users at Argonne National Lab."},
+        {"role": "user",
+         "content": "What is 8 plus 5?"}
+    ],
+    "stop": [],
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "tools": [
+        {
+            "name": "get_current_weather",
+            "description": "Get the current weather in a given location",
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                    "location": {
+                        "type": "STRING",
+                        "description": "The city and state, e.g. San Francisco, CA"
+                    }
+                }
+            },
+            "required":["location"]
+        },
+        {
+            "name": "add",
+            "description": "Add two numbers together.",
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                    "a": {
+                        "type": "number",
+                        "description": "The first number to add."
+                    },
+                    "b": {
+                        "type": "number",
+                        "description": "The second number to add."
+                    }
+                }
+            },
+            "required":["a","b"]
+        }
+    ]
+}
+Return object:
+
+NOTE: The Gemini models do not return an ID value, but the field key is included in the response.
+
+json
+{
+  "response": {
+    "content": null,
+    "tool_calls": {
+      "id": null,
+      "args": {
+        "b": 5,
+        "a": 8
+      },
+      "name": "add"
+    }
+  }
+}
+Anthropic (Claude)
+Learn more about tool calling with Anthropic LLMs: https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/implement-tool-use
+
+Example:
+
+python
+data = {
+    "user": "<**ENTER YOUR ANL DOMAIN USERNAME**>",
+    "model": "claudesonnet4",
+    "messages": [
+        {"role": "system",
+         "content": "You are a large language model with the name Argo that supports users at Argonne National Lab."},
+        {"role": "user",
+         "content": "What is the current stock price for MSFT"}
+    ],
+    "stop": [],
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "tools": [
+        {
+            "name": "get_stock_price",
+            "description": "Retrieves the current stock price for a given ticker symbol. The ticker symbol must be a valid symbol for a publicly traded company on a major US stock exchange like NYSE or NASDAQ. The tool will return the latest trade price in USD. It should be used when the user asks about the current or most recent price of a specific stock. It will not provide any other information about the stock or company.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+                    }
+                },
+                "required": [
+                    "ticker"
+                ]
+            }
+        }
+    ],
+    "tool_choice": {"type": "auto"}
+}
+Return object:
+
+json
+{
+  "response": {
+    "content": "I'll get the current stock price for Microsoft (MSFT) for you.",
+    "tool_calls": [
+      {
+        "id": "toolu_vrtx_01NsufZdmVCSMMdptrvxzbaa",
+        "input": {
+          "ticker": "MSFT"
+        },
+        "name": "get_stock_price",
+        "type": "tool_use"
+      }
+    ]
+  }
+}
+Chat - with System/Prompt Parameters
+url = https://apps-dev.inside.anl.gov/argoapi/api/v1/resource/chat/
+
+Start here: Template Python Script
+
+OpenAI
+Learn more about function calling with OpenAI LLMs: https://platform.openai.com/docs/guides/function-calling?api-mode=chat
+
+Example:
+
+python
+data = {
+    "user": "<**ENTER YOUR ANL DOMAIN USERNAME**>",
+    "model": "gpt4o",
+    "system": "You are a large language model with the name Argo that supports users at Argonne National Lab.",
+    "prompt":["What is 8 plus 5?"],
+    "stop": [],
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "tools": [
+        {
+            "type": "function",
+            "function": {
+                "name": "add",
+                "description": "Add two numbers together.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "a": {"type": "number", "description": "First number"},
+                        "b": {"type": "number", "description": "Second number"}
+                    },
+                    "required": ["a", "b"]
+                }
+            }
+        }
+    ],
+    "tool_choice":"auto",
+}
+Return object:
+
+json
+{
+  "response": {
+    "content": null,
+    "tool_calls": [
+      {
+        "id": "call_Uhwa8ZpfxMchUTPhTX3P0ZfH",
+        "function": {
+          "arguments": "{\"a\":8,\"b\":5}",
+          "name": "add"
+        },
+        "type": "function"
+      }
+    ]
+  }
+}
+Google (Gemini)
+Learn more about function calling with Google Gemini: https://ai.google.dev/gemini-api/docs/function-calling
+
+NOTE: You should pass your function parameters as a JSON object as in the example below. The Argo Gateway API takes care of formatting your function call into the Function and Tool object definitions described in the Google Gemini documentation.
+
+Example:
+
+python
+data = {
+    "user": "mdearing",
+    "model": "<**ENTER YOUR ANL DOMAIN USERNAME**>",
+    "system": "You are a large language model with the name Argo that supports users at Argonne National Lab.",
+    "prompt": ["What is 8 plus 5?"],
+    "stop": [],
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "tools": [
+        {
+            "name": "get_current_weather",
+            "description": "Get the current weather in a given location",
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                    "location": {
+                        "type": "STRING",
+                        "description": "The city and state, e.g. San Francisco, CA"
+                    }
+                }
+            },
+            "required":["location"]
+        },
+        {
+            "name": "add",
+            "description": "Add two numbers together.",
+            "parameters": {
+                "type": "OBJECT",
+                "properties": {
+                    "a": {
+                        "type": "number",
+                        "description": "The first number to add."
+                    },
+                    "b": {
+                        "type": "number",
+                        "description": "The second number to add."
+                    }
+                }
+            },
+            "required":["a","b"]
+        }
+    ]
+}
+Return object:
+
+NOTE: The Gemini models do not return an ID value, but the field key is included in the response.
+
+json
+{
+  "response": {
+    "content": null,
+    "tool_calls": {
+      "id": null,
+      "args": {
+        "a": 8,
+        "b": 5
+      },
+      "name": "add"
+    }
+  }
+}
+Anthropic (Claude)
+Learn more about tool calling with Anthropic LLMs: https://docs.anthropic.com/en/docs/agents-and-tools/tool-use/implement-tool-use
+
+Example:
+
+python
+data = {
+    "user": "mdearing",
+    "model": "<**ENTER YOUR ANL DOMAIN USERNAME**>",
+    "system": "You are a large language model with the name Argo that supports users at Argonne National Lab.",
+    "prompt": ["What is the current stock price for MSFT?"],
+    "stop": [],
+    "temperature": 0.1,
+    "top_p": 0.9,
+    "tools": [
+        {
+            "name": "get_stock_price",
+            "description": "Retrieves the current stock price for a given ticker symbol. The ticker symbol must be a valid symbol for a publicly traded company on a major US stock exchange like NYSE or NASDAQ. The tool will return the latest trade price in USD. It should be used when the user asks about the current or most recent price of a specific stock. It will not provide any other information about the stock or company.",
+            "input_schema": {
+                "type": "object",
+                "properties": {
+                    "ticker": {
+                        "type": "string",
+                        "description": "The stock ticker symbol, e.g. AAPL for Apple Inc."
+                    }
+                },
+                "required": [
+                    "ticker"
+                ]
+            }
+        }
+    ],
+    "tool_choice": {"type": "auto"}
+}
+Return object:
+
+json
+{
+  "response": {
+    "content": "I'll get the current stock price for Microsoft (MSFT) for you.",
+    "tool_calls": [
+      {
+        "id": "toolu_vrtx_01X1tcW6qR1uUoUkfpZMiXnH",
+        "input": {
+          "ticker": "MSFT"
+        },
+        "name": "get_stock_price",
+        "type": "tool_use"
+      }
+    ]
+  }
+}
+argo-proxy OpenAI-compatible Tool Calling
+If you are using argo-proxy to utilize an OpenAI-compatible interface for accessing Argo Gateway API LLMs, then the following two example scripts demonstrate how to make basic tool calls for any LLM from OpenAI, Google, and Anthropic.
+
+Learn more about the argo-proxy that supports the Argo Gateway API with an OpenAI-compatible interface: GitHub.
+
+Start here: Single Tool - Template Python Script
+Start here: Multiple Tools - Template Python Script

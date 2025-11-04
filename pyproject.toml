@@ -1,0 +1,86 @@
+[project]
+name = "gem-flux-mcp"
+version = "0.1.0"
+description = "MCP server for genome-scale metabolic modeling with ModelSEEDpy and COBRApy"
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = { text = "MIT" }
+authors = [
+    { name = "João Paulo Lima Faria" }
+]
+
+dependencies = [
+    "fastmcp>=0.2.0",
+    "cobra>=0.27.0",
+    "modelseedpy",  # Installed from Fxe/ModelSEEDpy@dev via [tool.uv.sources]
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "openai>=1.0.0",  # For Argo Gateway LLM integration (Phase 11.5)
+    "httpx>=0.28.0",  # For checking argo-proxy availability
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+]
+
+[tool.uv]
+dev-dependencies = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.21.0",
+]
+
+[tool.uv.sources]
+modelseedpy = { git = "https://github.com/Fxe/ModelSEEDpy.git", branch = "dev" }
+# CRITICAL: Must use Fxe fork, not ModelSEED official repo
+# Specs were written based on Fxe/ModelSEEDpy@dev behavior
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+markers = [
+    "real_llm: mark test as requiring real LLM API calls (expensive, slow, requires argo-proxy)",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/conftest.py",
+    "*/utils/context_relevance.py"  # Loop infrastructure, not application code
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+fail_under = 80
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]  # Line too long (handled by black)

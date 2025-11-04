@@ -60,3 +60,35 @@ baml_client/
 
 # Spec development artifacts
 .spec_loop_state
+
+# UV package manager
+uv.lock
+.uv/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Implementation loop artifacts
+.implementation_logs/
+.implementation_flags
+optimized_prompt.md
+# prompt.md is a STATIC file (tracked in repo, like specs-prompt.md)
+# Only optimized_prompt.md is generated dynamically
+optimized_prompt.md
+
+# Large database files (download from ModelSEED/ModelSEEDDatabase)
+data/database/compounds.tsv
+data/database/reactions.tsv
+# Keep README.md in repo to document sources
+
+# Large template files (download from Fxe/ModelSEEDpy)
+data/templates/*.json
+# Keep README.md in repo to document sources
+*.ipynb_checkpoints/
+.ipynb_checkpoints/
+
+# Debug and diagnostic scripts from tool development
+debug/
