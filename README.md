@@ -102,11 +102,8 @@ wget -O data/templates/Core-V5.2.json https://raw.githubusercontent.com/ModelSEE
 ### 4. Start Server
 
 ```bash
-# Start MCP server
-./start-server.sh
-
-# Or manually:
-uv run python -m gem_flux_mcp.server
+# Start MCP server manually:
+uv run python -m gem_flux_mcp
 ```
 
 **Expected output:**
@@ -315,9 +312,7 @@ print(response)
 # "I've built a metabolic model with ID 'ecoli_83333.gf'..."
 ```
 
-**Documentation**: See `docs/ARGO_LLM_INTEGRATION_GUIDE.md` for complete setup and usage.
-
-**Phase**: Phase 11.5 in `IMPLEMENTATION_PLAN.md` (Argo LLM Integration)
+**Documentation**: See `docs/ARGO_LLM_RELIABILITY_RESEARCH.md` for comprehensive testing and integration guide.
 
 ---
 
@@ -1193,8 +1188,7 @@ Debug logs include:
 - `docs/ATP_CORRECTION.md` - ATP correction feature guide
 - `docs/TESTING.md` - Testing guide and best practices
 - `docs/SESSION_LIFECYCLE.md` - Session management lifecycle
-- `IMPLEMENTATION_PLAN.md` - Complete implementation plan (100 tasks)
-- `CLAUDE.md` - AI co-scientist guidelines
+- `.claude/CLAUDE.md` - AI co-scientist guidelines (for development)
 
 ### External References
 

@@ -30,6 +30,7 @@ MODELS = {
     "gpt-4o": "argo:gpt-4o",
     "gpt-5": "argo:gpt-5",
     "claude-sonnet-4": "argo:claude-sonnet-4",
+    "claudesonnet45": "argo:claudesonnet45",
 }
 
 # ANSI color codes

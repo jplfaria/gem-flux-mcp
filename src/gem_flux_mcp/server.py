@@ -20,22 +20,9 @@ from gem_flux_mcp.media import load_predefined_media
 from gem_flux_mcp.storage.models import MODEL_STORAGE
 from gem_flux_mcp.storage.media import MEDIA_STORAGE
 
-# Import all MCP tools
-from gem_flux_mcp.tools.media_builder import build_media
-from gem_flux_mcp.tools.build_model import build_model
-from gem_flux_mcp.tools.gapfill_model import gapfill_model
-from gem_flux_mcp.tools.run_fba import run_fba
-from gem_flux_mcp.tools.compound_lookup import (
-    get_compound_name,
-    search_compounds,
-)
-from gem_flux_mcp.tools.reaction_lookup import (
-    get_reaction_name,
-    search_reactions,
-)
-from gem_flux_mcp.tools.list_models import list_models
-from gem_flux_mcp.tools.delete_model import delete_model
-from gem_flux_mcp.tools.list_media import list_media
+# NOTE: MCP tools are imported INSIDE create_server() to avoid circular imports
+# The mcp_tools module imports get_db_index() from this module, so we must
+# import mcp_tools AFTER the global state (database_index, templates) is initialized
 
 logger = get_logger(__name__)
 
@@ -90,6 +77,22 @@ def get_templates() -> dict:
     return templates
 
 
+def initialize_server() -> None:
+    """Initialize server global state for testing.
+
+    This is a convenience function for tests and scripts that need to
+    initialize the server resources without running the full server.
+
+    Equivalent to calling:
+    1. get_config_from_env()
+    2. load_resources(config)
+    3. initialize_session_storage(config)
+    """
+    config = get_config_from_env()
+    load_resources(config)
+    initialize_session_storage(config)
+
+
 def get_config_from_env() -> dict:
     """Load configuration from environment variables.
 
@@ -127,7 +130,7 @@ def load_resources(config: dict) -> None:
         FileNotFoundError: If required database files not found
         ValueError: If database loading fails
     """
-    global database_index
+    global database_index, templates
 
     logger.info("=" * 60)
     logger.info("Loading ModelSEED Resources")
@@ -205,70 +208,33 @@ def initialize_session_storage(config: dict) -> None:
     logger.info(f"Media in storage: {len(MEDIA_STORAGE)}")
 
 
-def register_tools(mcp_server: FastMCP) -> None:
-    """Register all MCP tools with FastMCP server.
-
-    Args:
-        mcp_server: FastMCP server instance
-
-    Registers:
-        - build_media: Create growth medium
-        - build_model: Build metabolic model from proteins
-        - gapfill_model: Gapfill model for growth
-        - run_fba: Execute flux balance analysis
-        - get_compound_name: Lookup compound name by ID
-        - get_reaction_name: Lookup reaction name by ID
-        - search_compounds: Search compounds by query
-        - search_reactions: Search reactions by query
-        - list_models: List all models in session
-        - delete_model: Delete a model from session
-        - list_media: List all media in session
-    """
-    logger.info("Registering MCP tools")
-
-    tools = [
-        ("build_media", build_media),
-        ("build_model", build_model),
-        ("gapfill_model", gapfill_model),
-        ("run_fba", run_fba),
-        ("get_compound_name", get_compound_name),
-        ("get_reaction_name", get_reaction_name),
-        ("search_compounds", search_compounds),
-        ("search_reactions", search_reactions),
-        ("list_models", list_models),
-        ("delete_model", delete_model),
-        ("list_media", list_media),
-    ]
-
-    for tool_name, tool_func in tools:
-        mcp_server.tool()(tool_func)
-        logger.info(f"Registered tool: {tool_name}")
-
-    logger.info(f"Tool registration complete ({len(tools)} tools)")
-
-
 def create_server() -> FastMCP:
     """Create and configure FastMCP server instance.
 
+    CRITICAL: This function imports mcp_tools INSIDE the function to avoid
+    circular import issues. The mcp_tools module imports get_db_index() and
+    get_templates() from this module, so we must import mcp_tools AFTER the
+    global state (database_index, templates) is initialized.
+
     Returns:
-        FastMCP: Configured server instance
+        FastMCP: Configured server instance with all tools registered
 
     Server Metadata:
         - name: gem-flux-mcp
         - version: 0.1.0
         - description: MCP server for metabolic modeling
-        - protocol_version: 2025-06-18 (latest stable MCP)
+        - Tools: Auto-registered via @mcp.tool() decorators in mcp_tools.py
     """
     logger.info("Creating FastMCP server instance")
 
-    server = FastMCP(
-        name="gem-flux-mcp",
-        dependencies=["fastmcp>=0.2.0", "cobra>=0.27.0", "modelseedpy", "pandas>=2.0.0"],
-    )
+    # CRITICAL: Import mcp_tools INSIDE this function to avoid circular import
+    # This import happens AFTER load_resources() has set database_index and templates
+    from gem_flux_mcp import mcp_tools
 
-    # FastMCP automatically handles protocol version and capabilities
-    logger.info("FastMCP server instance created")
-    return server
+    # Return the pre-configured server from mcp_tools
+    # All tools are already registered via @mcp.tool() decorators
+    logger.info("MCP server with registered tools returned from mcp_tools")
+    return mcp_tools.mcp
 
 
 def shutdown_handler(signum, frame):
@@ -327,13 +293,10 @@ def main():
         # Phase 3: Session Storage Initialization
         initialize_session_storage(config)
 
-        # Phase 4: Server Creation
+        # Phase 4: Server Creation (tools auto-registered via @mcp.tool() decorators)
         mcp = create_server()
 
-        # Phase 5: Tool Registration
-        register_tools(mcp)
-
-        # Phase 6: Setup shutdown handlers
+        # Phase 5: Setup shutdown handlers
         signal.signal(signal.SIGINT, shutdown_handler)
         signal.signal(signal.SIGTERM, shutdown_handler)
 
