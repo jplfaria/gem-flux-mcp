@@ -384,15 +384,18 @@ def search_compounds(request: SearchCompoundsRequest, db_index: DatabaseIndex) -
         response.next_steps = []
     else:
         # Add context-aware next_steps based on results
-        next_steps = [
-            "Use get_compound_name with compound 'id' to get detailed information",
-            "Use compound IDs in build_media to create growth media",
+        from gem_flux_mcp.prompts import render_prompt
+        next_steps_text = render_prompt(
+            "next_steps/search_compounds",
+            truncated=truncated,
+            limit=limit,
+            total_matches=total_matches,
+        )
+        response.next_steps = [
+            line.strip()[2:].strip()
+            for line in next_steps_text.split("\n")
+            if line.strip().startswith("-")
         ]
-
-        if truncated:
-            next_steps.insert(0, f"More results available: increase limit parameter (currently {limit}) to see all {total_matches} matches")
-
-        response.next_steps = next_steps
 
     logger.info(
         f"Search complete: {len(results)} results returned "

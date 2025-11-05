@@ -46,6 +46,27 @@ logger = get_logger(__name__)
 VALID_AMINO_ACIDS = set("ACDEFGHIKLMNPQRSTVWYU")
 
 
+# =============================================================================
+# Helper Functions for Prompts
+# =============================================================================
+
+
+def _get_next_steps_build_model() -> list[str]:
+    """Get next_steps from centralized prompt."""
+    from gem_flux_mcp.prompts import render_prompt
+    next_steps_text = render_prompt("next_steps/build_model")
+    return [
+        line.strip()[2:].strip()
+        for line in next_steps_text.split("\n")
+        if line.strip().startswith("-")
+    ]
+
+
+# =============================================================================
+# Validation Functions
+# =============================================================================
+
+
 def validate_amino_acid_sequence(protein_id: str, sequence: str) -> tuple[bool, list[tuple[str, int]]]:
     """Validate amino acid sequence contains only valid characters.
 
@@ -770,13 +791,7 @@ async def build_model(
             "expected_growth_without_gapfilling": "0.0 (draft models cannot grow)",
             "readiness": "Ready for gapfilling with gapfill_model tool",
         },
-        "next_steps": [
-            "Use gapfill_model to add reactions needed for growth in target media",
-            "Specify media_id (e.g., 'glucose_minimal_aerobic') when gapfilling",
-            "After gapfilling, use run_fba to analyze growth and metabolism",
-            "Compare growth rates across different media conditions",
-            "Use list_models to see both draft and gapfilled versions",
-        ],
+        "next_steps": _get_next_steps_build_model(),
     }
 
     # Include ATP correction statistics if available

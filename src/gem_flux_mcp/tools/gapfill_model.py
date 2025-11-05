@@ -71,6 +71,27 @@ from gem_flux_mcp.database.index import DatabaseIndex
 logger = get_logger(__name__)
 
 
+# =============================================================================
+# Helper Functions for Prompts
+# =============================================================================
+
+
+def _get_next_steps_gapfill() -> list[str]:
+    """Get next_steps from centralized prompt."""
+    from gem_flux_mcp.prompts import render_prompt
+    next_steps_text = render_prompt("next_steps/gapfill_model")
+    return [
+        line.strip()[2:].strip()
+        for line in next_steps_text.split("\n")
+        if line.strip().startswith("-")
+    ]
+
+
+# =============================================================================
+# Validation Functions
+# =============================================================================
+
+
 def validate_gapfill_inputs(
     model_id: str,
     media_id: str,
@@ -864,13 +885,7 @@ def gapfill_model(
             "num_reactions_added": num_reactions,
             "pathway_summary": pathway_summary,
             "interpretation": interpretation,
-            "next_steps": [
-                "Use run_fba to analyze metabolic fluxes and growth rate in detail",
-                "Examine pathway_summary to understand which metabolic pathways were activated",
-                "Compare growth rates on different media by gapfilling same model with other media_ids",
-                "Use get_reaction_name to look up details about added reactions",
-                "Original draft model preserved - use list_models to see both versions",
-            ],
+            "next_steps": _get_next_steps_gapfill(),
             "atp_correction": {
                 "performed": atp_stats.get("performed", False),
                 "media_tested": atp_stats.get("media_tested", 0),

@@ -57,6 +57,27 @@ from gem_flux_mcp.database.index import DatabaseIndex
 logger = get_logger(__name__)
 
 
+# =============================================================================
+# Helper Functions for Prompts
+# =============================================================================
+
+
+def _get_next_steps_run_fba() -> list[str]:
+    """Get next_steps from centralized prompt."""
+    from gem_flux_mcp.prompts import render_prompt
+    next_steps_text = render_prompt("next_steps/run_fba")
+    return [
+        line.strip()[2:].strip()
+        for line in next_steps_text.split("\n")
+        if line.strip().startswith("-")
+    ]
+
+
+# =============================================================================
+# Validation Functions
+# =============================================================================
+
+
 def validate_fba_inputs(
     model_id: str,
     media_id: str,
@@ -449,13 +470,7 @@ def run_fba(
                 ),
                 "model_status": "Model is viable and can grow in specified media"
             },
-            "next_steps": [
-                "Analyze uptake_fluxes to understand nutrient consumption",
-                "Analyze secretion_fluxes to identify metabolic byproducts",
-                "Compare growth rates on different media using same model",
-                "Use get_compound_name to look up unfamiliar compound IDs",
-                "Examine top_fluxes to identify key metabolic reactions"
-            ],
+            "next_steps": _get_next_steps_run_fba(),
             "active_reactions": flux_data["active_reactions"],
             "total_reactions": len(model.reactions),
             "total_flux": flux_data["total_flux"],

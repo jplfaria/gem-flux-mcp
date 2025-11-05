@@ -25,6 +25,22 @@ logger = logging.getLogger(__name__)
 
 
 # =============================================================================
+# Helper Functions
+# =============================================================================
+
+
+def _get_next_steps() -> list[str]:
+    """Get next_steps from centralized prompt."""
+    from gem_flux_mcp.prompts import render_prompt
+    next_steps_text = render_prompt("next_steps/build_media")
+    return [
+        line.strip()[2:].strip()
+        for line in next_steps_text.split("\n")
+        if line.strip().startswith("-")
+    ]
+
+
+# =============================================================================
 # Request/Response Models
 # =============================================================================
 
@@ -315,13 +331,7 @@ def build_media(request: BuildMediaRequest, db_index: DatabaseIndex) -> dict:
         media_type=media_type,
         default_uptake_rate=request.default_uptake,
         custom_bounds_applied=len(request.custom_bounds),
-        next_steps=[
-            "Use this media_id with gapfill_model to add reactions for growth",
-            "Use list_media to see all available media compositions",
-            "Bounds format: negative = uptake (consumption), positive = secretion",
-            "Compare model growth on different media by gapfilling with different media_ids",
-            "Use get_compound_name to look up details about compounds in this media",
-        ],
+        next_steps=_get_next_steps(),
     )
 
     logger.info(

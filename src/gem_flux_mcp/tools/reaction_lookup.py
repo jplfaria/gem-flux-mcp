@@ -626,16 +626,18 @@ def search_reactions(request: SearchReactionsRequest, db_index: DatabaseIndex) -
         response.next_steps = []
     else:
         # Add context-aware next_steps based on results
-        next_steps = [
-            "Use get_reaction_name with reaction 'id' to get detailed information and equation",
-            "Examine EC numbers to understand enzyme classification",
-            "Look at pathways to see metabolic context of reactions",
+        from gem_flux_mcp.prompts import render_prompt
+        next_steps_text = render_prompt(
+            "next_steps/search_reactions",
+            truncated=truncated,
+            limit=limit,
+            total_matches=total_matches,
+        )
+        response.next_steps = [
+            line.strip()[2:].strip()
+            for line in next_steps_text.split("\n")
+            if line.strip().startswith("-")
         ]
-
-        if truncated:
-            next_steps.insert(0, f"More results available: increase limit parameter (currently {limit}) to see all {total_matches} matches")
-
-        response.next_steps = next_steps
 
     logger.info(
         f"Search complete: {len(results)} results returned "

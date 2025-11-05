@@ -17,6 +17,8 @@ dependencies = [
     "numpy>=1.24.0",
     "openai>=1.0.0",  # For Argo Gateway LLM integration (Phase 11.5)
     "httpx>=0.28.0",  # For checking argo-proxy availability
+    "jinja2>=3.1.0",  # For centralized prompt templates
+    "pyyaml>=6.0",    # For prompt YAML frontmatter
 ]
 
 [project.optional-dependencies]
