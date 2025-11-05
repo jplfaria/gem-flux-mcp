@@ -5,6 +5,141 @@ All notable changes to the Gem-Flux MCP Server will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2025-11-05
+
+### Added
+- **Centralized Prompt Management** - Major infrastructure for maintainable prompts
+  - Created `prompts/` directory with Markdown + YAML frontmatter format
+  - Implemented Jinja2 template rendering with `render_prompt()` function
+  - Added prompt caching for performance
+  - Extracted 8 prompts to markdown files (7 next_steps + 1 interpretation)
+  - Documentation: `prompts/README.md` (253 lines) for team collaboration
+
+- **Prompt Files**:
+  - `prompts/next_steps/list_media.md` - Media usage guidance
+  - `prompts/next_steps/list_models.md` - Model state guidance
+  - `prompts/next_steps/build_media.md` - Media creation workflow
+  - `prompts/next_steps/build_model.md` - Model building workflow
+  - `prompts/next_steps/gapfill_model.md` - Gapfilling analysis
+  - `prompts/next_steps/run_fba.md` - FBA analysis guidance
+  - `prompts/next_steps/search_compounds.md` - Compound search (with truncation)
+  - `prompts/next_steps/search_reactions.md` - Reaction search (with truncation)
+  - `prompts/interpretations/build_model.md` - Model quality interpretation
+
+- **Design Documentation**:
+  - `prompts/INTERPRETATION_DESIGN_DECISIONS.md` - Why some interpretations stay in code
+  - `PROMPTS_MIGRATION_COMPLETE.md` - Complete migration summary
+  - `baseline_tests/BEFORE_AFTER_COMPARISON.md` - Code examples before/after
+
+### Changed
+- **8 Tools Refactored** to use centralized prompts:
+  - `list_media.py` - Helper function pattern
+  - `list_models.py` - Complex conditional logic now in markdown
+  - `build_media.py` - Static next_steps from prompt
+  - `build_model.py` - Workflow guidance + interpretation from prompts
+  - `gapfill_model.py` - Analysis guidance from prompt
+  - `run_fba.py` - FBA guidance from prompt
+  - `compound_lookup.py` - Inline rendering with truncation logic
+  - `reaction_lookup.py` - Inline rendering with truncation logic
+
+- **Dependencies**:
+  - Added `jinja2>=3.1.0` for template rendering
+  - Added `pyyaml>=6.0` for YAML frontmatter parsing
+
+### Testing
+- **Comprehensive Baseline Testing** - Zero functional regression verified
+  - Recorded `baseline_tests/BASELINE_PHASE2_TEST.txt` before changes
+  - Recorded `baseline_tests/AFTER_PROMPTS_TEST.txt` after changes
+  - End-to-end E. coli workflow: identical results (1829 reactions, 5 gapfill, 0.554 growth)
+  - MCP server tests: all tools working identically
+  - Phase 2 test: no differences from baseline
+
+### Benefits
+- ✅ **Team Collaboration** - Non-developers can edit prompts directly
+- ✅ **Version Control** - Git tracks every prompt change independently
+- ✅ **Rapid Iteration** - Change prompts without touching code
+- ✅ **Clear Separation** - Logic in Python, presentation in Markdown
+- ✅ **MCP Best Practice** - Industry standard (Markdown + YAML)
+
+### Statistics
+- 11 commits (clean, incremental)
+- 20 files created (prompts, tests, docs)
+- 8 files modified (tools refactored)
+- 1,696 lines added
+- 66 lines removed (code reduction)
+
+---
+
+## [0.2.1] - 2025-11-05
+
+### Added
+- **Phase 2 Argo Validation Results** - Production testing with Claude Sonnet 4.5
+  - 83% feature adoption rate (15/18 features used spontaneously)
+  - next_steps arrays: 100% adoption (all tools)
+  - interpretation objects: 67% adoption (2/3 tools)
+  - Validation document: `docs/argo_phase2_validation_results.md`
+
+### Changed
+- **Pathway Categorization** - Now uses real ModelSEED database data
+  - Fixed: Was using keyword matching, now uses actual pathway annotations
+  - Improvement: Shows exact ModelSEED pathway names (e.g., "ANAEROFRUCAT-PWY", "rn00010")
+  - Added: `reactions_without_pathways` and `reactions_without_pathways_percentage` metrics
+  - Function: `categorize_reactions_by_pathway()` now accepts `db_index` parameter
+
+---
+
+## [0.2.0] - 2025-11-04
+
+### Added
+- **next_steps Arrays** - Context-aware guidance for all 11 tools
+  - Workflow suggestions after each tool execution
+  - Conditional logic based on results (e.g., draft vs gapfilled models)
+  - Truncation warnings for search tools
+  - Links between related tools
+
+- **interpretation Objects** - Biological context for 3 key tools
+  - `build_model`: Model quality assessment, annotation status, readiness
+  - `gapfill_model`: Growth improvement, gapfilling assessment, pathway coverage
+  - `run_fba`: Metabolism type, carbon source, growth assessment
+
+- **Critical Gapfill Improvements** (5 fixes):
+  1. Fixed misleading "to enable growth" message when gapfilling fails
+  2. Added explicit growth_improvement object with before/after rates
+  3. Added gapfilling_assessment ("Minimal", "Moderate", "Extensive")
+  4. Exposed pathway_summary with reactions_by_pathway breakdown
+  5. Exposed reactions_without_pathways to show unknown reactions
+
+- **ATP Correction Status** - Exposed in build_model response
+  - Shows reactions added by ATP correction
+  - Shows test conditions used (28 media)
+  - Indicates biological realism enhancement
+
+### Changed
+- **gapfill_model Response** - Complete restructure for clarity
+  - Added `interpretation` object with overview, growth_improvement, assessment
+  - Added `pathway_summary` with pathways list and statistics
+  - Moved ATP stats to `atp_correction` object
+  - Added `genomescale_gapfill` object for stage breakdown
+
+- **run_fba Response** - Added biological interpretation
+  - `interpretation` object with growth_rate, metabolism_type, carbon_source
+  - Growth assessment categories ("Fast", "Moderate", "Slow", "Very slow")
+  - Model status indication
+
+- **build_model Response** - Added model quality interpretation
+  - Quality categories based on reaction counts
+  - RAST annotation status
+  - ATP correction status
+  - Expected growth and readiness assessment
+
+### Testing
+- **Argo LLM Validation** - Tested with Claude Sonnet 4 and 4.5
+  - Phase 2 validation: 83% feature adoption
+  - End-to-end E. coli workflow successful
+  - All tools working correctly with LLM agents
+
+---
+
 ## [0.1.2] - 2025-11-04
 
 ### Changed
