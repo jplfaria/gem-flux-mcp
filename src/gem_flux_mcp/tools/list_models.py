@@ -177,18 +177,18 @@ def list_models(
         models.sort(key=lambda m: m.created_at)
 
         # Build workflow-aware next_steps
-        next_steps = []
-        if state_counts["draft"] > 0 and state_counts["gapfilled"] == 0:
-            next_steps.append("Draft models need gapfilling: use gapfill_model with a media_id")
-        elif state_counts["draft"] > 0 and state_counts["gapfilled"] > 0:
-            next_steps.append("Draft models (.draft suffix) need gapfilling for growth")
-            next_steps.append("Gapfilled models (.gf suffix) are ready for run_fba")
-        elif state_counts["gapfilled"] > 0:
-            next_steps.append("Gapfilled models are ready: use run_fba to analyze metabolism")
-
-        if len(models) > 0:
-            next_steps.append("Compare growth rates across models using run_fba with same media")
-            next_steps.append("Use delete_model to remove models no longer needed")
+        from gem_flux_mcp.prompts import render_prompt
+        next_steps_text = render_prompt(
+            "next_steps/list_models",
+            draft_count=state_counts["draft"],
+            gapfilled_count=state_counts["gapfilled"],
+            has_models=len(models) > 0,
+        )
+        next_steps = [
+            line.strip()[2:].strip()
+            for line in next_steps_text.split("\n")
+            if line.strip().startswith("-")
+        ]
 
         # Build response
         response = ListModelsResponse(
