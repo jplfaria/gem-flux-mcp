@@ -143,15 +143,19 @@ def list_media(db_index=None) -> dict:
         media_list.sort(key=lambda m: m.created_at)
 
         # Build next_steps based on available media
-        next_steps = []
-        if predefined_count > 0:
-            next_steps.append("Use predefined media (like 'glucose_minimal_aerobic') with gapfill_model")
-        if user_created_count > 0:
-            next_steps.append("Your custom media compositions are ready for gapfilling")
-        if len(media_list) > 0:
-            next_steps.append("Use media_id with gapfill_model to add reactions for growth")
-            next_steps.append("Examine compounds_preview to see media composition")
-            next_steps.append("Use build_media to create custom media compositions")
+        from gem_flux_mcp.prompts import render_prompt
+        next_steps_text = render_prompt(
+            "next_steps/list_media",
+            predefined_count=predefined_count,
+            user_created_count=user_created_count,
+            has_media=len(media_list) > 0,
+        )
+        # Split into list (one item per line starting with -)
+        next_steps = [
+            line.strip()[2:].strip()  # Remove "- " prefix
+            for line in next_steps_text.split("\n")
+            if line.strip().startswith("-")
+        ]
 
         # Build response
         response = ListMediaResponse(
