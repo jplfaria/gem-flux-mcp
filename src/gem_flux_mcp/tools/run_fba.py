@@ -413,15 +413,49 @@ def run_fba(
             ),
         }
 
-        # Build success response
+        # Calculate biological interpretations
+        growth_rate = solution.objective_value
+
+        # Identify metabolism type based on uptake
+        has_oxygen = any(f["compound_id"] == "cpd00007" for f in flux_data["uptake_fluxes"])
+        metabolism_type = "Aerobic respiration" if has_oxygen else "Anaerobic/fermentation"
+
+        # Main carbon source
+        carbon_sources = ["cpd00027", "cpd00029", "cpd00020"]  # glucose, acetate, pyruvate
+        main_carbon = None
+        for f in flux_data["uptake_fluxes"]:
+            if f["compound_id"] in carbon_sources:
+                main_carbon = f["compound_id"]
+                break
+
+        # Build success response with interpretation
         response = {
             "success": True,
             "model_id": model_id,
             "media_id": media_id,
             "objective_reaction": objective,
-            "objective_value": round(solution.objective_value, 6),
+            "objective_value": round(growth_rate, 6),
             "status": "optimal",
             "solver_status": status,
+            "interpretation": {
+                "growth_rate_per_hour": round(growth_rate, 3),
+                "metabolism_type": metabolism_type,
+                "carbon_source": main_carbon if main_carbon else "Unknown",
+                "growth_assessment": (
+                    "Fast growth" if growth_rate > 0.5 else
+                    "Moderate growth" if growth_rate > 0.1 else
+                    "Slow growth" if growth_rate > 0.01 else
+                    "Very slow growth"
+                ),
+                "model_status": "Model is viable and can grow in specified media"
+            },
+            "next_steps": [
+                "Analyze uptake_fluxes to understand nutrient consumption",
+                "Analyze secretion_fluxes to identify metabolic byproducts",
+                "Compare growth rates on different media using same model",
+                "Use get_compound_name to look up unfamiliar compound IDs",
+                "Examine top_fluxes to identify key metabolic reactions"
+            ],
             "active_reactions": flux_data["active_reactions"],
             "total_reactions": len(model.reactions),
             "total_flux": flux_data["total_flux"],

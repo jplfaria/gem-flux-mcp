@@ -146,6 +146,9 @@ class SearchReactionsResponse(BaseModel):
     suggestions: Optional[list[str]] = Field(
         default=None, description="Suggestions when no results found"
     )
+    next_steps: list[str] = Field(
+        default_factory=list, description="Suggested next steps based on results"
+    )
 
 
 # =============================================================================
@@ -620,6 +623,19 @@ def search_reactions(request: SearchReactionsRequest, db_index: DatabaseIndex) -
             "Search by pathway name (e.g., Glycolysis)",
             "Search by database ID from other sources (KEGG, BiGG, MetaCyc)",
         ]
+        response.next_steps = []
+    else:
+        # Add context-aware next_steps based on results
+        next_steps = [
+            "Use get_reaction_name with reaction 'id' to get detailed information and equation",
+            "Examine EC numbers to understand enzyme classification",
+            "Look at pathways to see metabolic context of reactions",
+        ]
+
+        if truncated:
+            next_steps.insert(0, f"More results available: increase limit parameter (currently {limit}) to see all {total_matches} matches")
+
+        response.next_steps = next_steps
 
     logger.info(
         f"Search complete: {len(results)} results returned "

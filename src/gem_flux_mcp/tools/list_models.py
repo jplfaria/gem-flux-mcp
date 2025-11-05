@@ -176,12 +176,27 @@ def list_models(
         # Sort by created_at (oldest first)
         models.sort(key=lambda m: m.created_at)
 
+        # Build workflow-aware next_steps
+        next_steps = []
+        if state_counts["draft"] > 0 and state_counts["gapfilled"] == 0:
+            next_steps.append("Draft models need gapfilling: use gapfill_model with a media_id")
+        elif state_counts["draft"] > 0 and state_counts["gapfilled"] > 0:
+            next_steps.append("Draft models (.draft suffix) need gapfilling for growth")
+            next_steps.append("Gapfilled models (.gf suffix) are ready for run_fba")
+        elif state_counts["gapfilled"] > 0:
+            next_steps.append("Gapfilled models are ready: use run_fba to analyze metabolism")
+
+        if len(models) > 0:
+            next_steps.append("Compare growth rates across models using run_fba with same media")
+            next_steps.append("Use delete_model to remove models no longer needed")
+
         # Build response
         response = ListModelsResponse(
             success=True,
             models=models,
             total_models=len(models),
             models_by_state=state_counts,
+            next_steps=next_steps,
         )
 
         logger.info(

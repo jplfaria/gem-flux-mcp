@@ -554,6 +554,9 @@ class ListModelsResponse(BaseModel):
     models: List[ModelInfo] = Field(..., description="List of model metadata")
     total_models: int = Field(..., description="Total models after filtering")
     models_by_state: Dict[str, int] = Field(..., description="Breakdown by state")
+    next_steps: List[str] = Field(
+        default_factory=list, description="Suggested next steps based on models found"
+    )
 
 
 class DeleteModelRequest(BaseModel):
@@ -593,6 +596,9 @@ class ListMediaResponse(BaseModel):
     total_media: int = Field(..., description="Total media count")
     predefined_media: int = Field(..., description="Count of predefined media")
     user_created_media: int = Field(..., description="Count of user-created media")
+    next_steps: List[str] = Field(
+        default_factory=list, description="Suggested next steps based on media found"
+    )
 
 
 class DeleteMediaRequest(BaseModel):

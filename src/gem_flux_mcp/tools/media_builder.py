@@ -178,6 +178,9 @@ class BuildMediaResponse(BaseModel):
     custom_bounds_applied: int = Field(
         ..., description="Number of compounds with custom bounds"
     )
+    next_steps: list[str] = Field(
+        ..., description="Suggested next steps for using this media"
+    )
 
 
 # =============================================================================
@@ -312,6 +315,13 @@ def build_media(request: BuildMediaRequest, db_index: DatabaseIndex) -> dict:
         media_type=media_type,
         default_uptake_rate=request.default_uptake,
         custom_bounds_applied=len(request.custom_bounds),
+        next_steps=[
+            "Use this media_id with gapfill_model to add reactions for growth",
+            "Use list_media to see all available media compositions",
+            "Bounds format: negative = uptake (consumption), positive = secretion",
+            "Compare model growth on different media by gapfilling with different media_ids",
+            "Use get_compound_name to look up details about compounds in this media",
+        ],
     )
 
     logger.info(

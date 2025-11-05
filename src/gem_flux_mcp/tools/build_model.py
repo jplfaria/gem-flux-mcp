@@ -728,13 +728,54 @@ async def build_model(
     # Step 10: Collect statistics
     stats = collect_model_statistics(model, template)
 
-    # Step 11: Build response
+    # Step 11: Build interpretation
+    # Assess model quality
+    reaction_count = stats["num_reactions"]
+    gene_count = stats["num_genes"]
+
+    if reaction_count > 1000:
+        model_quality = "High-quality draft model with extensive reaction coverage"
+    elif reaction_count > 500:
+        model_quality = "Good draft model with moderate reaction coverage"
+    elif reaction_count > 100:
+        model_quality = "Basic draft model, will need gapfilling"
+    else:
+        model_quality = "Minimal draft model, significant gapfilling will be required"
+
+    # Explain RAST impact
+    if annotate_with_rast:
+        annotation_note = f"RAST annotation enabled: {gene_count} genes annotated with functional roles and EC numbers"
+    else:
+        annotation_note = "RAST annotation disabled: limited reaction mapping (enable RAST for better models)"
+
+    # Explain ATP correction
+    if atp_stats is not None:
+        atp_note = f"ATP correction applied: added {atp_stats['reactions_added_by_correction']} reactions across {atp_stats['media_tested']} media conditions for biologically realistic growth"
+    else:
+        atp_note = "ATP correction not applied: model may have unrealistic growth predictions"
+
+    # Build response
     response = {
         "success": True,
         "model_id": model_id,
         "model_name": model_name,
         "annotated_with_rast": annotate_with_rast,
         **stats,
+        "interpretation": {
+            "model_quality": model_quality,
+            "annotation_status": annotation_note,
+            "atp_correction_status": atp_note,
+            "model_state": "Draft model created - requires gapfilling to enable growth",
+            "expected_growth_without_gapfilling": "0.0 (draft models cannot grow)",
+            "readiness": "Ready for gapfilling with gapfill_model tool",
+        },
+        "next_steps": [
+            "Use gapfill_model to add reactions needed for growth in target media",
+            "Specify media_id (e.g., 'glucose_minimal_aerobic') when gapfilling",
+            "After gapfilling, use run_fba to analyze growth and metabolism",
+            "Compare growth rates across different media conditions",
+            "Use list_models to see both draft and gapfilled versions",
+        ],
     }
 
     # Include ATP correction statistics if available

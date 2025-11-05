@@ -552,57 +552,71 @@ def enrich_reaction_metadata(
     return enriched
 
 
-def categorize_reactions_by_pathway(enriched_reactions: list[dict]) -> dict:
-    """Categorize gapfilled reactions by biological pathway/function.
+def categorize_reactions_by_pathway(enriched_reactions: list[dict], db_index: DatabaseIndex) -> dict:
+    """Categorize gapfilled reactions by biological pathway using ModelSEED database annotations.
 
-    Uses keyword matching on reaction names to group reactions.
-    This is a heuristic approach suitable for giving LLMs an overview.
+    Uses actual pathway data from the ModelSEED reactions database instead of keyword matching.
+    This provides more accurate pathway categorization based on curated annotations.
 
     Args:
         enriched_reactions: List of reaction dicts with id, name, direction, compartment
+        db_index: DatabaseIndex instance for looking up reaction pathway data
 
     Returns:
         Dict with pathway categories and counts
     """
-    # Pathway keywords (case-insensitive matching)
-    pathway_keywords = {
-        "Glycolysis/Gluconeogenesis": ["glycolysis", "glucose", "fructose", "phosphofructo", "hexokinase", "pyruvate kinase"],
-        "TCA cycle": ["citrate", "isocitrate", "succinate", "fumarate", "malate", "oxaloacetate", "alpha-ketoglutarate", "TCA"],
-        "Pentose phosphate": ["pentose", "ribulose", "ribose", "xylulose", "transketolase", "transaldolase"],
-        "Amino acid metabolism": ["amino acid", "glutamate", "glutamine", "aspartate", "alanine", "serine", "glycine", "lysine", "arginine", "leucine", "valine"],
-        "Nucleotide metabolism": ["nucleotide", "purine", "pyrimidine", "AMP", "GMP", "CMP", "UMP", "IMP"],
-        "Lipid metabolism": ["lipid", "fatty acid", "acyl", "phospholipid", "glycerol"],
-        "Transport": ["transport", "exchange", "permease", "transporter", "_e0"],  # _e0 = extracellular
-        "Energy/ATP": ["ATP", "ADP", "NADH", "NADPH", "FAD", "electron", "respiration"],
-        "Cofactor/Vitamin": ["cofactor", "vitamin", "thiamine", "riboflavin", "folate", "coenzyme", "NAD biosynthesis"],
-    }
+    from gem_flux_mcp.tools.reaction_lookup import parse_pathways
 
     # Count reactions by pathway
-    pathway_counts = {pathway: 0 for pathway in pathway_keywords.keys()}
-    pathway_counts["Other/Unknown"] = 0
-    pathway_examples = {pathway: [] for pathway in pathway_keywords.keys()}
-    pathway_examples["Other/Unknown"] = []
+    pathway_counts = {}
+    pathway_examples = {}
+    reactions_without_pathways = 0
 
     for rxn in enriched_reactions:
-        name_lower = rxn["name"].lower()
-        rxn_id = rxn["id"]
-        matched = False
+        # Extract base reaction ID (without compartment suffix)
+        base_rxn_id = rxn["id"].split("_")[0]
 
-        for pathway, keywords in pathway_keywords.items():
-            if any(keyword.lower() in name_lower or keyword.lower() in rxn_id.lower() for keyword in keywords):
-                pathway_counts[pathway] += 1
-                if len(pathway_examples[pathway]) < 3:  # Keep up to 3 examples per pathway
-                    pathway_examples[pathway].append({
+        # Lookup in database
+        reaction_record = db_index.get_reaction_by_id(base_rxn_id)
+
+        if reaction_record:
+            pathways_raw = reaction_record.get("pathways", "")
+            pathways_list = parse_pathways(pathways_raw)
+
+            if pathways_list:
+                # Reaction has pathway annotations
+                for pathway in pathways_list:
+                    if pathway not in pathway_counts:
+                        pathway_counts[pathway] = 0
+                        pathway_examples[pathway] = []
+
+                    pathway_counts[pathway] += 1
+                    if len(pathway_examples[pathway]) < 3:  # Keep up to 3 examples per pathway
+                        pathway_examples[pathway].append({
+                            "id": rxn["id"],
+                            "name": rxn["name"]
+                        })
+            else:
+                # Reaction exists but has no pathway annotation
+                reactions_without_pathways += 1
+                if "Unannotated" not in pathway_counts:
+                    pathway_counts["Unannotated"] = 0
+                    pathway_examples["Unannotated"] = []
+                pathway_counts["Unannotated"] += 1
+                if len(pathway_examples["Unannotated"]) < 3:
+                    pathway_examples["Unannotated"].append({
                         "id": rxn["id"],
                         "name": rxn["name"]
                     })
-                matched = True
-                break  # Only count in first matching pathway
-
-        if not matched:
-            pathway_counts["Other/Unknown"] += 1
-            if len(pathway_examples["Other/Unknown"]) < 3:
-                pathway_examples["Other/Unknown"].append({
+        else:
+            # Reaction not found in database
+            reactions_without_pathways += 1
+            if "Unknown" not in pathway_counts:
+                pathway_counts["Unknown"] = 0
+                pathway_examples["Unknown"] = []
+            pathway_counts["Unknown"] += 1
+            if len(pathway_examples["Unknown"]) < 3:
+                pathway_examples["Unknown"].append({
                     "id": rxn["id"],
                     "name": rxn["name"]
                 })
@@ -617,10 +631,15 @@ def categorize_reactions_by_pathway(enriched_reactions: list[dict]) -> dict:
                 "examples": pathway_examples[pathway]
             })
 
+    # Calculate annotated pathways (exclude Unknown and Unannotated)
+    num_annotated_pathways = len([p for p in pathways if p["pathway"] not in ["Unknown", "Unannotated"]])
+
     return {
         "total_reactions": len(enriched_reactions),
         "pathways": pathways,
-        "num_pathways_affected": len([p for p in pathways if p["pathway"] != "Other/Unknown"])
+        "num_pathways_affected": num_annotated_pathways,
+        "reactions_without_pathways": reactions_without_pathways,
+        "reactions_without_pathways_percentage": round(reactions_without_pathways / len(enriched_reactions) * 100, 1) if len(enriched_reactions) > 0 else 0
     }
 
 
@@ -790,10 +809,49 @@ def gapfill_model(
         # Step 11: Enrich reaction metadata
         enriched_reactions = enrich_reaction_metadata(added_reactions, db_index)
 
-        # Step 12: Categorize reactions by pathway
-        pathway_summary = categorize_reactions_by_pathway(enriched_reactions)
+        # Step 12: Categorize reactions by pathway (using real database pathway data)
+        pathway_summary = categorize_reactions_by_pathway(enriched_reactions, db_index)
 
-        # Step 13: Build response with pathway-based summary
+        # Step 13: Build improved interpretation with 5 key improvements
+        num_reactions = len(enriched_reactions)
+
+        # Improvement 1: Fix misleading overview (don't say "to enable growth" if it failed)
+        if gapfilling_successful:
+            overview = f"Added {num_reactions} reactions across {pathway_summary['num_pathways_affected']} metabolic pathways. Model can now grow."
+        else:
+            overview = f"Added {num_reactions} reactions across {pathway_summary['num_pathways_affected']} metabolic pathways. Model still cannot grow."
+
+        # Improvement 2: Add growth improvement context
+        growth_improvement = {
+            "before": round(growth_rate_before, 6),
+            "after": round(growth_rate_after, 6),
+            "target": target_growth_rate,
+            "met_target": gapfilling_successful,
+        }
+
+        # Improvement 3: Add gapfilling assessment
+        if num_reactions < 10:
+            gapfill_assessment = f"Minimal gapfilling ({num_reactions} reactions)"
+        elif num_reactions < 50:
+            gapfill_assessment = f"Moderate gapfilling ({num_reactions} reactions)"
+        else:
+            gapfill_assessment = f"Extensive gapfilling ({num_reactions} reactions) - may indicate poor annotation quality"
+
+        # Improvement 4 & 5: Expose unknown reactions
+        unknown_count = pathway_summary["reactions_without_pathways"]
+        unknown_pct = pathway_summary["reactions_without_pathways_percentage"]
+
+        interpretation = {
+            "overview": overview,
+            "growth_improvement": growth_improvement,
+            "gapfilling_assessment": gapfill_assessment,
+        }
+
+        # Add warning if significant unknowns
+        if unknown_count > 0:
+            interpretation["pathway_coverage_note"] = f"{unknown_count} of {num_reactions} reactions ({unknown_pct}%) lack pathway annotations in database"
+
+        # Step 14: Build response with improved interpretation
         return {
             "success": True,
             "model_id": new_model_id,
@@ -803,12 +861,16 @@ def gapfill_model(
             "growth_rate_after": growth_rate_after,
             "target_growth_rate": target_growth_rate,
             "gapfilling_successful": gapfilling_successful,
-            "num_reactions_added": len(enriched_reactions),
-            "pathway_summary": pathway_summary,  # NEW: Biological pathway categorization
-            "interpretation": {
-                "overview": f"Added {len(enriched_reactions)} reactions across {pathway_summary['num_pathways_affected']} metabolic pathways to enable growth.",
-                "growth_status": "Model can now grow" if gapfilling_successful else f"Model cannot reach target growth ({growth_rate_after:.4f} < {target_growth_rate})",
-            },
+            "num_reactions_added": num_reactions,
+            "pathway_summary": pathway_summary,
+            "interpretation": interpretation,
+            "next_steps": [
+                "Use run_fba to analyze metabolic fluxes and growth rate in detail",
+                "Examine pathway_summary to understand which metabolic pathways were activated",
+                "Compare growth rates on different media by gapfilling same model with other media_ids",
+                "Use get_reaction_name to look up details about added reactions",
+                "Original draft model preserved - use list_models to see both versions",
+            ],
             "atp_correction": {
                 "performed": atp_stats.get("performed", False),
                 "media_tested": atp_stats.get("media_tested", 0),

@@ -142,6 +142,17 @@ def list_media(db_index=None) -> dict:
         # Sort by created_at (oldest first)
         media_list.sort(key=lambda m: m.created_at)
 
+        # Build next_steps based on available media
+        next_steps = []
+        if predefined_count > 0:
+            next_steps.append("Use predefined media (like 'glucose_minimal_aerobic') with gapfill_model")
+        if user_created_count > 0:
+            next_steps.append("Your custom media compositions are ready for gapfilling")
+        if len(media_list) > 0:
+            next_steps.append("Use media_id with gapfill_model to add reactions for growth")
+            next_steps.append("Examine compounds_preview to see media composition")
+            next_steps.append("Use build_media to create custom media compositions")
+
         # Build response
         response = ListMediaResponse(
             success=True,
@@ -149,6 +160,7 @@ def list_media(db_index=None) -> dict:
             total_media=len(media_list),
             predefined_media=predefined_count,
             user_created_media=user_created_count,
+            next_steps=next_steps,
         )
 
         logger.info(
