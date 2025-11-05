@@ -6,7 +6,7 @@ COBRApy models using the canonical .medium property pattern.
 
 import logging
 import math
-from typing import Any, Union
+from typing import Any
 
 import cobra
 
@@ -98,10 +98,10 @@ def apply_media_to_model(
         )
 
     if len(media_constraints) == 0:
-        logger.error(f"NO media constraints found!")
+        logger.error("NO media constraints found!")
         raise ValueError(
-            f"Failed to parse media: no compound constraints found. "
-            f"Check media format."
+            "Failed to parse media: no compound constraints found. "
+            "Check media format."
         )
 
     # Convert to COBRApy medium dict format: {exchange_id: uptake_rate}
@@ -130,13 +130,13 @@ def apply_media_to_model(
             logger.warning(f"Exchange reaction {exchange_rxn_id} not found in model (compound: {compound_id})")
 
     if len(medium) == 0:
-        logger.error(f"NO exchange reactions matched! This will prevent growth.")
+        logger.error("NO exchange reactions matched! This will prevent growth.")
         logger.error(f"Media had {len(media_constraints)} constraints")
         logger.error(f"Model has {len([r for r in model.reactions if r.id.startswith('EX_')])} exchange reactions")
         logger.error(f"Missing exchanges: {missing_exchanges[:10]}")
         raise ValueError(
-            f"Failed to apply media: no exchange reactions matched media constraints. "
-            f"This would result in zero growth. Check exchange reaction naming."
+            "Failed to apply media: no exchange reactions matched media constraints. "
+            "This would result in zero growth. Check exchange reaction naming."
         )
 
     # Apply using COBRApy's model.medium property

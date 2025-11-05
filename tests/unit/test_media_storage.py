@@ -5,20 +5,20 @@ Tests session-based in-memory media storage according to
 specification 010-model-storage.md.
 """
 
-import pytest
-import time
 import re
+
+import pytest
 
 from gem_flux_mcp.storage.media import (
     MEDIA_STORAGE,
-    generate_media_id,
-    store_media,
-    retrieve_media,
-    media_exists,
-    list_media_ids,
-    delete_media,
     clear_all_media,
+    delete_media,
+    generate_media_id,
     get_media_count,
+    list_media_ids,
+    media_exists,
+    retrieve_media,
+    store_media,
 )
 
 

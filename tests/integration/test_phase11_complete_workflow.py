@@ -12,20 +12,22 @@ Test expectations defined in test_expectations.json (Phase 11):
 - test_import_export_workflow (may_fail - future feature)
 """
 
-import pytest
-from unittest.mock import Mock, patch
 from datetime import datetime
+from unittest.mock import Mock
+
+import pytest
+
+from gem_flux_mcp.storage.media import (
+    MEDIA_STORAGE,
+    clear_all_media,
+    store_media,
+)
 
 # Import storage modules
 from gem_flux_mcp.storage.models import (
     MODEL_STORAGE,
     clear_all_models,
     store_model,
-)
-from gem_flux_mcp.storage.media import (
-    MEDIA_STORAGE,
-    clear_all_media,
-    store_media,
 )
 
 

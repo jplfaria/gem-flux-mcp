@@ -5,22 +5,22 @@ Tests storage, retrieval, ID generation, and state transformations
 according to specification 010-model-storage.md.
 """
 
-import time
-import pytest
 from unittest.mock import MagicMock
 
+import pytest
+
 from gem_flux_mcp.storage.models import (
+    MODEL_STORAGE,
+    clear_all_models,
+    delete_model,
     generate_model_id,
     generate_model_id_from_name,
-    transform_state_suffix,
-    store_model,
-    retrieve_model,
-    model_exists,
-    list_model_ids,
-    delete_model,
-    clear_all_models,
     get_model_count,
-    MODEL_STORAGE,
+    list_model_ids,
+    model_exists,
+    retrieve_model,
+    store_model,
+    transform_state_suffix,
 )
 
 

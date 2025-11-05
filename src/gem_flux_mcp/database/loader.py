@@ -14,11 +14,11 @@ According to spec 007-database-integration.md:
 import logging
 import re
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import pandas as pd
 
-from gem_flux_mcp.errors import DatabaseError, build_error_response
+from gem_flux_mcp.errors import DatabaseError
 
 logger = logging.getLogger(__name__)
 
@@ -111,7 +111,7 @@ def load_compounds_database(file_path: str | Path) -> pd.DataFrame:
     except Exception as e:
         logger.error(f"Failed to parse compounds database: {e}")
         raise DatabaseError(
-            message=f"Failed to parse compounds database file",
+            message="Failed to parse compounds database file",
             error_code="DATABASE_PARSE_ERROR",
             details={
                 "file": str(file_path),
@@ -147,7 +147,7 @@ def load_compounds_database(file_path: str | Path) -> pd.DataFrame:
     if invalid_ids:
         logger.error(f"Found {len(invalid_ids)} invalid compound IDs")
         raise DatabaseError(
-            message=f"Compounds database contains invalid IDs",
+            message="Compounds database contains invalid IDs",
             error_code="DATABASE_INVALID_IDS",
             details={
                 "file": str(file_path),
@@ -163,7 +163,7 @@ def load_compounds_database(file_path: str | Path) -> pd.DataFrame:
     if duplicate_ids:
         logger.error(f"Found {len(duplicate_ids)} duplicate compound IDs")
         raise DatabaseError(
-            message=f"Compounds database contains duplicate IDs",
+            message="Compounds database contains duplicate IDs",
             error_code="DATABASE_DUPLICATE_IDS",
             details={
                 "file": str(file_path),
@@ -235,7 +235,7 @@ def load_reactions_database(file_path: str | Path) -> pd.DataFrame:
     except Exception as e:
         logger.error(f"Failed to parse reactions database: {e}")
         raise DatabaseError(
-            message=f"Failed to parse reactions database file",
+            message="Failed to parse reactions database file",
             error_code="DATABASE_PARSE_ERROR",
             details={
                 "file": str(file_path),
@@ -271,7 +271,7 @@ def load_reactions_database(file_path: str | Path) -> pd.DataFrame:
     if invalid_ids:
         logger.error(f"Found {len(invalid_ids)} invalid reaction IDs")
         raise DatabaseError(
-            message=f"Reactions database contains invalid IDs",
+            message="Reactions database contains invalid IDs",
             error_code="DATABASE_INVALID_IDS",
             details={
                 "file": str(file_path),
@@ -287,7 +287,7 @@ def load_reactions_database(file_path: str | Path) -> pd.DataFrame:
     if duplicate_ids:
         logger.error(f"Found {len(duplicate_ids)} duplicate reaction IDs")
         raise DatabaseError(
-            message=f"Reactions database contains duplicate IDs",
+            message="Reactions database contains duplicate IDs",
             error_code="DATABASE_DUPLICATE_IDS",
             details={
                 "file": str(file_path),

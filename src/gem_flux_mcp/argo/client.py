@@ -13,15 +13,15 @@ The client:
 """
 
 import json
-from typing import List, Dict, Any, Optional, Callable
-from openai import OpenAI
+from typing import Any, Dict, List, Optional
 
-from gem_flux_mcp.logging import get_logger
-from gem_flux_mcp.argo.converter import MCPToOpenAIConverter
-from gem_flux_mcp.argo.tool_selector import ToolSelector
+from openai import OpenAI
 
 # Import MCP tools for direct execution
 from gem_flux_mcp import mcp_tools
+from gem_flux_mcp.argo.converter import MCPToOpenAIConverter
+from gem_flux_mcp.argo.tool_selector import ToolSelector
+from gem_flux_mcp.logging import get_logger
 
 logger = get_logger(__name__)
 

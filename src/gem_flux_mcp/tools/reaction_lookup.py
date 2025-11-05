@@ -19,7 +19,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from gem_flux_mcp.database import parse_aliases, validate_reaction_id
 from gem_flux_mcp.database.index import DatabaseIndex
-from gem_flux_mcp.errors import NotFoundError, ValidationError
+from gem_flux_mcp.errors import NotFoundError
 
 logger = logging.getLogger(__name__)
 

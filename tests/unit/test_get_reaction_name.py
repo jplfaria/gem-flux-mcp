@@ -4,21 +4,20 @@ Tests the get_reaction_name tool implementation as specified in
 009-reaction-lookup-tools.md.
 """
 
-import pytest
 import pandas as pd
+import pytest
 from pydantic import ValidationError
 
 from gem_flux_mcp.database.index import DatabaseIndex
 from gem_flux_mcp.errors import NotFoundError
 from gem_flux_mcp.tools.reaction_lookup import (
     GetReactionNameRequest,
+    format_equation_readable,
     get_reaction_name,
-    parse_reversibility_and_direction,
     parse_ec_numbers,
     parse_pathways,
-    format_equation_readable,
+    parse_reversibility_and_direction,
 )
-
 
 # =============================================================================
 # Fixtures

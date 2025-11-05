@@ -10,7 +10,6 @@ from pydantic import ValidationError as PydanticValidationError
 from gem_flux_mcp.database.index import DatabaseIndex
 from gem_flux_mcp.tools.reaction_lookup import (
     SearchReactionsRequest,
-    SearchReactionsResponse,
     search_reactions,
 )
 

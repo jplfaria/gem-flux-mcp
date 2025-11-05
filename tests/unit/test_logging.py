@@ -9,23 +9,22 @@ Tests the logging module functionality including:
 """
 
 import logging
-import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
 import sys
 
+import pytest
+
 from gem_flux_mcp.logging import (
-    setup_logger,
-    get_logger,
-    configure_default_logger,
-    get_default_logger,
-    debug,
-    info,
-    warning,
-    error,
-    critical,
-    LOG_FORMAT,
     DATE_FORMAT,
+    LOG_FORMAT,
+    configure_default_logger,
+    critical,
+    debug,
+    error,
+    get_default_logger,
+    get_logger,
+    info,
+    setup_logger,
+    warning,
 )
 
 
@@ -105,7 +104,7 @@ class TestSetupLogger:
     def test_setup_logger_file_handler_creates_parent_dirs(self, tmp_path):
         """Test file handler creates parent directories if they don't exist."""
         log_file = tmp_path / "nested" / "dir" / "test.log"
-        logger = setup_logger(log_file=log_file, name="test_nested_logger")
+        setup_logger(log_file=log_file, name="test_nested_logger")
 
         # Verify parent directories were created
         assert log_file.parent.exists()
@@ -203,7 +202,7 @@ class TestConfigureDefaultLogger:
         """Test default logger can be reconfigured."""
         # First configuration
         log_file1 = tmp_path / "config1.log"
-        logger1 = configure_default_logger(level="INFO", log_file=log_file1)
+        configure_default_logger(level="INFO", log_file=log_file1)
 
         # Second configuration (should replace)
         log_file2 = tmp_path / "config2.log"

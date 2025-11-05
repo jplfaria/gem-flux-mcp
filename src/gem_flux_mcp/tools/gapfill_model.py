@@ -35,38 +35,36 @@ What this tool does NOT do (MVP):
 """
 
 import copy
-from typing import Any, Optional
+from typing import Any
 
 from modelseedpy import MSATPCorrection, MSGapfill
 from modelseedpy.core.msatpcorrection import load_default_medias
 from modelseedpy.core.msmodel import get_reaction_constraints_from_direction
 
-from gem_flux_mcp.logging import get_logger
+from gem_flux_mcp.database.index import DatabaseIndex
 from gem_flux_mcp.errors import (
-    ValidationError,
-    NotFoundError,
     InfeasibilityError,
     LibraryError,
-    build_error_response,
-    build_generic_error_response,
-    model_not_found_error,
-    media_not_found_error,
+    NotFoundError,
+    ValidationError,
     gapfill_infeasible_error,
+    media_not_found_error,
+    model_not_found_error,
+)
+from gem_flux_mcp.logging import get_logger
+from gem_flux_mcp.storage.media import (
+    MEDIA_STORAGE,
+    media_exists,
+    retrieve_media,
 )
 from gem_flux_mcp.storage.models import (
     MODEL_STORAGE,
-    retrieve_model,
     model_exists,
-    transform_state_suffix,
+    retrieve_model,
     store_model,
-)
-from gem_flux_mcp.storage.media import (
-    MEDIA_STORAGE,
-    retrieve_media,
-    media_exists,
+    transform_state_suffix,
 )
 from gem_flux_mcp.templates.loader import get_template
-from gem_flux_mcp.database.index import DatabaseIndex
 
 logger = get_logger(__name__)
 
@@ -250,7 +248,7 @@ def run_atp_correction(
 
         # Run ATP correction workflow
         logger.info("Evaluating growth media...")
-        media_eval = atp_correction.evaluate_growth_media()
+        atp_correction.evaluate_growth_media()
 
         logger.info("Determining growth media...")
         atp_correction.determine_growth_media()
@@ -479,7 +477,7 @@ def integrate_gapfill_solution(
     ]
 
     if exchange_reactions_in_solution:
-        logger.info(f"Step 2: Creating exchange reactions for new metabolites...")
+        logger.info("Step 2: Creating exchange reactions for new metabolites...")
         # MSBuilder will create exchanges for all metabolites that don't have them yet
         added_exchanges = MSBuilder.add_exchanges_to_model(model, extra_cell='e0')
         logger.info(f"MSBuilder added {len(added_exchanges)} exchange reactions")
@@ -542,10 +540,9 @@ def enrich_reaction_metadata(
 
         if reaction_record is not None:
             name = reaction_record.get("name", "Unknown reaction")
-            equation = reaction_record.get("equation", "")
+            reaction_record.get("equation", "")
         else:
             name = "Unknown reaction"
-            equation = ""
 
         # Parse compartment from rxn_id
         if "_" in rxn_id:

@@ -11,14 +11,14 @@ and stores them in session storage with enriched metadata.
 """
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
-from pydantic import BaseModel, Field, field_validator
 from modelseedpy import MSMedia
+from pydantic import BaseModel, Field, field_validator
 
 from gem_flux_mcp.database import validate_compound_id
 from gem_flux_mcp.database.index import DatabaseIndex
-from gem_flux_mcp.errors import ValidationError, invalid_compound_ids_error
+from gem_flux_mcp.errors import invalid_compound_ids_error
 from gem_flux_mcp.storage.media import generate_media_id, store_media
 
 logger = logging.getLogger(__name__)

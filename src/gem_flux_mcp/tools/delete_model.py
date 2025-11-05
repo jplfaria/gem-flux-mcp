@@ -4,15 +4,16 @@ This module implements the delete_model MCP tool for removing models
 from the current session according to specification 018-session-management-tools.md.
 """
 
-from typing import Union
 
 from gem_flux_mcp.logging import get_logger
-from gem_flux_mcp.storage.models import delete_model as storage_delete_model, model_exists
+from gem_flux_mcp.storage.models import delete_model as storage_delete_model
+from gem_flux_mcp.storage.models import model_exists
 from gem_flux_mcp.types import (
     DeleteModelRequest,
     DeleteModelResponse,
     ErrorResponse,
 )
+
 # No error imports needed - we return simple error response dicts
 
 logger = get_logger(__name__)

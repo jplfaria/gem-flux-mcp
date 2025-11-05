@@ -19,44 +19,40 @@ Test coverage spans all MCP tools:
 - Session management errors
 """
 
-import pytest
-from unittest.mock import Mock, patch
+
 import pandas as pd
-
-# Import storage modules
-from gem_flux_mcp.storage.models import (
-    MODEL_STORAGE,
-    clear_all_models,
-    store_model,
-)
-from gem_flux_mcp.storage.media import (
-    MEDIA_STORAGE,
-    clear_all_media,
-    store_media,
-)
-
-# Import error classes and builders
-from gem_flux_mcp.errors import (
-    ValidationError,
-    NotFoundError,
-    InfeasibilityError,
-    LibraryError,
-    DatabaseError,
-    ServerError,
-    TimeoutError,
-    build_error_response,
-    build_generic_error_response,
-    model_not_found_error,
-    media_not_found_error,
-    invalid_compound_ids_error,
-    compound_not_found_error,
-    reaction_not_found_error,
-    gapfill_infeasible_error,
-    fba_infeasible_error,
-)
+import pytest
 
 # Import database
 from gem_flux_mcp.database.index import DatabaseIndex
+
+# Import error classes and builders
+from gem_flux_mcp.errors import (
+    DatabaseError,
+    InfeasibilityError,
+    LibraryError,
+    NotFoundError,
+    ServerError,
+    TimeoutError,
+    ValidationError,
+    build_error_response,
+    build_generic_error_response,
+    compound_not_found_error,
+    fba_infeasible_error,
+    gapfill_infeasible_error,
+    invalid_compound_ids_error,
+    media_not_found_error,
+    model_not_found_error,
+    reaction_not_found_error,
+)
+from gem_flux_mcp.storage.media import (
+    clear_all_media,
+)
+
+# Import storage modules
+from gem_flux_mcp.storage.models import (
+    clear_all_models,
+)
 
 
 @pytest.fixture(autouse=True)

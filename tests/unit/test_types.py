@@ -12,42 +12,37 @@ import pytest
 from pydantic import ValidationError
 
 from gem_flux_mcp.types import (
+    ATPCorrectionStats,
     # Build Media
     BuildMediaRequest,
     BuildMediaResponse,
-    CompoundInfo,
     # Build Model
     BuildModelRequest,
     BuildModelResponse,
-    ModelStatistics,
-    ModelProperties,
+    CompoundInfo,
+    # Database Lookups
+    CompoundLookupResult,
+    CompoundSearchResponse,
+    CompoundSearchResult,
+    ErrorDetails,
+    # Errors
+    ErrorResponse,
+    FBASummary,
+    GapfilledModelProperties,
     # Gapfill Model
     GapfillModelRequest,
     GapfillModelResponse,
-    ReactionAdded,
-    ExchangeReactionAdded,
-    ATPCorrectionStats,
     GenomescaleGapfillStats,
-    GapfilledModelProperties,
-    # Run FBA
+    ModelProperties,
+    ModelStatistics,
+    ReactionAdded,
+    ReactionLookupResult,
     RunFBARequest,
     RunFBAResponse,
-    UptakeFlux,
     SecretionFlux,
-    FBASummary,
     TopFlux,
-    # Database Lookups
-    CompoundLookupResult,
-    CompoundSearchResult,
-    CompoundSearchResponse,
-    ReactionLookupResult,
-    ReactionSearchResult,
-    ReactionSearchResponse,
-    # Errors
-    ErrorResponse,
-    ErrorDetails,
+    UptakeFlux,
 )
-
 
 # =============================================================================
 # Build Media Request Tests
@@ -262,7 +257,7 @@ class TestBuildModelRequest:
 
     def test_case_insensitive_amino_acids(self):
         """Test that amino acids are case-insensitive (converted to upper)."""
-        request = BuildModelRequest(
+        BuildModelRequest(
             protein_sequences={"prot_001": "mklvinlv"},  # lowercase
             template="Core"
         )

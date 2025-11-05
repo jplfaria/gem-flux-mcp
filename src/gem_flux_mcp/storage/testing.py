@@ -6,9 +6,9 @@ These utilities are intended for test code only, not production use.
 
 from typing import Any
 
-from gem_flux_mcp.storage.models import MODEL_STORAGE
-from gem_flux_mcp.storage.media import MEDIA_STORAGE
 from gem_flux_mcp.logging import get_logger
+from gem_flux_mcp.storage.media import MEDIA_STORAGE
+from gem_flux_mcp.storage.models import MODEL_STORAGE
 
 logger = get_logger(__name__)
 

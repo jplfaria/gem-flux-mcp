@@ -11,12 +11,13 @@ ATP correction improves model accuracy by:
 This results in more constrained, biologically realistic growth predictions.
 """
 
-from typing import Any, Optional
+from typing import Any
+
 from modelseedpy import MSATPCorrection
 from modelseedpy.core.msatpcorrection import load_default_medias
 
-from gem_flux_mcp.logging import get_logger
 from gem_flux_mcp.errors import LibraryError
+from gem_flux_mcp.logging import get_logger
 
 logger = get_logger(__name__)
 
@@ -87,7 +88,7 @@ def apply_atp_correction(
 
         # Run ATP correction workflow
         logger.info("Evaluating growth media...")
-        media_eval = atp_correction.evaluate_growth_media()
+        atp_correction.evaluate_growth_media()
 
         logger.info("Determining growth media...")
         atp_correction.determine_growth_media()

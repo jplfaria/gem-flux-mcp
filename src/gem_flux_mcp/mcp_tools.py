@@ -29,42 +29,56 @@ Reference:
     - specs/021-mcp-tool-registration.md: MCP tool registration specification
 """
 
-from typing import Any, Optional
+from typing import Optional
 
 from fastmcp import FastMCP
 
 # Import global state accessors (will be defined in server.py)
 from gem_flux_mcp.server import get_db_index
+from gem_flux_mcp.tools.build_model import build_model as _build_model
+from gem_flux_mcp.tools.compound_lookup import (
+    GetCompoundNameRequest,
+    SearchCompoundsRequest,
+)
+from gem_flux_mcp.tools.compound_lookup import (
+    get_compound_name as _get_compound_name,
+)
+from gem_flux_mcp.tools.compound_lookup import (
+    search_compounds as _search_compounds,
+)
+from gem_flux_mcp.tools.delete_model import (
+    DeleteModelRequest,
+)
+from gem_flux_mcp.tools.delete_model import (
+    delete_model as _delete_model,
+)
+from gem_flux_mcp.tools.gapfill_model import gapfill_model as _gapfill_model
+from gem_flux_mcp.tools.list_media import list_media as _list_media
+from gem_flux_mcp.tools.list_models import (
+    ListModelsRequest,
+)
+from gem_flux_mcp.tools.list_models import (
+    list_models as _list_models,
+)
+from gem_flux_mcp.tools.media_builder import (
+    BuildMediaRequest,
+)
 
 # Import core tool implementations
 from gem_flux_mcp.tools.media_builder import (
     build_media as _build_media,
-    BuildMediaRequest,
-)
-from gem_flux_mcp.tools.build_model import build_model as _build_model
-from gem_flux_mcp.tools.gapfill_model import gapfill_model as _gapfill_model
-from gem_flux_mcp.tools.run_fba import run_fba as _run_fba
-from gem_flux_mcp.tools.compound_lookup import (
-    get_compound_name as _get_compound_name,
-    search_compounds as _search_compounds,
-    GetCompoundNameRequest,
-    SearchCompoundsRequest,
 )
 from gem_flux_mcp.tools.reaction_lookup import (
-    get_reaction_name as _get_reaction_name,
-    search_reactions as _search_reactions,
     GetReactionNameRequest,
     SearchReactionsRequest,
 )
-from gem_flux_mcp.tools.list_models import (
-    list_models as _list_models,
-    ListModelsRequest,
+from gem_flux_mcp.tools.reaction_lookup import (
+    get_reaction_name as _get_reaction_name,
 )
-from gem_flux_mcp.tools.delete_model import (
-    delete_model as _delete_model,
-    DeleteModelRequest,
+from gem_flux_mcp.tools.reaction_lookup import (
+    search_reactions as _search_reactions,
 )
-from gem_flux_mcp.tools.list_media import list_media as _list_media
+from gem_flux_mcp.tools.run_fba import run_fba as _run_fba
 
 # Create FastMCP server instance
 # Note: Dependencies should be specified in fastmcp.json configuration file

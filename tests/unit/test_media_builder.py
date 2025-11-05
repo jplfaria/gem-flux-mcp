@@ -18,17 +18,14 @@ from pydantic import ValidationError as PydanticValidationError
 from gem_flux_mcp.database.index import DatabaseIndex
 from gem_flux_mcp.errors import ValidationError
 from gem_flux_mcp.storage.media import (
-    MEDIA_STORAGE,
     clear_all_media,
     media_exists,
     retrieve_media,
 )
 from gem_flux_mcp.tools.media_builder import (
     BuildMediaRequest,
-    BuildMediaResponse,
     build_media,
 )
-
 
 # =============================================================================
 # Fixtures

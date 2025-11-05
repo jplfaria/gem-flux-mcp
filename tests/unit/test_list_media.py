@@ -4,16 +4,17 @@ Tests the list_media MCP tool according to specification
 018-session-management-tools.md.
 """
 
-import pytest
 from unittest.mock import MagicMock
 
-from gem_flux_mcp.tools.list_media import (
-    list_media,
-    extract_media_name,
-    extract_media_metadata,
-    PREDEFINED_MEDIA_IDS,
-)
+import pytest
+
 from gem_flux_mcp.storage.media import MEDIA_STORAGE, clear_all_media, store_media
+from gem_flux_mcp.tools.list_media import (
+    PREDEFINED_MEDIA_IDS,
+    extract_media_metadata,
+    extract_media_name,
+    list_media,
+)
 
 
 @pytest.fixture(autouse=True)

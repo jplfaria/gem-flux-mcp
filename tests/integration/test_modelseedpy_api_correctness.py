@@ -26,19 +26,19 @@ Best Practices Demonstrated:
 - Real ModelSEEDpy objects (not mocks) verify actual library behavior
 """
 
-import pytest
 from pathlib import Path
 
+import pytest
+from modelseedpy.core.msmedia import MSMedia
+
+from gem_flux_mcp.database.index import DatabaseIndex
+from gem_flux_mcp.database.loader import load_compounds_database, load_reactions_database
+from gem_flux_mcp.storage.media import MEDIA_STORAGE, store_media
+from gem_flux_mcp.storage.models import MODEL_STORAGE
+from gem_flux_mcp.templates.loader import load_templates
 from gem_flux_mcp.tools.build_model import build_model
 from gem_flux_mcp.tools.gapfill_model import gapfill_model
 from gem_flux_mcp.tools.run_fba import run_fba
-from gem_flux_mcp.database.index import DatabaseIndex
-from gem_flux_mcp.database.loader import load_compounds_database, load_reactions_database
-from gem_flux_mcp.templates.loader import load_templates
-from gem_flux_mcp.storage.models import retrieve_model, MODEL_STORAGE
-from gem_flux_mcp.storage.media import store_media, MEDIA_STORAGE
-
-from modelseedpy.core.msmedia import MSMedia
 
 
 @pytest.fixture(scope="module")
@@ -235,7 +235,7 @@ class TestMSMediaConstraintsAPI:
         # Note: With offline model building, models are empty and gapfilling will fail,
         # but we're testing API correctness, not gapfilling success
         try:
-            gapfill_response = gapfill_model(
+            gapfill_model(
                 model_id=model_id,
                 media_id=glucose_media,
                 db_index=db_index,
@@ -276,7 +276,7 @@ class TestMSGapfillAPI:
         # 2. .run_gapfilling(minimum_obj=...) not .run_gapfilling(target=0.01)
         # Note: Empty models may cause gapfilling to fail, but we're testing API correctness
         try:
-            gapfill_response = gapfill_model(
+            gapfill_model(
                 model_id=model_id,
                 media_id=glucose_media,
                 db_index=db_index,
@@ -319,7 +319,7 @@ class TestMSATPCorrectionAPI:
         # 2. MSATPCorrection(..., atp_medias=...) not MSATPCorrection(..., tests=...)
         # Note: Empty models will cause ATP correction to fail, but we're testing API correctness
         try:
-            gapfill_response = gapfill_model(
+            gapfill_model(
                 model_id=model_id,
                 media_id=glucose_media,
                 db_index=db_index,

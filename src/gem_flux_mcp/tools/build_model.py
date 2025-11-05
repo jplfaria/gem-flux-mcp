@@ -18,16 +18,15 @@ What this tool does NOT do (MVP):
     - Does not optimize or refine models
 """
 
-import json
 import tempfile
 from pathlib import Path
 from typing import Any, Optional
 
-from modelseedpy import MSGenome, MSBuilder
+from modelseedpy import MSBuilder, MSGenome
 from modelseedpy.core.rast_client import RastClient
 
+from gem_flux_mcp.errors import LibraryError, ValidationError
 from gem_flux_mcp.logging import get_logger
-from gem_flux_mcp.errors import ValidationError, LibraryError
 from gem_flux_mcp.storage.models import (
     generate_model_id,
     generate_model_id_from_name,
@@ -36,6 +35,8 @@ from gem_flux_mcp.storage.models import (
 from gem_flux_mcp.templates.loader import get_template, validate_template_name
 from gem_flux_mcp.utils.atp_correction import (
     apply_atp_correction as do_atp_correction,
+)
+from gem_flux_mcp.utils.atp_correction import (
     get_atp_correction_statistics,
 )
 
@@ -409,7 +410,7 @@ def create_genome_from_fasta(
             # Then annotate with RAST
             rast_client = RastClient()
             rast_client.annotate_genome(genome)
-            logger.info(f"Annotated genome with RAST")
+            logger.info("Annotated genome with RAST")
 
         except Exception as e:
             raise ValidationError(

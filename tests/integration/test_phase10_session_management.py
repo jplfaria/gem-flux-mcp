@@ -15,31 +15,32 @@ Test expectations defined in test_expectations.json:
 - test_session_isolation (must_pass)
 """
 
+from unittest.mock import Mock
+
 import pytest
-from datetime import datetime
-from unittest.mock import Mock, patch
 
-# Import session management tools
-from gem_flux_mcp.tools.list_models import list_models
-from gem_flux_mcp.tools.list_media import list_media
-from gem_flux_mcp.tools.delete_model import delete_model
-
-# Import types
-from gem_flux_mcp.types import (
-    ListModelsRequest,
-    DeleteModelRequest,
+from gem_flux_mcp.storage.media import (
+    MEDIA_STORAGE,
+    clear_all_media,
+    store_media,
 )
 
 # Import storage modules
 from gem_flux_mcp.storage.models import (
     MODEL_STORAGE,
-    store_model,
     clear_all_models,
+    store_model,
 )
-from gem_flux_mcp.storage.media import (
-    MEDIA_STORAGE,
-    store_media,
-    clear_all_media,
+from gem_flux_mcp.tools.delete_model import delete_model
+from gem_flux_mcp.tools.list_media import list_media
+
+# Import session management tools
+from gem_flux_mcp.tools.list_models import list_models
+
+# Import types
+from gem_flux_mcp.types import (
+    DeleteModelRequest,
+    ListModelsRequest,
 )
 
 
@@ -51,7 +52,7 @@ def setup_storage():
     clear_all_media()
 
     # Load predefined media
-    from gem_flux_mcp.media.predefined_loader import load_predefined_media, PREDEFINED_MEDIA_CACHE
+    from gem_flux_mcp.media.predefined_loader import PREDEFINED_MEDIA_CACHE, load_predefined_media
     from gem_flux_mcp.storage.media import MEDIA_STORAGE
 
     # Load predefined media into cache
@@ -60,7 +61,7 @@ def setup_storage():
         # Copy predefined media to storage
         for media_name, media_data in PREDEFINED_MEDIA_CACHE.items():
             MEDIA_STORAGE[media_name] = media_data["compounds"]
-    except Exception as e:
+    except Exception:
         # If loading fails, create mock predefined media
         for media_name in ["glucose_minimal_aerobic", "glucose_minimal_anaerobic",
                            "pyruvate_minimal_aerobic", "pyruvate_minimal_anaerobic"]:

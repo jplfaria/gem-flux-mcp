@@ -4,22 +4,23 @@ Tests the compound and reaction lookup tools with real database.
 These tests use real ModelSEED data and verify end-to-end functionality.
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 from gem_flux_mcp.database import load_compounds_database, load_reactions_database
 from gem_flux_mcp.database.index import DatabaseIndex
 from gem_flux_mcp.tools.compound_lookup import (
-    get_compound_name,
-    search_compounds,
     GetCompoundNameRequest,
     SearchCompoundsRequest,
+    get_compound_name,
+    search_compounds,
 )
 from gem_flux_mcp.tools.reaction_lookup import (
-    get_reaction_name,
-    search_reactions,
     GetReactionNameRequest,
     SearchReactionsRequest,
+    get_reaction_name,
+    search_reactions,
 )
 
 

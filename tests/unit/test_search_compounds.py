@@ -13,12 +13,10 @@ import pandas as pd
 import pytest
 
 from gem_flux_mcp.database.index import DatabaseIndex
-from gem_flux_mcp.errors import ValidationError
 from gem_flux_mcp.tools.compound_lookup import (
     SearchCompoundsRequest,
     search_compounds,
 )
-
 
 # =============================================================================
 # Test Fixtures

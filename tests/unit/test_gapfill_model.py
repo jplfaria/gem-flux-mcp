@@ -4,21 +4,18 @@ Unit tests for gapfill_model tool.
 Tests validation, ATP correction, genome-scale gapfilling, and error handling.
 """
 
-import pytest
-from unittest.mock import Mock, MagicMock, patch
-import copy
+from unittest.mock import Mock, patch
 
+import pytest
+
+from gem_flux_mcp.errors import NotFoundError, ValidationError
 from gem_flux_mcp.tools.gapfill_model import (
-    validate_gapfill_inputs,
     check_baseline_growth,
-    run_atp_correction,
-    run_genome_scale_gapfilling,
-    integrate_gapfill_solution,
     enrich_reaction_metadata,
     gapfill_model,
+    integrate_gapfill_solution,
+    validate_gapfill_inputs,
 )
-from gem_flux_mcp.errors import ValidationError, NotFoundError
-
 
 # ============================================================================
 # Fixtures
@@ -334,7 +331,6 @@ def test_check_baseline_growth_uses_shared_media_utility(mock_model, mock_media)
 
     This verifies the refactoring from Phase 1.4 is working correctly.
     """
-    from gem_flux_mcp.utils.media import apply_media_to_model
 
     # Mock MSMedia.get_media_constraints
     mock_media.get_media_constraints = Mock(return_value={

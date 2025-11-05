@@ -9,19 +9,19 @@ produces the same results as the source notebook, specifically:
 This is the ultimate validation test for our ATP correction integration.
 """
 
-import pytest
-import asyncio
 from pathlib import Path
+
+import pytest
 
 from gem_flux_mcp.database import load_compounds_database, load_reactions_database
 from gem_flux_mcp.database.index import DatabaseIndex
+from gem_flux_mcp.storage.media import clear_all_media
+from gem_flux_mcp.storage.models import clear_all_models
+from gem_flux_mcp.templates.loader import load_templates
 from gem_flux_mcp.tools.build_model import build_model
 from gem_flux_mcp.tools.gapfill_model import gapfill_model
-from gem_flux_mcp.tools.media_builder import build_media, BuildMediaRequest
+from gem_flux_mcp.tools.media_builder import BuildMediaRequest, build_media
 from gem_flux_mcp.tools.run_fba import run_fba
-from gem_flux_mcp.storage.models import clear_all_models
-from gem_flux_mcp.storage.media import clear_all_media
-from gem_flux_mcp.templates.loader import load_templates
 
 
 @pytest.fixture
@@ -117,7 +117,7 @@ class TestNotebookReplication:
         assert atp_stats["atp_correction_applied"] is True, "ATP correction should be applied by default"
 
         reactions_added_by_atp = atp_stats["reactions_added_by_correction"]
-        print(f"\n  ATP Correction Statistics:")
+        print("\n  ATP Correction Statistics:")
         print(f"    Before: {atp_stats['reactions_before_correction']} reactions")
         print(f"    After: {atp_stats['reactions_after_correction']} reactions")
         print(f"    Added: {reactions_added_by_atp} reactions")
@@ -189,11 +189,11 @@ class TestNotebookReplication:
         atp_gapfill_stats = gapfill_result["atp_correction"]
 
         if atp_gapfill_stats["performed"]:
-            print(f"\n  WARNING: ATP correction was performed (test_conditions not reused)")
-            print(f"    This is slower but still correct")
+            print("\n  WARNING: ATP correction was performed (test_conditions not reused)")
+            print("    This is slower but still correct")
         else:
-            print(f"\n  ✓ ATP correction SKIPPED (test_conditions reused from build_model)")
-            print(f"    Time saved: ~3-5 minutes")
+            print("\n  ✓ ATP correction SKIPPED (test_conditions reused from build_model)")
+            print("    Time saved: ~3-5 minutes")
             assert "test_conditions_reused" in atp_gapfill_stats
             print(f"    Reused: {atp_gapfill_stats['test_conditions_reused']} test conditions")
 
@@ -203,7 +203,7 @@ class TestNotebookReplication:
         assert genomescale_stats["performed"] is True, "Genome-scale gapfilling should be performed"
 
         reactions_added_by_gapfill = gapfill_result.get("num_reactions_added", 0)
-        print(f"\n  Genome-scale Gapfilling Statistics:")
+        print("\n  Genome-scale Gapfilling Statistics:")
         print(f"    Reactions added: {reactions_added_by_gapfill}")
         print(f"    Growth rate after: {gapfill_result['growth_rate_after']:.6f}")
         print(f"    Target growth rate: {gapfill_result['target_growth_rate']:.6f}")
@@ -232,7 +232,7 @@ class TestNotebookReplication:
         assert fba_result["status"] == "optimal", "FBA should find optimal solution"
         growth_rate = fba_result["objective_value"]
 
-        print(f"\n✓ FBA completed successfully")
+        print("\n✓ FBA completed successfully")
         print(f"  Status: {fba_result['status']}")
         print(f"  Growth rate: {growth_rate:.6f}")
         print(f"  Active reactions: {fba_result['active_reactions']}")
@@ -241,7 +241,7 @@ class TestNotebookReplication:
 
         # Step 5: Verify growth rate matches notebook (0.5544)
         print("\n=== STEP 5: Validating Results ===")
-        print(f"Expected growth rate: 0.5544")
+        print("Expected growth rate: 0.5544")
         print(f"Actual growth rate:   {growth_rate:.6f}")
 
         # Allow small tolerance for numerical differences
@@ -251,11 +251,11 @@ class TestNotebookReplication:
         growth_rate_matches = abs(growth_rate - EXPECTED_GROWTH_RATE) < TOLERANCE
 
         if growth_rate_matches:
-            print(f"\n✓✓✓ SUCCESS! Growth rate matches notebook ✓✓✓")
+            print("\n✓✓✓ SUCCESS! Growth rate matches notebook ✓✓✓")
             print(f"    Difference: {abs(growth_rate - EXPECTED_GROWTH_RATE):.6f}")
             print(f"    Within tolerance: {TOLERANCE}")
         else:
-            print(f"\n✗ MISMATCH: Growth rate does not match notebook")
+            print("\n✗ MISMATCH: Growth rate does not match notebook")
             print(f"    Expected: {EXPECTED_GROWTH_RATE:.6f}")
             print(f"    Actual: {growth_rate:.6f}")
             print(f"    Difference: {abs(growth_rate - EXPECTED_GROWTH_RATE):.6f}")
@@ -275,10 +275,10 @@ class TestNotebookReplication:
         print(f"\n✓ Model gapfilled: {gapfilled_model_id}")
         print(f"  - ATP correction reused: {not atp_gapfill_stats['performed']}")
         print(f"  - Genome-scale reactions added: {reactions_added_by_gapfill}")
-        print(f"\n✓ FBA completed:")
+        print("\n✓ FBA completed:")
         print(f"  - Growth rate: {growth_rate:.6f}")
-        print(f"  - Matches notebook: YES")
-        print(f"  - Biologically realistic: YES")
+        print("  - Matches notebook: YES")
+        print("  - Biologically realistic: YES")
         print("\n" + "=" * 80)
         print("ALL TESTS PASSED! 🎉")
         print("Our tool chain successfully replicates the notebook workflow!")

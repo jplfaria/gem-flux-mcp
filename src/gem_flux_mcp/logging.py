@@ -9,7 +9,6 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-
 # Default log format with timestamp, level, module, and message
 LOG_FORMAT = "%(asctime)s | %(levelname)-8s | %(name)s:%(lineno)d | %(message)s"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"

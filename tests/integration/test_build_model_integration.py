@@ -4,19 +4,19 @@ Tests the complete workflow: FASTA -> RAST annotation -> model building -> FBA.
 These tests use the real E. coli proteins FASTA file from examples/.
 """
 
-import pytest
-import asyncio
 from pathlib import Path
+
+import pytest
 
 from gem_flux_mcp.database import load_compounds_database, load_reactions_database
 from gem_flux_mcp.database.index import DatabaseIndex
-from gem_flux_mcp.tools.build_model import build_model
-from gem_flux_mcp.tools.media_builder import build_media, BuildMediaRequest
-from gem_flux_mcp.tools.run_fba import run_fba
-from gem_flux_mcp.tools.gapfill_model import gapfill_model
-from gem_flux_mcp.storage.models import retrieve_model, model_exists, clear_all_models
 from gem_flux_mcp.storage.media import clear_all_media
+from gem_flux_mcp.storage.models import clear_all_models, model_exists, retrieve_model
 from gem_flux_mcp.templates.loader import load_templates
+from gem_flux_mcp.tools.build_model import build_model
+from gem_flux_mcp.tools.gapfill_model import gapfill_model
+from gem_flux_mcp.tools.media_builder import BuildMediaRequest, build_media
+from gem_flux_mcp.tools.run_fba import run_fba
 
 
 @pytest.fixture
@@ -84,7 +84,7 @@ class TestBuildModelIntegration:
         # assert "gene_coverage" in response  # Not always present
         # assert "template_name" in response  # Not always present
 
-        print(f"\n✓ Model built successfully:")
+        print("\n✓ Model built successfully:")
         print(f"  - Genes: {response['num_genes']}")
         print(f"  - Reactions: {response['num_reactions']}")
         print(f"  - Metabolites: {response['num_metabolites']}")
@@ -170,7 +170,7 @@ class TestBuildModelIntegration:
         # Uptake fluxes may be present even with zero growth
         # assert len(fba_result["uptake_fluxes"]) > 0, "Should have uptake fluxes"
 
-        print(f"✓ FBA successful:")
+        print("✓ FBA successful:")
         print(f"  Status: {fba_result['status']}")
         print(f"  Growth rate: {fba_result['objective_value']:.4f}")
         if 'summary' in fba_result and fba_result['summary']:
@@ -205,7 +205,7 @@ class TestBuildModelIntegration:
         assert response["num_genes"] >= 2  # Should have at least 2 annotated genes
         assert response["num_reactions"] > 0
 
-        print(f"✓ Small model built:")
+        print("✓ Small model built:")
         print(f"  Genes: {response['num_genes']}")
         print(f"  Reactions: {response['num_reactions']}")
 
@@ -290,7 +290,7 @@ class TestBuildModelIntegration:
         assert atpm_reaction.upper_bound > 0, "ATPM upper bound should be > 0 (allow consumption)"
         print(f"  ✓ ATPM bounds: [{atpm_reaction.lower_bound}, {atpm_reaction.upper_bound}]")
 
-        print(f"✓ ATP maintenance (ATPM) reaction correctly configured")
+        print("✓ ATP maintenance (ATPM) reaction correctly configured")
 
 
 @pytest.mark.asyncio
@@ -392,7 +392,7 @@ class TestATPCorrectionIntegration:
         assert len(stored_test_conditions) > 0, "Test conditions should not be empty"
 
         print(f"  ✓ Stored {len(stored_test_conditions)} test conditions")
-        print(f"\n✓ ATP correction applied successfully in build_model")
+        print("\n✓ ATP correction applied successfully in build_model")
 
     @pytest.mark.slow
     async def test_build_model_atp_correction_can_be_disabled(self, real_database):
@@ -404,8 +404,9 @@ class TestATPCorrectionIntegration:
         - Test_conditions are NOT stored
         - Model is faster to build without ATP correction
         """
-        from gem_flux_mcp.storage.models import MODEL_STORAGE
         import time
+
+        from gem_flux_mcp.storage.models import MODEL_STORAGE
 
         protein_sequences = {
             "prot1": "MRVLKFGGTSVANAERFLRVADILESNARQGQVATVLSAPAKITNHLVAMIEKTISGQDALPNISDAERIFAELLTGLAAAQPGFPLAQLKTFVDQEFAQIKHVLHGISLLGQCPDSINAALICR",
@@ -434,15 +435,15 @@ class TestATPCorrectionIntegration:
         atp_stats = response["atp_correction"]
         assert atp_stats["atp_correction_applied"] is False, "ATP correction should be disabled"
 
-        print(f"  ✓ ATP correction disabled as expected")
+        print("  ✓ ATP correction disabled as expected")
 
         # Verify test_conditions were NOT stored
         test_conditions_id = f"{model_id}.test_conditions"
         assert test_conditions_id not in MODEL_STORAGE, \
-            f"Test conditions should NOT be stored when ATP correction is disabled"
+            "Test conditions should NOT be stored when ATP correction is disabled"
 
-        print(f"  ✓ No test conditions stored (as expected)")
-        print(f"\n✓ ATP correction successfully disabled")
+        print("  ✓ No test conditions stored (as expected)")
+        print("\n✓ ATP correction successfully disabled")
 
     @pytest.mark.slow
     async def test_gapfill_reuses_test_conditions_from_build_model(self, real_database):
@@ -522,7 +523,7 @@ class TestATPCorrectionIntegration:
 
         # Verify gapfilling succeeded
         assert gapfill_result["success"] is True
-        print(f"  ✓ Gapfilling succeeded")
+        print("  ✓ Gapfilling succeeded")
 
         # Verify ATP correction was SKIPPED (test_conditions reused)
         assert "atp_correction" in gapfill_result
@@ -535,11 +536,11 @@ class TestATPCorrectionIntegration:
         assert atp_stats["test_conditions_reused"] == num_stored_conditions, \
             f"Should reuse all {num_stored_conditions} stored test_conditions"
 
-        print(f"  ✓ ATP correction skipped (test_conditions reused)")
+        print("  ✓ ATP correction skipped (test_conditions reused)")
         print(f"    Note: {atp_stats['note']}")
         print(f"    Reused: {atp_stats['test_conditions_reused']} test conditions")
 
-        print(f"\n✓ Test_conditions successfully reused from build_model")
+        print("\n✓ Test_conditions successfully reused from build_model")
 
     @pytest.mark.slow
     async def test_gapfill_runs_atp_correction_when_needed(self, real_database):
@@ -577,7 +578,7 @@ class TestATPCorrectionIntegration:
         # Verify test_conditions were NOT stored
         test_conditions_id = f"{model_id}.test_conditions"
         assert test_conditions_id not in MODEL_STORAGE
-        print(f"  ✓ Model built WITHOUT ATP correction (no test_conditions stored)")
+        print("  ✓ Model built WITHOUT ATP correction (no test_conditions stored)")
 
         # Step 2: Create minimal media
         print("\nStep 2: Creating minimal media...")
@@ -618,7 +619,7 @@ class TestATPCorrectionIntegration:
 
         # Verify gapfilling succeeded
         assert gapfill_result["success"] is True
-        print(f"  ✓ Gapfilling succeeded")
+        print("  ✓ Gapfilling succeeded")
 
         # Verify ATP correction was PERFORMED
         assert "atp_correction" in gapfill_result
@@ -628,11 +629,11 @@ class TestATPCorrectionIntegration:
         assert "media_tested" in atp_stats, "Should report media tested"
         assert atp_stats["media_tested"] == 54, "Should test 54 default media"
 
-        print(f"  ✓ ATP correction performed as expected")
+        print("  ✓ ATP correction performed as expected")
         print(f"    Media tested: {atp_stats['media_tested']}")
         print(f"    Reactions added: {atp_stats.get('reactions_added', 0)}")
 
-        print(f"\n✓ ATP correction correctly performed when test_conditions not found")
+        print("\n✓ ATP correction correctly performed when test_conditions not found")
 
     @pytest.mark.slow
     async def test_atp_correction_media_testing(self, ecoli_fasta_path, real_database):
@@ -729,7 +730,7 @@ class TestATPCorrectionIntegration:
         media_failed = atp_stats["media_failed"]
         reactions_added = atp_stats["reactions_added"]
 
-        print(f"\n=== ATP Correction Results ===")
+        print("\n=== ATP Correction Results ===")
         print(f"  Media tested: {media_tested}")
         print(f"  Media passed: {media_passed}")
         print(f"  Media failed: {media_failed}")
@@ -744,7 +745,7 @@ class TestATPCorrectionIntegration:
 
         # Show examples
         if "failed_media_examples" in atp_stats and atp_stats["failed_media_examples"]:
-            print(f"\n  Failed media examples (first 5):")
+            print("\n  Failed media examples (first 5):")
             for media_name in atp_stats["failed_media_examples"][:5]:
                 print(f"    - {media_name}")
 
@@ -755,9 +756,9 @@ class TestATPCorrectionIntegration:
         # Verify growth is NOT expected at this stage
         growth_rate = gapfill_result.get("growth_rate_after", 0.0)
         print(f"\n  Growth rate after ATP correction: {growth_rate:.6f}")
-        print(f"  (Growth NOT expected - no biomass objective yet)")
+        print("  (Growth NOT expected - no biomass objective yet)")
 
-        print(f"\n✓ ATP correction workflow complete!")
+        print("\n✓ ATP correction workflow complete!")
         print(f"  Original model: {model_id}")
         print(f"  After ATP correction: {new_model_id}")
         print(f"  {media_passed}/{media_tested} media conditions satisfied")
@@ -853,7 +854,7 @@ class TestATPCorrectionIntegration:
         # Verify growth was achieved
         growth_after = gapfill_result["growth_rate_after"]
         target_growth = gapfill_result["target_growth_rate"]
-        print(f"\n=== Gapfilling Results ===")
+        print("\n=== Gapfilling Results ===")
         print(f"  Growth rate achieved: {growth_after:.6f}")
         print(f"  Target growth rate: {target_growth:.6f}")
         print(f"  Gapfilling successful: {gapfill_result['gapfilling_successful']}")
@@ -871,7 +872,7 @@ class TestATPCorrectionIntegration:
         reactions_added = gapfill_result.get("num_reactions_added", 0)
         assert reactions_added > 0, "Gapfilling should add reactions to enable growth"
 
-        print(f"\n✓ Genome-scale gapfilling complete!")
+        print("\n✓ Genome-scale gapfilling complete!")
         print(f"  Original model: {model_id}")
         print(f"  Gapfilled model: {new_model_id}")
         print(f"  Reactions added: {reactions_added}")

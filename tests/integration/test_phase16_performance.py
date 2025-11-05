@@ -23,27 +23,25 @@ Specification References:
 
 import time
 import tracemalloc
-from typing import Dict, List
 
 import pytest
 
 from gem_flux_mcp.database import load_compounds_database, load_reactions_database
 from gem_flux_mcp.database.index import DatabaseIndex
-from gem_flux_mcp.templates import load_templates
 from gem_flux_mcp.media import load_predefined_media
 from gem_flux_mcp.storage.models import MODEL_STORAGE
-from gem_flux_mcp.storage.media import MEDIA_STORAGE
+from gem_flux_mcp.templates import load_templates
 from gem_flux_mcp.tools.compound_lookup import (
-    get_compound_name,
-    search_compounds,
     GetCompoundNameRequest,
     SearchCompoundsRequest,
+    get_compound_name,
+    search_compounds,
 )
 from gem_flux_mcp.tools.reaction_lookup import (
-    get_reaction_name,
-    search_reactions,
     GetReactionNameRequest,
     SearchReactionsRequest,
+    get_reaction_name,
+    search_reactions,
 )
 
 
@@ -271,7 +269,7 @@ class TestDatabaseSearchPerformance:
         assert elapsed < 100.0, f"Compound search took {elapsed:.3f}ms, expected <100ms"
 
         print(f"\n✓ Compound search: {elapsed:.3f}ms (<100ms target)")
-        print(f"  - Query: 'glucose'")
+        print("  - Query: 'glucose'")
         print(f"  - Results: {result['num_results']}")
 
     def test_reaction_search_by_name_performance(self, database_index):
@@ -289,7 +287,7 @@ class TestDatabaseSearchPerformance:
         assert elapsed < 100.0, f"Reaction search took {elapsed:.3f}ms, expected <100ms"
 
         print(f"\n✓ Reaction search: {elapsed:.3f}ms (<100ms target)")
-        print(f"  - Query: 'kinase'")
+        print("  - Query: 'kinase'")
         print(f"  - Results: {result['num_results']}")
 
     def test_compound_search_various_queries_performance(self, database_index):
@@ -319,7 +317,7 @@ class TestDatabaseSearchPerformance:
         print(f"\n✓ Compound search performance ({len(queries)} queries):")
         print(f"  - Average time: {avg_time:.3f}ms")
         print(f"  - Max time: {max_time:.3f}ms")
-        print(f"  - All queries <100ms target")
+        print("  - All queries <100ms target")
 
     def test_reaction_search_various_queries_performance(self, database_index):
         """Test various reaction search queries maintain <100ms."""
@@ -348,7 +346,7 @@ class TestDatabaseSearchPerformance:
         print(f"\n✓ Reaction search performance ({len(queries)} queries):")
         print(f"  - Average time: {avg_time:.3f}ms")
         print(f"  - Max time: {max_time:.3f}ms")
-        print(f"  - All queries <100ms target")
+        print("  - All queries <100ms target")
 
 
 class TestMemoryUsage:
@@ -364,7 +362,7 @@ class TestMemoryUsage:
         # Load databases
         compounds_df = load_compounds_database(compounds_path)
         reactions_df = load_reactions_database(reactions_path)
-        index = DatabaseIndex(compounds_df, reactions_df)
+        DatabaseIndex(compounds_df, reactions_df)
 
         snapshot2 = tracemalloc.take_snapshot()
         tracemalloc.stop()
@@ -484,7 +482,7 @@ class TestConcurrentOperationPerformance:
         slowdown_factor = concurrent_time / sequential_time
         assert slowdown_factor < 2.0, f"Concurrent slowdown factor: {slowdown_factor:.2f}x"
 
-        print(f"\n✓ Concurrent lookups performance:")
+        print("\n✓ Concurrent lookups performance:")
         print(f"  - Sequential time: {sequential_time*1000:.3f}ms")
         print(f"  - Concurrent time: {concurrent_time*1000:.3f}ms")
         print(f"  - Slowdown factor: {slowdown_factor:.2f}x (<2.0x target)")

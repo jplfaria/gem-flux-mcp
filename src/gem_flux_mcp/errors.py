@@ -25,7 +25,6 @@ JSON-RPC Error Codes:
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-
 # ============================================================================
 # Custom Exception Classes
 # ============================================================================

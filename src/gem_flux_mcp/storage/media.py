@@ -5,13 +5,13 @@ This module implements media storage, retrieval, and ID generation
 according to specification 010-model-storage.md.
 """
 
-import time
 import random
 import string
-from typing import Any, Optional
+import time
+from typing import Any
 
-from gem_flux_mcp.logging import get_logger
 from gem_flux_mcp.errors import media_not_found_error
+from gem_flux_mcp.logging import get_logger
 
 logger = get_logger(__name__)
 

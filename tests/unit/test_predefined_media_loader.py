@@ -4,20 +4,17 @@ Tests loading predefined media from JSON files according to specification 019.
 """
 
 import json
+
 import pytest
-from pathlib import Path
-from unittest.mock import patch, mock_open, MagicMock
 
 from gem_flux_mcp.media.predefined_loader import (
-    load_predefined_media,
+    PREDEFINED_MEDIA_CACHE,
     get_predefined_media,
+    get_predefined_media_count,
     has_predefined_media,
     list_predefined_media_names,
-    get_predefined_media_count,
-    PREDEFINED_MEDIA_CACHE,
+    load_predefined_media,
 )
-from gem_flux_mcp.media.predefined import PREDEFINED_MEDIA_IDS
-
 
 # Sample media definition for testing
 SAMPLE_MEDIA = {

@@ -15,14 +15,13 @@ odelsEED database downloaded to data/database/
 - argo-proxy running on localhost:8000 (for full integration tests)
 """
 
-import pytest
-from unittest.mock import Mock, AsyncMock, MagicMock, patch
 import json
+from unittest.mock import AsyncMock, Mock, patch
 
-from gem_flux_mcp.server import initialize_server, create_server
+import pytest
+
 from gem_flux_mcp.argo.client import ArgoMCPClient
-from gem_flux_mcp.argo.tool_selector import ToolSelector
-
+from gem_flux_mcp.server import create_server, initialize_server
 
 # =============================================================================
 # Fixtures
@@ -207,7 +206,7 @@ async def test_execute_async_tool(argo_client):
         mock_build_model.fn = mock_fn
 
         # Execute async tool
-        result = await argo_client._execute_tool(
+        await argo_client._execute_tool(
             "build_model",
             {
                 "protein_sequences": ["MKLAVLGL"],

@@ -1,8 +1,8 @@
 """Unit tests for media utilities (src/gem_flux_mcp/utils/media.py)."""
 
+from unittest.mock import Mock
+
 import pytest
-from unittest.mock import Mock, patch
-import math
 
 from gem_flux_mcp.utils.media import apply_media_to_model
 

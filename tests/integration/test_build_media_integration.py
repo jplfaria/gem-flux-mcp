@@ -4,13 +4,14 @@ Tests the build_media tool with real database and MSMedia objects.
 These tests use real ModelSEED data and verify end-to-end functionality.
 """
 
-import pytest
 from pathlib import Path
+
+import pytest
 
 from gem_flux_mcp.database import load_compounds_database, load_reactions_database
 from gem_flux_mcp.database.index import DatabaseIndex
-from gem_flux_mcp.tools.media_builder import build_media, BuildMediaRequest
-from gem_flux_mcp.storage.media import retrieve_media, clear_all_media
+from gem_flux_mcp.storage.media import clear_all_media, retrieve_media
+from gem_flux_mcp.tools.media_builder import BuildMediaRequest, build_media
 
 
 @pytest.fixture

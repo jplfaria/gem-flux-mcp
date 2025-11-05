@@ -6,19 +6,19 @@ tool registration, and lifecycle management according to specification
 """
 
 import os
-import sys
 import signal
+import sys
 from typing import Optional
 
 from fastmcp import FastMCP
 
-from gem_flux_mcp.logging import get_logger
 from gem_flux_mcp.database import load_compounds_database, load_reactions_database
 from gem_flux_mcp.database.index import DatabaseIndex
-from gem_flux_mcp.templates import load_templates
+from gem_flux_mcp.logging import get_logger
 from gem_flux_mcp.media import load_predefined_media
-from gem_flux_mcp.storage.models import MODEL_STORAGE
 from gem_flux_mcp.storage.media import MEDIA_STORAGE
+from gem_flux_mcp.storage.models import MODEL_STORAGE
+from gem_flux_mcp.templates import load_templates
 
 # NOTE: MCP tools are imported INSIDE create_server() to avoid circular imports
 # The mcp_tools module imports get_db_index() from this module, so we must
@@ -182,8 +182,9 @@ def load_resources(config: dict) -> None:
     logger.info(f"Loaded {len(loaded_media)} predefined media compositions")
 
     # Store predefined media in session storage so tools can access them
-    from gem_flux_mcp.storage.media import store_media
     from modelseedpy.core.msmedia import MSMedia
+
+    from gem_flux_mcp.storage.media import store_media
 
     for media_name, media_data in loaded_media.items():
         try:

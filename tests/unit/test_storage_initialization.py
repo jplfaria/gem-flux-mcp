@@ -6,18 +6,19 @@ according to specifications 010-model-storage.md and 015-mcp-server-setup.md.
 """
 
 import os
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 from gem_flux_mcp.storage.initialization import (
-    StorageConfig,
-    initialize_storage,
-    shutdown_storage,
-    get_storage_config,
-    check_storage_limits,
-    load_config_from_env,
-    DEFAULT_MAX_MODELS,
     DEFAULT_MAX_MEDIA,
+    DEFAULT_MAX_MODELS,
+    StorageConfig,
+    check_storage_limits,
+    get_storage_config,
+    initialize_storage,
+    load_config_from_env,
+    shutdown_storage,
 )
 
 
@@ -115,9 +116,9 @@ class TestInitializeStorage:
 
     def setup_method(self):
         """Clear storage before each test."""
-        from gem_flux_mcp.storage.models import clear_all_models
-        from gem_flux_mcp.storage.media import clear_all_media
         from gem_flux_mcp.storage import initialization
+        from gem_flux_mcp.storage.media import clear_all_media
+        from gem_flux_mcp.storage.models import clear_all_models
 
         clear_all_models()
         clear_all_media()
@@ -131,8 +132,8 @@ class TestInitializeStorage:
         assert config.max_media == DEFAULT_MAX_MEDIA
 
         # Verify storage is initialized
-        from gem_flux_mcp.storage.models import get_model_count
         from gem_flux_mcp.storage.media import get_media_count
+        from gem_flux_mcp.storage.models import get_model_count
         assert get_model_count() == 0
         assert get_media_count() == 0
 
@@ -166,8 +167,8 @@ class TestInitializeStorage:
 
     def test_initialize_with_empty_storage(self):
         """Test initialization with empty storage."""
-        from gem_flux_mcp.storage.models import get_model_count
         from gem_flux_mcp.storage.media import get_media_count
+        from gem_flux_mcp.storage.models import get_model_count
 
         initialize_storage()
 
@@ -177,7 +178,7 @@ class TestInitializeStorage:
 
     def test_initialize_with_non_empty_storage(self):
         """Test initialization when storage is not empty."""
-        from gem_flux_mcp.storage.models import store_model, get_model_count
+        from gem_flux_mcp.storage.models import get_model_count, store_model
 
         # Create a mock model
         mock_model = MagicMock()
@@ -211,9 +212,9 @@ class TestShutdownStorage:
 
     def setup_method(self):
         """Initialize storage and clear before each test."""
-        from gem_flux_mcp.storage.models import clear_all_models
-        from gem_flux_mcp.storage.media import clear_all_media
         from gem_flux_mcp.storage import initialization
+        from gem_flux_mcp.storage.media import clear_all_media
+        from gem_flux_mcp.storage.models import clear_all_models
 
         clear_all_models()
         clear_all_media()
@@ -228,15 +229,15 @@ class TestShutdownStorage:
         assert media_cleared == 0
 
         # Verify storage is still empty after shutdown
-        from gem_flux_mcp.storage.models import get_model_count
         from gem_flux_mcp.storage.media import get_media_count
+        from gem_flux_mcp.storage.models import get_model_count
         assert get_model_count() == 0
         assert get_media_count() == 0
 
     def test_shutdown_with_models_and_media(self):
         """Test shutdown clears models and media."""
-        from gem_flux_mcp.storage.models import store_model, get_model_count
-        from gem_flux_mcp.storage.media import store_media, get_media_count
+        from gem_flux_mcp.storage.media import get_media_count, store_media
+        from gem_flux_mcp.storage.models import get_model_count, store_model
 
         # Add mock models and media
         mock_model = MagicMock()
@@ -261,8 +262,8 @@ class TestShutdownStorage:
 
     def test_shutdown_actually_clears_storage(self):
         """Test that shutdown actually clears storage dictionaries."""
-        from gem_flux_mcp.storage.models import store_model, get_model_count
-        from gem_flux_mcp.storage.media import store_media, get_media_count
+        from gem_flux_mcp.storage.media import get_media_count, store_media
+        from gem_flux_mcp.storage.models import get_model_count, store_model
 
         # Add items
         mock_model = MagicMock()
@@ -286,9 +287,9 @@ class TestCheckStorageLimits:
 
     def setup_method(self):
         """Initialize storage before each test."""
-        from gem_flux_mcp.storage.models import clear_all_models
-        from gem_flux_mcp.storage.media import clear_all_media
         from gem_flux_mcp.storage import initialization
+        from gem_flux_mcp.storage.media import clear_all_media
+        from gem_flux_mcp.storage.models import clear_all_models
 
         clear_all_models()
         clear_all_media()
@@ -309,8 +310,8 @@ class TestCheckStorageLimits:
 
     def test_check_limits_with_some_storage(self):
         """Test checking limits with some items in storage."""
-        from gem_flux_mcp.storage.models import store_model
         from gem_flux_mcp.storage.media import store_media
+        from gem_flux_mcp.storage.models import store_model
 
         mock_model = MagicMock()
         mock_media = MagicMock()
@@ -391,9 +392,9 @@ class TestIntegrationScenarios:
 
     def setup_method(self):
         """Clear storage before each test."""
-        from gem_flux_mcp.storage.models import clear_all_models
-        from gem_flux_mcp.storage.media import clear_all_media
         from gem_flux_mcp.storage import initialization
+        from gem_flux_mcp.storage.media import clear_all_media
+        from gem_flux_mcp.storage.models import clear_all_models
 
         clear_all_models()
         clear_all_media()
@@ -401,8 +402,8 @@ class TestIntegrationScenarios:
 
     def test_full_lifecycle(self):
         """Test complete storage lifecycle: init → use → shutdown."""
-        from gem_flux_mcp.storage.models import store_model, get_model_count
-        from gem_flux_mcp.storage.media import store_media, get_media_count
+        from gem_flux_mcp.storage.media import get_media_count, store_media
+        from gem_flux_mcp.storage.models import get_model_count, store_model
 
         # Step 1: Initialize
         config = initialize_storage(StorageConfig(max_models=50, max_media=25))

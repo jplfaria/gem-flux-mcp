@@ -4,32 +4,30 @@ Tests all custom exceptions, error response builders, and common error construct
 Ensures JSON-RPC 2.0 compliance and proper error formatting.
 """
 
-import pytest
 from datetime import datetime
 
 from gem_flux_mcp.errors import (
+    DatabaseError,
     # Exception classes
     GemFluxError,
-    ValidationError,
-    NotFoundError,
     InfeasibilityError,
     LibraryError,
-    DatabaseError,
+    NotFoundError,
     ServerError,
     TimeoutError,
+    ValidationError,
     # Error response builders
     build_error_response,
     build_generic_error_response,
+    compound_not_found_error,
+    fba_infeasible_error,
+    gapfill_infeasible_error,
+    invalid_compound_ids_error,
+    media_not_found_error,
     # Common error constructors
     model_not_found_error,
-    media_not_found_error,
-    invalid_compound_ids_error,
-    compound_not_found_error,
     reaction_not_found_error,
-    gapfill_infeasible_error,
-    fba_infeasible_error,
 )
-
 
 # ============================================================================
 # Test Custom Exception Classes

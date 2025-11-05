@@ -19,17 +19,18 @@ According to spec 002-data-formats.md:
 Test expectations: All tests in this module should be must_pass (critical path).
 """
 
-import pytest
-from unittest.mock import Mock
 from datetime import datetime
+from unittest.mock import Mock
+
+import pytest
 
 # Import storage modules
 from gem_flux_mcp.storage.models import (
     MODEL_STORAGE,
     clear_all_models,
-    store_model,
     generate_model_id,
     generate_model_id_from_name,
+    store_model,
     transform_state_suffix,
 )
 

@@ -4,8 +4,10 @@ Tests conversion of MCP tool schemas to OpenAI function calling format,
 including filtering internal parameters and preserving user-facing parameters.
 """
 
-import pytest
 from unittest.mock import Mock
+
+import pytest
+
 from gem_flux_mcp.argo.converter import MCPToOpenAIConverter
 
 

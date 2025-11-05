@@ -6,12 +6,13 @@ Tests the delete_model MCP tool according to specification
 018-session-management-tools.md.
 """
 
-import pytest
 from unittest.mock import MagicMock
 
+import pytest
+
+from gem_flux_mcp.storage.models import MODEL_STORAGE, clear_all_models, store_model
 from gem_flux_mcp.tools.delete_model import delete_model
 from gem_flux_mcp.types import DeleteModelRequest
-from gem_flux_mcp.storage.models import MODEL_STORAGE, clear_all_models, store_model
 
 
 @pytest.fixture(autouse=True)

@@ -9,8 +9,8 @@ Components:
 - tool_selector: Dynamic tool selection to work around Argo payload limits
 """
 
-from .converter import MCPToOpenAIConverter
 from .client import ArgoMCPClient
+from .converter import MCPToOpenAIConverter
 from .tool_selector import ToolSelector
 
 __all__ = ["MCPToOpenAIConverter", "ArgoMCPClient", "ToolSelector"]

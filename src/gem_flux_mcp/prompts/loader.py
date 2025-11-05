@@ -3,8 +3,9 @@
 import re
 from pathlib import Path
 from typing import Any, Dict, Optional
+
 import yaml
-from jinja2 import Environment, FileSystemLoader, Template, TemplateNotFound
+from jinja2 import Environment, FileSystemLoader, Template
 
 from gem_flux_mcp.logging import get_logger
 

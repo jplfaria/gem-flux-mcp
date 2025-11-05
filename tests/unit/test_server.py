@@ -5,15 +5,15 @@ according to specification 015-mcp-server-setup.md.
 """
 
 import os
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
-from pathlib import Path
 
 from gem_flux_mcp.server import (
-    get_config_from_env,
-    load_resources,
-    initialize_session_storage,
     create_server,
+    get_config_from_env,
+    initialize_session_storage,
+    load_resources,
     shutdown_handler,
 )
 
@@ -297,7 +297,7 @@ class TestIntegrationScenarios:
         # Execute startup phases
         mock_load_resources(config)
         mock_init_storage(config)
-        server = mock_create_server()
+        mock_create_server()
         # NOTE: No register_tools(server) call - tools auto-register when mcp_tools is imported
 
         # Verify all phases executed

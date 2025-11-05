@@ -108,8 +108,8 @@ def initialize_storage(config: Optional[StorageConfig] = None) -> StorageConfig:
     global _storage_config
 
     # Import here to avoid circular dependency
-    from gem_flux_mcp.storage.models import MODEL_STORAGE, get_model_count
     from gem_flux_mcp.storage.media import MEDIA_STORAGE, get_media_count
+    from gem_flux_mcp.storage.models import MODEL_STORAGE, get_model_count
 
     # Load or use provided config
     if config is None:
@@ -173,8 +173,8 @@ def shutdown_storage() -> tuple[int, int]:
         are empty and can be re-initialized.
     """
     # Import here to avoid circular dependency
-    from gem_flux_mcp.storage.models import clear_all_models
     from gem_flux_mcp.storage.media import clear_all_media
+    from gem_flux_mcp.storage.models import clear_all_models
 
     logger.info("Shutting down session storage")
 
@@ -210,8 +210,8 @@ def check_storage_limits() -> dict:
         )
 
     # Import here to avoid circular dependency
-    from gem_flux_mcp.storage.models import get_model_count
     from gem_flux_mcp.storage.media import get_media_count
+    from gem_flux_mcp.storage.models import get_model_count
 
     model_count = get_model_count()
     media_count = get_media_count()

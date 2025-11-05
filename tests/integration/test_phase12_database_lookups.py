@@ -20,29 +20,28 @@ serialization. Tests must use dictionary access (response["key"]) not attribute
 access (response.key).
 """
 
-import pytest
-from unittest.mock import Mock, patch
+
 import pandas as pd
+import pytest
+
+from gem_flux_mcp.database.index import DatabaseIndex
 
 # Import database modules
-from gem_flux_mcp.database.loader import load_compounds_database, load_reactions_database
-from gem_flux_mcp.database.index import DatabaseIndex
+from gem_flux_mcp.errors import NotFoundError
 
 # Import lookup tools
 from gem_flux_mcp.tools.compound_lookup import (
-    get_compound_name,
-    search_compounds,
     GetCompoundNameRequest,
     SearchCompoundsRequest,
+    get_compound_name,
+    search_compounds,
 )
 from gem_flux_mcp.tools.reaction_lookup import (
-    get_reaction_name,
-    search_reactions,
     GetReactionNameRequest,
     SearchReactionsRequest,
+    get_reaction_name,
+    search_reactions,
 )
-from gem_flux_mcp.errors import NotFoundError
-
 
 # =============================================================================
 # Fixtures

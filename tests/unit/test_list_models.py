@@ -4,18 +4,19 @@ Tests the list_models MCP tool according to specification
 018-session-management-tools.md.
 """
 
-import pytest
-from unittest.mock import MagicMock
 from datetime import datetime
+from unittest.mock import MagicMock
 
+import pytest
+
+from gem_flux_mcp.storage.models import MODEL_STORAGE, clear_all_models
 from gem_flux_mcp.tools.list_models import (
-    list_models,
     classify_model_state,
-    extract_model_name,
     extract_model_metadata,
+    extract_model_name,
+    list_models,
 )
 from gem_flux_mcp.types import ListModelsRequest
-from gem_flux_mcp.storage.models import MODEL_STORAGE, clear_all_models
 
 
 @pytest.fixture(autouse=True)

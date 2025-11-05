@@ -4,20 +4,19 @@ Unit tests for run_fba tool.
 Tests validation, media application, FBA execution, and result processing.
 """
 
-import pytest
-from unittest.mock import Mock, MagicMock, patch
-import copy
+from unittest.mock import Mock, patch
 
+import pytest
+
+from gem_flux_mcp.errors import NotFoundError, ValidationError
 from gem_flux_mcp.tools.run_fba import (
-    validate_fba_inputs,
     apply_media_to_model,
+    extract_fluxes,
     get_compound_name_safe,
     get_reaction_name_safe,
-    extract_fluxes,
     run_fba,
+    validate_fba_inputs,
 )
-from gem_flux_mcp.errors import ValidationError, NotFoundError, InfeasibilityError
-
 
 # ============================================================================
 # Fixtures
@@ -629,7 +628,7 @@ def test_run_fba_preserves_original_model(
     mock_db_class.get_instance = Mock(return_value=mock_db_index)
 
     # Run FBA
-    result = run_fba(
+    run_fba(
         model_id="model_001.gf",
         media_id="media_001",
         db_index=mock_db_index,

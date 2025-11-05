@@ -4,8 +4,6 @@ Unit tests for database loader module.
 Tests database loading, validation, and alias parsing functions.
 """
 
-import io
-from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -24,7 +22,6 @@ from gem_flux_mcp.database.loader import (
     validate_reaction_id,
 )
 from gem_flux_mcp.errors import DatabaseError
-
 
 # ============================================================================
 # Test Fixtures

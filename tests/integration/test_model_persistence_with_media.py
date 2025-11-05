@@ -9,20 +9,21 @@ Tests that models can be:
 5. Produce identical growth rates
 """
 
-import pytest
 import json
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from gem_flux_mcp.database import load_compounds_database, load_reactions_database
 from gem_flux_mcp.database.index import DatabaseIndex
+from gem_flux_mcp.storage.media import clear_all_media
+from gem_flux_mcp.storage.models import MODEL_STORAGE, clear_all_models
+from gem_flux_mcp.templates.loader import load_templates
 from gem_flux_mcp.tools.build_model import build_model
 from gem_flux_mcp.tools.gapfill_model import gapfill_model
-from gem_flux_mcp.tools.media_builder import build_media, BuildMediaRequest
+from gem_flux_mcp.tools.media_builder import BuildMediaRequest, build_media
 from gem_flux_mcp.tools.run_fba import run_fba
-from gem_flux_mcp.storage.models import clear_all_models, MODEL_STORAGE
-from gem_flux_mcp.storage.media import clear_all_media
-from gem_flux_mcp.templates.loader import load_templates
 
 
 class TestModelPersistenceWithMedia:
@@ -334,5 +335,5 @@ class TestModelPersistenceWithMedia:
             assert diff < 0.000001, \
                 f"Growth rate changed between cycles: {growth_rates[i]:.6f} vs {growth_rates[i+1]:.6f}"
 
-        print(f"\n✓ Multiple save/load cycles test PASSED!")
+        print("\n✓ Multiple save/load cycles test PASSED!")
         print(f"✓ Growth rate remained stable across {len(growth_rates)} measurements")

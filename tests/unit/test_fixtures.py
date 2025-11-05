@@ -4,7 +4,6 @@ This test file ensures all fixtures defined in conftest.py are properly
 configured and return expected data structures.
 """
 
-import pytest
 from pathlib import Path
 
 

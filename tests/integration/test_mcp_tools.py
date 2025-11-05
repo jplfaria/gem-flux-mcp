@@ -6,7 +6,8 @@ and accessible through the FastMCP server instance.
 
 import pytest
 import pytest_asyncio
-from gem_flux_mcp.server import initialize_server, create_server
+
+from gem_flux_mcp.server import create_server, initialize_server
 
 
 @pytest_asyncio.fixture(scope="module")

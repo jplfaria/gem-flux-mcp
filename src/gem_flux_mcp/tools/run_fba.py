@@ -31,28 +31,29 @@ What this tool does NOT do (MVP):
 """
 
 import copy
-from typing import Any, Optional
+from typing import Any
 
-from gem_flux_mcp.logging import get_logger
+from gem_flux_mcp.database.index import DatabaseIndex
 from gem_flux_mcp.errors import (
-    ValidationError,
-    NotFoundError,
     InfeasibilityError,
+    NotFoundError,
+    ValidationError,
     build_error_response,
-    model_not_found_error,
     media_not_found_error,
+    model_not_found_error,
+)
+from gem_flux_mcp.logging import get_logger
+from gem_flux_mcp.storage.media import (
+    MEDIA_STORAGE,
+    media_exists,
+    retrieve_media,
 )
 from gem_flux_mcp.storage.models import (
     MODEL_STORAGE,
-    retrieve_model,
     model_exists,
+    retrieve_model,
 )
-from gem_flux_mcp.storage.media import (
-    MEDIA_STORAGE,
-    retrieve_media,
-    media_exists,
-)
-from gem_flux_mcp.database.index import DatabaseIndex
+from gem_flux_mcp.utils.media import apply_media_to_model
 
 logger = get_logger(__name__)
 
@@ -126,12 +127,6 @@ def validate_fba_inputs(
                 "Default threshold is 1e-6 if not specified",
             ],
         )
-
-
-# Media application is now handled by shared utility
-# See: src/gem_flux_mcp/utils/media.py
-# This alias maintains backwards compatibility
-from gem_flux_mcp.utils.media import apply_media_to_model
 
 
 def get_compound_name_safe(db_index: DatabaseIndex, compound_id: str) -> str:

@@ -5,16 +5,17 @@ in the current session according to specification 018-session-management-tools.m
 """
 
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 from gem_flux_mcp.logging import get_logger
 from gem_flux_mcp.media.predefined import PREDEFINED_MEDIA_IDS, PREDEFINED_MEDIA_TIMESTAMP
 from gem_flux_mcp.storage.media import MEDIA_STORAGE
 from gem_flux_mcp.types import (
+    ErrorResponse,
     ListMediaResponse,
     MediaInfo,
-    ErrorResponse,
 )
+
 # No error imports needed - we return simple error response dicts
 
 logger = get_logger(__name__)

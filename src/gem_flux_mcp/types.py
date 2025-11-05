@@ -10,10 +10,9 @@ All types follow the specifications in specs/002-data-formats.md and
 individual tool specifications.
 """
 
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
-
 
 # =============================================================================
 # Build Media Tool Types (spec: 003-build-media-tool.md)

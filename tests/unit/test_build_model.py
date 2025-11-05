@@ -13,26 +13,25 @@ Test Coverage:
     - Model statistics collection
 """
 
-import pytest
 import tempfile
 from pathlib import Path
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 
-from gem_flux_mcp.errors import ValidationError, LibraryError
+import pytest
+
+from gem_flux_mcp.errors import ValidationError
 from gem_flux_mcp.storage.models import (
-    MODEL_STORAGE,
     clear_all_models,
     model_exists,
 )
 from gem_flux_mcp.tools.build_model import (
+    build_model,
+    collect_model_statistics,
+    dict_to_fasta_file,
+    load_fasta_file,
     validate_amino_acid_sequence,
     validate_protein_sequences,
-    load_fasta_file,
-    dict_to_fasta_file,
-    collect_model_statistics,
-    build_model,
 )
-
 
 # =============================================================================
 # Fixtures

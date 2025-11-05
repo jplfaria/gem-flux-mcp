@@ -16,10 +16,17 @@ Test expectations defined in test_expectations.json (Phase 12):
 - test_gapfill_failure_recovery (must_pass)
 """
 
-import pytest
 from unittest.mock import Mock
-from datetime import datetime
+
 import pandas as pd
+import pytest
+
+# Import database
+from gem_flux_mcp.database.index import DatabaseIndex
+from gem_flux_mcp.errors import NotFoundError, ValidationError
+from gem_flux_mcp.storage.media import (
+    clear_all_media,
+)
 
 # Import storage modules
 from gem_flux_mcp.storage.models import (
@@ -27,20 +34,10 @@ from gem_flux_mcp.storage.models import (
     clear_all_models,
     store_model,
 )
-from gem_flux_mcp.storage.media import (
-    MEDIA_STORAGE,
-    clear_all_media,
-    store_media,
-)
-
-# Import database
-from gem_flux_mcp.database.index import DatabaseIndex
 
 # Import tools
-from gem_flux_mcp.tools.delete_model import delete_model, DeleteModelRequest
+from gem_flux_mcp.tools.delete_model import DeleteModelRequest, delete_model
 from gem_flux_mcp.tools.list_models import list_models
-from gem_flux_mcp.tools.list_media import list_media
-from gem_flux_mcp.errors import NotFoundError, ValidationError
 
 
 @pytest.fixture(autouse=True)
