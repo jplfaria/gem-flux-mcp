@@ -579,7 +579,7 @@ def categorize_reactions_by_pathway(enriched_reactions: list[dict], db_index: Da
         # Lookup in database
         reaction_record = db_index.get_reaction_by_id(base_rxn_id)
 
-        if reaction_record:
+        if reaction_record is not None:
             pathways_raw = reaction_record.get("pathways", "")
             pathways_list = parse_pathways(pathways_raw)
 
