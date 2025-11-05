@@ -750,7 +750,8 @@ async def build_model(
 
     # Explain ATP correction
     if atp_stats is not None:
-        atp_note = f"ATP correction applied: added {atp_stats['reactions_added_by_correction']} reactions across {atp_stats['media_tested']} media conditions for biologically realistic growth"
+        num_media = atp_stats['num_test_conditions']
+        atp_note = f"ATP correction applied: added {atp_stats['reactions_added_by_correction']} reactions tested across {num_media} media conditions for biologically realistic growth"
     else:
         atp_note = "ATP correction not applied: model may have unrealistic growth predictions"
 
