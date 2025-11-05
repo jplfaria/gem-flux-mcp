@@ -63,8 +63,14 @@ class TestConfigurationLoading:
         assert config["log_level"] == "DEBUG"
 
         # Cleanup
-        for var in ["GEM_FLUX_HOST", "GEM_FLUX_PORT", "GEM_FLUX_DATABASE_DIR",
-                    "GEM_FLUX_TEMPLATE_DIR", "GEM_FLUX_MAX_MODELS", "GEM_FLUX_LOG_LEVEL"]:
+        for var in [
+            "GEM_FLUX_HOST",
+            "GEM_FLUX_PORT",
+            "GEM_FLUX_DATABASE_DIR",
+            "GEM_FLUX_TEMPLATE_DIR",
+            "GEM_FLUX_MAX_MODELS",
+            "GEM_FLUX_LOG_LEVEL",
+        ]:
             os.environ.pop(var, None)
 
 
@@ -89,8 +95,12 @@ class TestResourceLoading:
         """Test successful loading of all resources."""
         # Setup mocks
         mock_exists.return_value = True
-        mock_load_compounds.return_value = Mock(name="compounds_df", __len__=Mock(return_value=33993))
-        mock_load_reactions.return_value = Mock(name="reactions_df", __len__=Mock(return_value=43775))
+        mock_load_compounds.return_value = Mock(
+            name="compounds_df", __len__=Mock(return_value=33993)
+        )
+        mock_load_reactions.return_value = Mock(
+            name="reactions_df", __len__=Mock(return_value=43775)
+        )
         mock_load_templates.return_value = {
             "GramNegative": Mock(),
             "GramPositive": Mock(),
@@ -121,6 +131,7 @@ class TestResourceLoading:
     @patch("os.path.exists")
     def test_missing_compounds_database(self, mock_exists):
         """Test error when compounds database file is missing."""
+
         # compounds.tsv doesn't exist
         def exists_side_effect(path):
             return "reactions.tsv" in str(path)
@@ -135,6 +146,7 @@ class TestResourceLoading:
     @patch("os.path.exists")
     def test_missing_reactions_database(self, mock_exists):
         """Test error when reactions database file is missing."""
+
         # reactions.tsv doesn't exist
         def exists_side_effect(path):
             return "compounds.tsv" in str(path)

@@ -14,10 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def apply_media_to_model(
-    model: cobra.Model,
-    media: Any,
-    compartment: str = "e0",
-    reset_exchange_bounds: bool = False
+    model: cobra.Model, media: Any, compartment: str = "e0", reset_exchange_bounds: bool = False
 ) -> None:
     """Apply media constraints using COBRApy's model.medium property.
 
@@ -93,15 +90,12 @@ def apply_media_to_model(
                 logger.warning(f"Skipping {compound_id}: invalid bounds format {bounds}")
 
     else:
-        raise TypeError(
-            f"media must be MSMedia object or dict, got {type(media).__name__}"
-        )
+        raise TypeError(f"media must be MSMedia object or dict, got {type(media).__name__}")
 
     if len(media_constraints) == 0:
         logger.error("NO media constraints found!")
         raise ValueError(
-            "Failed to parse media: no compound constraints found. "
-            "Check media format."
+            "Failed to parse media: no compound constraints found. Check media format."
         )
 
     # Convert to COBRApy medium dict format: {exchange_id: uptake_rate}
@@ -111,8 +105,14 @@ def apply_media_to_model(
 
     # DEBUG: Count exchanges BEFORE applying media
     exchanges_before = [r.id for r in model.reactions if r.id.startswith("EX_")]
-    open_before = [r.id for r in model.reactions if r.id.startswith("EX_") and (r.lower_bound < 0 or r.upper_bound > 0)]
-    logger.info(f"BEFORE applying media: {len(exchanges_before)} total exchanges, {len(open_before)} open")
+    open_before = [
+        r.id
+        for r in model.reactions
+        if r.id.startswith("EX_") and (r.lower_bound < 0 or r.upper_bound > 0)
+    ]
+    logger.info(
+        f"BEFORE applying media: {len(exchanges_before)} total exchanges, {len(open_before)} open"
+    )
 
     for compound_id, (lower_bound, upper_bound) in media_constraints.items():
         # Convert compound ID to exchange reaction ID
@@ -127,12 +127,16 @@ def apply_media_to_model(
             logger.debug(f"Adding {exchange_rxn_id} to medium: uptake_rate={uptake_rate}")
         else:
             missing_exchanges.append(exchange_rxn_id)
-            logger.warning(f"Exchange reaction {exchange_rxn_id} not found in model (compound: {compound_id})")
+            logger.warning(
+                f"Exchange reaction {exchange_rxn_id} not found in model (compound: {compound_id})"
+            )
 
     if len(medium) == 0:
         logger.error("NO exchange reactions matched! This will prevent growth.")
         logger.error(f"Media had {len(media_constraints)} constraints")
-        logger.error(f"Model has {len([r for r in model.reactions if r.id.startswith('EX_')])} exchange reactions")
+        logger.error(
+            f"Model has {len([r for r in model.reactions if r.id.startswith('EX_')])} exchange reactions"
+        )
         logger.error(f"Missing exchanges: {missing_exchanges[:10]}")
         raise ValueError(
             "Failed to apply media: no exchange reactions matched media constraints. "
@@ -146,5 +150,9 @@ def apply_media_to_model(
     model.medium = medium
 
     # DEBUG: Count exchanges AFTER applying media
-    open_after = [r.id for r in model.reactions if r.id.startswith("EX_") and (r.lower_bound < 0 or r.upper_bound > 0)]
+    open_after = [
+        r.id
+        for r in model.reactions
+        if r.id.startswith("EX_") and (r.lower_bound < 0 or r.upper_bound > 0)
+    ]
     logger.info(f"AFTER applying media: {len(open_after)} open exchanges (was {len(open_before)})")

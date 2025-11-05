@@ -49,6 +49,7 @@ def setup_storage():
 # Test 1: Full Workflow - Verify Data Flow and State Transitions
 # ============================================================================
 
+
 def test_full_workflow_build_gapfill_fba():
     """Test complete workflow data flow and state transitions.
 
@@ -68,8 +69,8 @@ def test_full_workflow_build_gapfill_fba():
     # Simulate media creation by storing media manually
     media_id = "media_test_glucose"
     media_data = {
-        "cpd00027_e0": (-5, 100),    # Glucose
-        "cpd00007_e0": (-10, 100),   # O2
+        "cpd00027_e0": (-5, 100),  # Glucose
+        "cpd00007_e0": (-10, 100),  # O2
         "cpd00001_e0": (-100, 100),  # H2O
     }
     store_media(media_id, media_data)
@@ -167,6 +168,7 @@ def test_full_workflow_build_gapfill_fba():
 # Test 2: Workflow with Multiple Media Compositions
 # ============================================================================
 
+
 def test_workflow_with_custom_media():
     """Test workflow with different media compositions.
 
@@ -179,18 +181,18 @@ def test_workflow_with_custom_media():
     # Create aerobic medium
     aerobic_media_id = "media_aerobic"
     aerobic_media = {
-        "cpd00027_e0": (-5, 100),   # Glucose
+        "cpd00027_e0": (-5, 100),  # Glucose
         "cpd00007_e0": (-10, 100),  # O2 (aerobic)
-        "cpd00001_e0": (-100, 100), # H2O
+        "cpd00001_e0": (-100, 100),  # H2O
     }
     store_media(aerobic_media_id, aerobic_media)
 
     # Create anaerobic medium (no O2)
     anaerobic_media_id = "media_anaerobic"
     anaerobic_media = {
-        "cpd00027_e0": (-5, 100),   # Glucose
-        "cpd00007_e0": (0, 0),      # O2 blocked (anaerobic)
-        "cpd00001_e0": (-100, 100), # H2O
+        "cpd00027_e0": (-5, 100),  # Glucose
+        "cpd00007_e0": (0, 0),  # O2 blocked (anaerobic)
+        "cpd00001_e0": (-100, 100),  # H2O
     }
     store_media(anaerobic_media_id, anaerobic_media)
 
@@ -218,6 +220,7 @@ def test_workflow_with_custom_media():
 # ============================================================================
 # Test 3: End-to-End Error Handling - State Verification
 # ============================================================================
+
 
 def test_end_to_end_error_handling():
     """Test error handling patterns in workflow.
@@ -266,6 +269,7 @@ def test_end_to_end_error_handling():
 # ============================================================================
 # Test 4: Import/Export Workflow (Future Feature - May Fail)
 # ============================================================================
+
 
 def test_import_export_workflow():
     """Test model import/export workflow.

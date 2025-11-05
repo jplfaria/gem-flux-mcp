@@ -79,12 +79,8 @@ def verify_storage_clean() -> None:
     """
     state = get_storage_state()
 
-    assert state["models"]["count"] == 0, (
-        f"MODEL_STORAGE not empty: {state['models']['ids']}"
-    )
-    assert state["media"]["count"] == 0, (
-        f"MEDIA_STORAGE not empty: {state['media']['ids']}"
-    )
+    assert state["models"]["count"] == 0, f"MODEL_STORAGE not empty: {state['models']['ids']}"
+    assert state["media"]["count"] == 0, f"MEDIA_STORAGE not empty: {state['media']['ids']}"
 
 
 def verify_media_stored(media_id: str) -> None:
@@ -106,8 +102,7 @@ def verify_media_stored(media_id: str) -> None:
     from gem_flux_mcp.storage.media import media_exists
 
     assert media_exists(media_id), (
-        f"Media '{media_id}' not found in storage. "
-        f"Available: {list(MEDIA_STORAGE.keys())}"
+        f"Media '{media_id}' not found in storage. Available: {list(MEDIA_STORAGE.keys())}"
     )
 
 
@@ -130,8 +125,7 @@ def verify_model_stored(model_id: str) -> None:
     from gem_flux_mcp.storage.models import model_exists
 
     assert model_exists(model_id), (
-        f"Model '{model_id}' not found in storage. "
-        f"Available: {list(MODEL_STORAGE.keys())}"
+        f"Model '{model_id}' not found in storage. Available: {list(MODEL_STORAGE.keys())}"
     )
 
 
@@ -197,14 +191,12 @@ def verify_storage_ids(
         actual_models = list(MODEL_STORAGE.keys())
         for model_id in expected_models:
             assert model_id in actual_models, (
-                f"Expected model '{model_id}' not found. "
-                f"Available: {actual_models}"
+                f"Expected model '{model_id}' not found. Available: {actual_models}"
             )
 
     if expected_media is not None:
         actual_media = list(MEDIA_STORAGE.keys())
         for media_id in expected_media:
             assert media_id in actual_media, (
-                f"Expected media '{media_id}' not found. "
-                f"Available: {actual_media}"
+                f"Expected media '{media_id}' not found. Available: {actual_media}"
             )

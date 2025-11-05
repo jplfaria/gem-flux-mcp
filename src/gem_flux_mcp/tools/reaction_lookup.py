@@ -71,9 +71,13 @@ class GetReactionNameResponse(BaseModel):
     abbreviation: str = Field(..., description="Short reaction code")
     equation: str = Field(..., description="Reaction equation with human-readable compound names")
     equation_with_ids: str = Field(..., description="Reaction equation with ModelSEED compound IDs")
-    reversibility: str = Field(..., description="Reversibility type (reversible, irreversible, irreversible_reverse)")
+    reversibility: str = Field(
+        ..., description="Reversibility type (reversible, irreversible, irreversible_reverse)"
+    )
     direction: str = Field(..., description="Preferred direction (forward, reverse, bidirectional)")
-    is_transport: bool = Field(..., description="True if reaction moves compounds between compartments")
+    is_transport: bool = Field(
+        ..., description="True if reaction moves compounds between compartments"
+    )
     ec_numbers: list[str] = Field(..., description="Enzyme Commission numbers")
     pathways: list[str] = Field(..., description="Metabolic pathways containing this reaction")
     deltag: Optional[float] = Field(None, description="Standard Gibbs free energy change (kJ/mol)")
@@ -125,9 +129,7 @@ class ReactionSearchResult(BaseModel):
         ...,
         description="Field where match was found (name, abbreviation, ec_numbers, pathways, aliases, id)",
     )
-    match_type: str = Field(
-        ..., description="Type of match (exact or partial)"
-    )
+    match_type: str = Field(..., description="Type of match (exact or partial)")
 
 
 class SearchReactionsResponse(BaseModel):
@@ -136,9 +138,7 @@ class SearchReactionsResponse(BaseModel):
     success: bool = Field(default=True)
     query: str = Field(..., description="The search query as processed")
     num_results: int = Field(..., description="Number of results returned")
-    results: list[ReactionSearchResult] = Field(
-        ..., description="List of matching reactions"
-    )
+    results: list[ReactionSearchResult] = Field(..., description="List of matching reactions")
     truncated: bool = Field(
         ...,
         description="True if more results exist beyond limit, False otherwise",
@@ -178,7 +178,9 @@ def parse_reversibility_and_direction(reversibility_symbol: str) -> tuple[str, s
         return ("reversible", "bidirectional")
     else:
         # Default to reversible if unknown
-        logger.warning(f"Unknown reversibility symbol: {reversibility_symbol}, defaulting to reversible")
+        logger.warning(
+            f"Unknown reversibility symbol: {reversibility_symbol}, defaulting to reversible"
+        )
         return ("reversible", "bidirectional")
 
 
@@ -323,10 +325,17 @@ def format_equation_readable(equation_with_ids: str, definition: str) -> str:
     """
     if not definition or pd.isna(definition):
         # Fallback to equation_with_ids if no definition
-        return equation_with_ids.replace("[0]", "").replace("[c0]", "").replace("[e0]", "").replace("[p0]", "")
+        return (
+            equation_with_ids.replace("[0]", "")
+            .replace("[c0]", "")
+            .replace("[e0]", "")
+            .replace("[p0]", "")
+        )
 
     # Remove compartment suffixes: [0], [c0], [e0], [p0]
-    readable = definition.replace("[0]", "").replace("[c0]", "").replace("[e0]", "").replace("[p0]", "")
+    readable = (
+        definition.replace("[0]", "").replace("[c0]", "").replace("[e0]", "").replace("[p0]", "")
+    )
 
     return readable
 
@@ -336,9 +345,7 @@ def format_equation_readable(equation_with_ids: str, definition: str) -> str:
 # =============================================================================
 
 
-def get_reaction_name(
-    request: GetReactionNameRequest, db_index: DatabaseIndex
-) -> dict:
+def get_reaction_name(request: GetReactionNameRequest, db_index: DatabaseIndex) -> dict:
     """Get human-readable name and metadata for a ModelSEED reaction ID.
 
     This function implements the get_reaction_name MCP tool as specified in
@@ -418,13 +425,21 @@ def get_reaction_name(
     # Step 7: Parse thermodynamic data
     deltag = None
     deltagerr = None
-    if "deltag" in reaction_record and reaction_record["deltag"] is not None and not pd.isna(reaction_record["deltag"]):
+    if (
+        "deltag" in reaction_record
+        and reaction_record["deltag"] is not None
+        and not pd.isna(reaction_record["deltag"])
+    ):
         try:
             deltag = float(reaction_record["deltag"])
         except (ValueError, TypeError):
             pass
 
-    if "deltagerr" in reaction_record and reaction_record["deltagerr"] is not None and not pd.isna(reaction_record["deltagerr"]):
+    if (
+        "deltagerr" in reaction_record
+        and reaction_record["deltagerr"] is not None
+        and not pd.isna(reaction_record["deltagerr"])
+    ):
         try:
             deltagerr = float(reaction_record["deltagerr"])
         except (ValueError, TypeError):
@@ -627,6 +642,7 @@ def search_reactions(request: SearchReactionsRequest, db_index: DatabaseIndex) -
     else:
         # Add context-aware next_steps based on results
         from gem_flux_mcp.prompts import render_prompt
+
         next_steps_text = render_prompt(
             "next_steps/search_reactions",
             truncated=truncated,

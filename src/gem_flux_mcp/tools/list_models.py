@@ -179,6 +179,7 @@ def list_models(
 
         # Build workflow-aware next_steps
         from gem_flux_mcp.prompts import render_prompt
+
         next_steps_text = render_prompt(
             "next_steps/list_models",
             draft_count=state_counts["draft"],

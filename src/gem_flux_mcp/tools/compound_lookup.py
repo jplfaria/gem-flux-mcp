@@ -74,9 +74,7 @@ class GetCompoundNameResponse(BaseModel):
     charge: int = Field(..., description="Ionic charge")
     inchikey: str = Field(..., description="InChI key for structure identification")
     smiles: str = Field(..., description="SMILES notation for chemical structure")
-    aliases: dict[str, list[str]] = Field(
-        ..., description="Cross-references to external databases"
-    )
+    aliases: dict[str, list[str]] = Field(..., description="Cross-references to external databases")
 
 
 class SearchCompoundsRequest(BaseModel):
@@ -125,9 +123,7 @@ class CompoundSearchResult(BaseModel):
         ...,
         description="Field where match was found (name, abbreviation, formula, aliases, id)",
     )
-    match_type: str = Field(
-        ..., description="Type of match (exact or partial)"
-    )
+    match_type: str = Field(..., description="Type of match (exact or partial)")
 
 
 class SearchCompoundsResponse(BaseModel):
@@ -136,9 +132,7 @@ class SearchCompoundsResponse(BaseModel):
     success: bool = Field(default=True)
     query: str = Field(..., description="The search query as processed")
     num_results: int = Field(..., description="Number of results returned")
-    results: list[CompoundSearchResult] = Field(
-        ..., description="List of matching compounds"
-    )
+    results: list[CompoundSearchResult] = Field(..., description="List of matching compounds")
     truncated: bool = Field(
         ...,
         description="True if more results exist beyond limit, False otherwise",
@@ -156,9 +150,7 @@ class SearchCompoundsResponse(BaseModel):
 # =============================================================================
 
 
-def get_compound_name(
-    request: GetCompoundNameRequest, db_index: DatabaseIndex
-) -> dict:
+def get_compound_name(request: GetCompoundNameRequest, db_index: DatabaseIndex) -> dict:
     """Get human-readable name and metadata for a ModelSEED compound ID.
 
     This function implements the get_compound_name MCP tool as specified in
@@ -385,6 +377,7 @@ def search_compounds(request: SearchCompoundsRequest, db_index: DatabaseIndex) -
     else:
         # Add context-aware next_steps based on results
         from gem_flux_mcp.prompts import render_prompt
+
         next_steps_text = render_prompt(
             "next_steps/search_compounds",
             truncated=truncated,

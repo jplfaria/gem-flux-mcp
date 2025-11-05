@@ -38,42 +38,69 @@ class ToolSelector:
             "get_compound_name",
             "get_reaction_name",
             "search_compounds",
-            "search_reactions"
+            "search_reactions",
         },
-        "media": {
-            "build_media",
-            "list_media"
-        },
-        "model": {
-            "build_model",
-            "list_models",
-            "delete_model"
-        },
-        "analysis": {
-            "gapfill_model",
-            "run_fba"
-        }
+        "media": {"build_media", "list_media"},
+        "model": {"build_model", "list_models", "delete_model"},
+        "analysis": {"gapfill_model", "run_fba"},
     }
 
     # Keywords that trigger each category
     CATEGORY_KEYWORDS = {
         "database": {
-            "compound", "cpd", "reaction", "rxn", "formula", "molecular",
-            "search", "find", "lookup", "what is", "tell me about",
-            "glucose", "atp", "metabolite", "enzyme"
+            "compound",
+            "cpd",
+            "reaction",
+            "rxn",
+            "formula",
+            "molecular",
+            "search",
+            "find",
+            "lookup",
+            "what is",
+            "tell me about",
+            "glucose",
+            "atp",
+            "metabolite",
+            "enzyme",
         },
         "media": {
-            "media", "medium", "growth", "nutrients", "feed", "supplement",
-            "composition", "uptake", "bounds"
+            "media",
+            "medium",
+            "growth",
+            "nutrients",
+            "feed",
+            "supplement",
+            "composition",
+            "uptake",
+            "bounds",
         },
         "model": {
-            "model", "build", "construct", "create", "genome", "fasta",
-            "template", "reconstruction", "draft", "list models", "delete"
+            "model",
+            "build",
+            "construct",
+            "create",
+            "genome",
+            "fasta",
+            "template",
+            "reconstruction",
+            "draft",
+            "list models",
+            "delete",
         },
         "analysis": {
-            "gapfill", "gap", "fill", "fba", "flux", "balance", "analysis",
-            "simulate", "growth rate", "optimize", "objective"
-        }
+            "gapfill",
+            "gap",
+            "fill",
+            "fba",
+            "flux",
+            "balance",
+            "analysis",
+            "simulate",
+            "growth rate",
+            "optimize",
+            "objective",
+        },
     }
 
     def __init__(self, max_tools: int = 6):
@@ -128,7 +155,7 @@ class ToolSelector:
         # Step 4: If still under limit, add database search tools
         if len(selected) < self.max_tools:
             search_tools = {"search_compounds", "search_reactions"} & available_tools
-            selected.update(list(search_tools)[:self.max_tools - len(selected)])
+            selected.update(list(search_tools)[: self.max_tools - len(selected)])
 
         selected_list = list(selected)
         logger.info(f"Selected {len(selected_list)} tools: {selected_list}")
@@ -148,7 +175,7 @@ class ToolSelector:
         for category, keywords in self.CATEGORY_KEYWORDS.items():
             for keyword in keywords:
                 # Use word boundaries to avoid partial matches
-                pattern = r'\b' + re.escape(keyword) + r'\b'
+                pattern = r"\b" + re.escape(keyword) + r"\b"
                 if re.search(pattern, query_lower):
                     detected.add(category)
                     break  # One match is enough for this category

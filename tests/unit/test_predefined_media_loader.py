@@ -21,17 +21,9 @@ SAMPLE_MEDIA = {
     "name": "test_media",
     "description": "Test media for unit tests",
     "compounds": {
-        "cpd00027": {
-            "name": "D-Glucose",
-            "bounds": [-5.0, 100.0],
-            "comment": "Carbon source"
-        },
-        "cpd00007": {
-            "name": "O2",
-            "bounds": [-10.0, 100.0],
-            "comment": "Oxygen"
-        }
-    }
+        "cpd00027": {"name": "D-Glucose", "bounds": [-5.0, 100.0], "comment": "Carbon source"},
+        "cpd00007": {"name": "O2", "bounds": [-10.0, 100.0], "comment": "Oxygen"},
+    },
 }
 
 
@@ -57,14 +49,14 @@ class TestLoadPredefinedMedia:
                 "cpd00027": {  # No _e0 suffix
                     "name": "D-Glucose",
                     "bounds": [-5.0, 100.0],
-                    "comment": "Carbon source"
+                    "comment": "Carbon source",
                 },
                 "cpd00007": {  # No _e0 suffix
                     "name": "O2",
                     "bounds": [-10.0, 100.0],
-                    "comment": "Oxygen"
-                }
-            }
+                    "comment": "Oxygen",
+                },
+            },
         }
 
         media_file = media_dir / "test_media.json"

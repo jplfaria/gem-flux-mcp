@@ -66,6 +66,7 @@ logger = get_logger(__name__)
 def _get_next_steps_run_fba() -> list[str]:
     """Get next_steps from centralized prompt."""
     from gem_flux_mcp.prompts import render_prompt
+
     next_steps_text = render_prompt("next_steps/run_fba")
     return [
         line.strip()[2:].strip()
@@ -190,9 +191,7 @@ def extract_fluxes(
 
     # Filter by threshold
     significant_fluxes = {
-        rxn_id: flux
-        for rxn_id, flux in all_fluxes.items()
-        if abs(flux) > flux_threshold
+        rxn_id: flux for rxn_id, flux in all_fluxes.items() if abs(flux) > flux_threshold
     }
 
     # Separate exchange reactions
@@ -245,12 +244,14 @@ def extract_fluxes(
         reaction_name = get_reaction_name_safe(db_index, rxn_id)
         direction = "forward" if flux > 0 else "reverse"
 
-        top_fluxes.append({
-            "reaction_id": rxn_id,
-            "reaction_name": reaction_name,
-            "flux": round(flux, 6),
-            "direction": direction,
-        })
+        top_fluxes.append(
+            {
+                "reaction_id": rxn_id,
+                "reaction_name": reaction_name,
+                "flux": round(flux, 6),
+                "direction": direction,
+            }
+        )
 
     return {
         "fluxes": {k: round(v, 6) for k, v in significant_fluxes.items()},
@@ -458,12 +459,15 @@ def run_fba(
                 "metabolism_type": metabolism_type,
                 "carbon_source": main_carbon if main_carbon else "Unknown",
                 "growth_assessment": (
-                    "Fast growth" if growth_rate > 0.5 else
-                    "Moderate growth" if growth_rate > 0.1 else
-                    "Slow growth" if growth_rate > 0.01 else
-                    "Very slow growth"
+                    "Fast growth"
+                    if growth_rate > 0.5
+                    else "Moderate growth"
+                    if growth_rate > 0.1
+                    else "Slow growth"
+                    if growth_rate > 0.01
+                    else "Very slow growth"
                 ),
-                "model_status": "Model is viable and can grow in specified media"
+                "model_status": "Model is viable and can grow in specified media",
             },
             "next_steps": _get_next_steps_run_fba(),
             "active_reactions": flux_data["active_reactions"],

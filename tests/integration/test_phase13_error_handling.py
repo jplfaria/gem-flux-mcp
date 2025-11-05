@@ -98,6 +98,7 @@ def mock_db_index():
 # Test 1: JSON-RPC Error Code Compliance
 # ============================================================================
 
+
 def test_jsonrpc_error_compliance():
     """Test all errors follow JSON-RPC 2.0 format.
 
@@ -125,6 +126,7 @@ def test_jsonrpc_error_compliance():
 # ============================================================================
 # Test 2: Invalid Model ID Handling
 # ============================================================================
+
 
 def test_invalid_model_id_handling():
     """Test error handling for invalid model_id references.
@@ -162,6 +164,7 @@ def test_invalid_model_id_handling():
 # Test 3: Missing Database Handling (via empty lists)
 # ============================================================================
 
+
 def test_missing_database_handling():
     """Test error handling for empty session storage.
 
@@ -186,6 +189,7 @@ def test_missing_database_handling():
 # Test 4: Gapfill Failure Recovery (via missing model)
 # ============================================================================
 
+
 def test_gapfill_failure_recovery():
     """Test that gapfilling errors contain helpful recovery information.
 
@@ -202,8 +206,7 @@ def test_gapfill_failure_recovery():
 
     try:
         raise model_not_found_error(
-            model_id="model_missing.draft",
-            available_models=available_models
+            model_id="model_missing.draft", available_models=available_models
         )
     except NotFoundError as e:
         # Verify exception contains helpful information
@@ -217,6 +220,7 @@ def test_gapfill_failure_recovery():
 # ============================================================================
 # Test 5: Error Message Quality
 # ============================================================================
+
 
 def test_error_message_quality():
     """Test that error messages are helpful and actionable.
@@ -239,6 +243,7 @@ def test_error_message_quality():
 # ============================================================================
 # Test 6: Error Recovery Workflow
 # ============================================================================
+
 
 def test_error_recovery_workflow():
     """Test that errors allow graceful recovery.
@@ -275,6 +280,7 @@ def test_error_recovery_workflow():
 # Test 7: Multiple Error Types in Single Session
 # ============================================================================
 
+
 def test_multiple_error_types():
     """Test handling multiple different error types in one session.
 
@@ -306,6 +312,7 @@ def test_multiple_error_types():
 # ============================================================================
 # Test 8: Error Details Structure
 # ============================================================================
+
 
 def test_error_details_structure():
     """Test that error details contain useful diagnostic information.
@@ -344,6 +351,7 @@ def test_error_details_structure():
 # Test 9: Validation Error Structure
 # ============================================================================
 
+
 def test_validation_error_structure():
     """Test validation errors have proper structure.
 
@@ -358,7 +366,7 @@ def test_validation_error_structure():
         message="Missing required parameter",
         error_code="MISSING_PARAMETER",
         details={"parameter": "model_id"},
-        suggestions=["Provide a valid model_id"]
+        suggestions=["Provide a valid model_id"],
     )
 
     # Verify structure

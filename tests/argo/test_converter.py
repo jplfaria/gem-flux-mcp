@@ -28,19 +28,14 @@ class TestMCPToOpenAIConverter:
         tool.parameters = {
             "type": "object",
             "properties": {
-                "media_id": {
-                    "type": "string",
-                    "description": "Unique identifier for media"
-                },
+                "media_id": {"type": "string", "description": "Unique identifier for media"},
                 "compounds": {
                     "type": "array",
                     "description": "List of compound IDs",
-                    "items": {
-                        "type": "string"
-                    }
-                }
+                    "items": {"type": "string"},
+                },
             },
-            "required": ["media_id", "compounds"]
+            "required": ["media_id", "compounds"],
         }
         return tool
 
@@ -53,16 +48,10 @@ class TestMCPToOpenAIConverter:
         tool.parameters = {
             "type": "object",
             "properties": {
-                "compound_id": {
-                    "type": "string",
-                    "description": "Compound ID (e.g., cpd00027)"
-                },
-                "db_index": {
-                    "type": "object",
-                    "description": "Database index (internal)"
-                }
+                "compound_id": {"type": "string", "description": "Compound ID (e.g., cpd00027)"},
+                "db_index": {"type": "object", "description": "Database index (internal)"},
             },
-            "required": ["compound_id", "db_index"]
+            "required": ["compound_id", "db_index"],
         }
         return tool
 
@@ -75,25 +64,16 @@ class TestMCPToOpenAIConverter:
         tool.parameters = {
             "type": "object",
             "properties": {
-                "model_id": {
-                    "type": "string",
-                    "description": "Unique model identifier"
-                },
-                "genome": {
-                    "type": "string",
-                    "description": "FASTA genome sequence"
-                },
+                "model_id": {"type": "string", "description": "Unique model identifier"},
+                "genome": {"type": "string", "description": "FASTA genome sequence"},
                 "template_type": {
                     "type": "string",
                     "description": "Template type for reconstruction",
-                    "enum": ["GramNegative", "GramPositive", "Core"]
+                    "enum": ["GramNegative", "GramPositive", "Core"],
                 },
-                "templates": {
-                    "type": "object",
-                    "description": "Templates dictionary (internal)"
-                }
+                "templates": {"type": "object", "description": "Templates dictionary (internal)"},
             },
-            "required": ["model_id", "genome", "template_type", "templates"]
+            "required": ["model_id", "genome", "template_type", "templates"],
         }
         return tool
 
@@ -155,7 +135,7 @@ class TestMCPToOpenAIConverter:
         """Test converting multiple tools at once."""
         mcp_tools = {
             "build_media": mock_tool_simple,
-            "get_compound_name": mock_tool_with_internal_params
+            "get_compound_name": mock_tool_with_internal_params,
         }
 
         result = converter.convert_tools(mcp_tools)
@@ -180,7 +160,7 @@ class TestMCPToOpenAIConverter:
             "function": {
                 "name": "test",
                 "description": "test",
-                "parameters": {"type": "object", "properties": {}, "required": []}
+                "parameters": {"type": "object", "properties": {}, "required": []},
             }
         }
 
@@ -195,12 +175,10 @@ class TestMCPToOpenAIConverter:
                 "description": "test",
                 "parameters": {
                     "type": "object",
-                    "properties": {
-                        "param1": {"type": "string"}
-                    },
-                    "required": ["param1", "param2"]  # param2 doesn't exist
-                }
-            }
+                    "properties": {"param1": {"type": "string"}},
+                    "required": ["param1", "param2"],  # param2 doesn't exist
+                },
+            },
         }
 
         assert converter.validate_conversion([invalid_tool]) is False
@@ -211,11 +189,7 @@ class TestMCPToOpenAIConverter:
         tool.name = "test_tool"
         tool.description = None
         tool.__doc__ = "Test tool docstring\nSecond line"
-        tool.parameters = {
-            "type": "object",
-            "properties": {},
-            "required": []
-        }
+        tool.parameters = {"type": "object", "properties": {}, "required": []}
 
         result = converter.convert_tool("test_tool", tool)
 
@@ -250,11 +224,7 @@ class TestMCPToOpenAIConverter:
         good_tool = Mock()
         good_tool.name = "good_tool"
         good_tool.description = "Good tool"
-        good_tool.parameters = {
-            "type": "object",
-            "properties": {},
-            "required": []
-        }
+        good_tool.parameters = {"type": "object", "properties": {}, "required": []}
 
         bad_tool = Mock()
         bad_tool.name = "bad_tool"
@@ -263,10 +233,7 @@ class TestMCPToOpenAIConverter:
         bad_tool.__doc__ = None
 
         # Should only convert the good tool, skip the bad one
-        mcp_tools = {
-            "good_tool": good_tool,
-            "bad_tool": bad_tool
-        }
+        mcp_tools = {"good_tool": good_tool, "bad_tool": bad_tool}
 
         result = converter.convert_tools(mcp_tools)
 
@@ -287,18 +254,12 @@ class TestMCPToOpenAIConverter:
                     "type": "object",
                     "description": "Configuration object",
                     "properties": {
-                        "setting1": {
-                            "type": "string",
-                            "description": "First setting"
-                        },
-                        "setting2": {
-                            "type": "integer",
-                            "description": "Second setting"
-                        }
-                    }
+                        "setting1": {"type": "string", "description": "First setting"},
+                        "setting2": {"type": "integer", "description": "Second setting"},
+                    },
                 }
             },
-            "required": ["config"]
+            "required": ["config"],
         }
 
         result = converter.convert_tool("test_tool", tool)

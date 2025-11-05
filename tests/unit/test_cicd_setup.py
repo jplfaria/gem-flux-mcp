@@ -66,7 +66,7 @@ class TestCICDSetup:
             # Check required top-level fields
             assert "name" in data, f"{workflow_file.name} missing 'name' field"
             # YAML parses "on" as True (boolean), so check for either
-            assert ("on" in data or True in data), f"{workflow_file.name} missing 'on' field"
+            assert "on" in data or True in data, f"{workflow_file.name} missing 'on' field"
             assert "jobs" in data, f"{workflow_file.name} missing 'jobs' field"
 
             # Check that jobs is not empty
@@ -198,9 +198,9 @@ class TestCICDSetup:
                 content = f.read()
 
             # Check for UV setup action
-            assert (
-                "astral-sh/setup-uv@v3" in content
-            ), f"{workflow_file.name} doesn't use UV setup action"
+            assert "astral-sh/setup-uv@v3" in content, (
+                f"{workflow_file.name} doesn't use UV setup action"
+            )
 
             # Check for UV commands
             assert "uv sync" in content or "uv run" in content or "uv build" in content, (
@@ -220,9 +220,7 @@ class TestCICDSetup:
                 content = f.read()
 
             # Check for Python 3.11 reference
-            assert (
-                "3.11" in content
-            ), f"{workflow_file.name} doesn't specify Python 3.11"
+            assert "3.11" in content, f"{workflow_file.name} doesn't specify Python 3.11"
 
     def test_ci_workflow_runs_tests(self, workflows_dir: Path):
         """Test that CI workflow runs pytest."""
@@ -327,14 +325,14 @@ class TestWorkflowQuality:
 
             # Check for common actions
             if "actions/checkout" in content:
-                assert (
-                    "actions/checkout@v4" in content
-                ), f"{workflow_file.name} doesn't pin checkout action version"
+                assert "actions/checkout@v4" in content, (
+                    f"{workflow_file.name} doesn't pin checkout action version"
+                )
 
             if "astral-sh/setup-uv" in content:
-                assert (
-                    "astral-sh/setup-uv@v3" in content
-                ), f"{workflow_file.name} doesn't pin UV setup action version"
+                assert "astral-sh/setup-uv@v3" in content, (
+                    f"{workflow_file.name} doesn't pin UV setup action version"
+                )
 
     def test_workflows_have_job_names(self, workflows_dir: Path):
         """Test that all jobs have descriptive names."""
@@ -343,8 +341,6 @@ class TestWorkflowQuality:
                 data = yaml.safe_load(f)
 
             for job_id, job_data in data["jobs"].items():
-                assert (
-                    "name" in job_data
-                ), f"Job '{job_id}' in {workflow_file.name} has no name"
+                assert "name" in job_data, f"Job '{job_id}' in {workflow_file.name} has no name"
                 name = job_data["name"]
                 assert len(name) > 0, f"Job '{job_id}' in {workflow_file.name} has empty name"

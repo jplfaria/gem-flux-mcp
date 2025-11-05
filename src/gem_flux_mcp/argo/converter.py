@@ -33,7 +33,7 @@ class MCPToOpenAIConverter:
     # Internal parameters to exclude from LLM-visible schema
     INTERNAL_PARAMS = {
         "db_index",  # Database index passed by wrapper
-        "templates", # Templates dict passed by wrapper
+        "templates",  # Templates dict passed by wrapper
         # Add more as needed
     }
 
@@ -111,8 +111,8 @@ class MCPToOpenAIConverter:
             "function": {
                 "name": tool_name,
                 "description": description,
-                "parameters": openai_parameters
-            }
+                "parameters": openai_parameters,
+            },
         }
 
     def _get_tool_description(self, tool_obj: Any) -> str:
@@ -125,13 +125,13 @@ class MCPToOpenAIConverter:
             Tool description string
         """
         # FastMCP tools have description attribute
-        if hasattr(tool_obj, 'description') and tool_obj.description:
+        if hasattr(tool_obj, "description") and tool_obj.description:
             return tool_obj.description
 
         # Fallback to docstring if available
-        if hasattr(tool_obj, '__doc__') and tool_obj.__doc__:
+        if hasattr(tool_obj, "__doc__") and tool_obj.__doc__:
             # Take first line of docstring
-            return tool_obj.__doc__.strip().split('\n')[0]
+            return tool_obj.__doc__.strip().split("\n")[0]
 
         # Last resort
         return f"Execute {getattr(tool_obj, 'name', 'tool')}"
@@ -146,15 +146,11 @@ class MCPToOpenAIConverter:
             Parameter schema dictionary (MCP format)
         """
         # FastMCP tools have parameters attribute (JSON schema)
-        if hasattr(tool_obj, 'parameters') and tool_obj.parameters:
+        if hasattr(tool_obj, "parameters") and tool_obj.parameters:
             return tool_obj.parameters
 
         # Return empty schema if no parameters
-        return {
-            "type": "object",
-            "properties": {},
-            "required": []
-        }
+        return {"type": "object", "properties": {}, "required": []}
 
     def _convert_parameters(self, mcp_params: Dict[str, Any]) -> Dict[str, Any]:
         """Convert MCP parameter schema to OpenAI format.
@@ -172,11 +168,7 @@ class MCPToOpenAIConverter:
             OpenAI-compatible parameter schema
         """
         # Start with base structure
-        openai_params = {
-            "type": "object",
-            "properties": {},
-            "required": []
-        }
+        openai_params = {"type": "object", "properties": {}, "required": []}
 
         # Get properties and required list
         properties = mcp_params.get("properties", {})
@@ -186,14 +178,11 @@ class MCPToOpenAIConverter:
         for param_name, param_schema in properties.items():
             if param_name not in self.INTERNAL_PARAMS:
                 # Copy parameter schema (preserving description, enum, etc.)
-                openai_params["properties"][param_name] = self._copy_parameter_schema(
-                    param_schema
-                )
+                openai_params["properties"][param_name] = self._copy_parameter_schema(param_schema)
 
         # Filter required list - remove internal parameters
         openai_params["required"] = [
-            param for param in required
-            if param not in self.INTERNAL_PARAMS
+            param for param in required if param not in self.INTERNAL_PARAMS
         ]
 
         return openai_params
@@ -213,10 +202,7 @@ class MCPToOpenAIConverter:
         for key, value in param_schema.items():
             # Handle nested objects/arrays recursively if needed
             if key == "properties" and isinstance(value, dict):
-                copied[key] = {
-                    k: self._copy_parameter_schema(v)
-                    for k, v in value.items()
-                }
+                copied[key] = {k: self._copy_parameter_schema(v) for k, v in value.items()}
             elif key == "items" and isinstance(value, dict):
                 copied[key] = self._copy_parameter_schema(value)
             else:
@@ -261,8 +247,9 @@ class MCPToOpenAIConverter:
 
                 # Verify required params exist in properties
                 for req_param in params["required"]:
-                    assert req_param in params["properties"], \
+                    assert req_param in params["properties"], (
                         f"Required parameter '{req_param}' not in properties"
+                    )
 
             logger.info(f"Validated {len(openai_tools)} OpenAI tools")
             return True

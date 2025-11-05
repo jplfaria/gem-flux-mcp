@@ -42,7 +42,7 @@ def argo_client(mcp_server):
         mcp_server=mcp_server,
         argo_base_url="http://localhost:8000/v1",
         model="argo:gpt-4o",
-        max_tools_per_call=6
+        max_tools_per_call=6,
     )
 
     # Mock the OpenAI client to avoid actual API calls
@@ -79,7 +79,7 @@ async def test_client_initialization(argo_client, mcp_server):
         "search_reactions",
         "list_models",
         "delete_model",
-        "list_media"
+        "list_media",
     }
     assert expected_tools.issubset(set(argo_client.mcp_tools.keys()))
 
@@ -178,10 +178,7 @@ async def test_execute_sync_tool(argo_client):
     await argo_client.initialize()
 
     # Execute sync tool (get_compound_name)
-    result = await argo_client._execute_tool(
-        "get_compound_name",
-        {"compound_id": "cpd00027"}
-    )
+    result = await argo_client._execute_tool("get_compound_name", {"compound_id": "cpd00027"})
 
     # Verify result
     assert "success" in result
@@ -197,12 +194,9 @@ async def test_execute_async_tool(argo_client):
     await argo_client.initialize()
 
     # build_model is async, but we'll mock it to avoid long execution
-    with patch('gem_flux_mcp.mcp_tools.build_model') as mock_build_model:
+    with patch("gem_flux_mcp.mcp_tools.build_model") as mock_build_model:
         # Setup mock
-        mock_fn = AsyncMock(return_value={
-            "success": True,
-            "model_id": "test_model"
-        })
+        mock_fn = AsyncMock(return_value={"success": True, "model_id": "test_model"})
         mock_build_model.fn = mock_fn
 
         # Execute async tool
@@ -211,8 +205,8 @@ async def test_execute_async_tool(argo_client):
             {
                 "protein_sequences": ["MKLAVLGL"],
                 "model_id": "test_model",
-                "template": "GramNegative"
-            }
+                "template": "GramNegative",
+            },
         )
 
         # Since we're mocking, this will fail. Let's just test the error handling
@@ -226,10 +220,7 @@ async def test_execute_tool_error_handling(argo_client):
 
     # Try to execute tool with invalid arguments
     with pytest.raises(RuntimeError, match="Tool execution failed"):
-        await argo_client._execute_tool(
-            "get_compound_name",
-            {"invalid_arg": "value"}
-        )
+        await argo_client._execute_tool("get_compound_name", {"invalid_arg": "value"})
 
 
 # =============================================================================
@@ -250,9 +241,9 @@ async def test_chat_with_database_lookup_mocked(argo_client):
     mock_response.choices[0].message.tool_calls[0].id = "call_123"
     mock_response.choices[0].message.tool_calls[0].function = Mock()
     mock_response.choices[0].message.tool_calls[0].function.name = "get_compound_name"
-    mock_response.choices[0].message.tool_calls[0].function.arguments = json.dumps({
-        "compound_id": "cpd00027"
-    })
+    mock_response.choices[0].message.tool_calls[0].function.arguments = json.dumps(
+        {"compound_id": "cpd00027"}
+    )
 
     # Second response (final answer after tool call)
     mock_final_response = Mock()
@@ -292,10 +283,7 @@ async def test_conversation_history_management(argo_client):
     assert len(argo_client.get_conversation_history()) == 0
 
     # Add a message
-    argo_client.messages.append({
-        "role": "user",
-        "content": "Test message"
-    })
+    argo_client.messages.append({"role": "user", "content": "Test message"})
 
     assert len(argo_client.get_conversation_history()) == 1
 
@@ -320,9 +308,9 @@ async def test_max_tool_calls_limit(argo_client):
     mock_response.choices[0].message.tool_calls[0].id = "call_123"
     mock_response.choices[0].message.tool_calls[0].function = Mock()
     mock_response.choices[0].message.tool_calls[0].function.name = "get_compound_name"
-    mock_response.choices[0].message.tool_calls[0].function.arguments = json.dumps({
-        "compound_id": "cpd00027"
-    })
+    mock_response.choices[0].message.tool_calls[0].function.arguments = json.dumps(
+        {"compound_id": "cpd00027"}
+    )
 
     argo_client.openai_client.chat.completions.create = Mock(return_value=mock_response)
 
@@ -347,9 +335,7 @@ async def test_real_argo_database_lookup(mcp_server):
     """
     # Create client without mocking
     client = ArgoMCPClient(
-        mcp_server=mcp_server,
-        argo_base_url="http://localhost:8000/v1",
-        model="argo:gpt-4o"
+        mcp_server=mcp_server, argo_base_url="http://localhost:8000/v1", model="argo:gpt-4o"
     )
 
     await client.initialize()
@@ -357,8 +343,7 @@ async def test_real_argo_database_lookup(mcp_server):
     # Ask a simple question that requires database lookup
     try:
         response = await client.chat(
-            "What is the molecular formula of compound cpd00027?",
-            reset_history=True
+            "What is the molecular formula of compound cpd00027?", reset_history=True
         )
 
         # Verify response contains formula
@@ -377,25 +362,18 @@ async def test_real_argo_multi_turn_conversation(mcp_server):
     """
     # Create client without mocking
     client = ArgoMCPClient(
-        mcp_server=mcp_server,
-        argo_base_url="http://localhost:8000/v1",
-        model="argo:gpt-4o"
+        mcp_server=mcp_server, argo_base_url="http://localhost:8000/v1", model="argo:gpt-4o"
     )
 
     await client.initialize()
 
     try:
         # First question
-        response1 = await client.chat(
-            "What is the formula for cpd00027?",
-            reset_history=True
-        )
+        response1 = await client.chat("What is the formula for cpd00027?", reset_history=True)
         assert "C6H12O6" in response1 or "glucose" in response1.lower()
 
         # Second question with context
-        response2 = await client.chat(
-            "What is that compound's mass?"
-        )
+        response2 = await client.chat("What is that compound's mass?")
         assert "180" in response2  # Glucose mass
 
     except Exception as e:
@@ -410,6 +388,7 @@ async def test_real_argo_multi_turn_conversation(mcp_server):
 def test_get_available_tools(argo_client):
     """Test get_available_tools returns correct tool list."""
     import asyncio
+
     asyncio.run(argo_client.initialize())
 
     tools = argo_client.get_available_tools()

@@ -160,9 +160,7 @@ class TestAminoAcidValidation:
 
     def test_invalid_characters_x_and_asterisk(self):
         """Test detection of invalid characters X and *."""
-        is_valid, invalid_chars = validate_amino_acid_sequence(
-            "prot_001", "MKLVINLXVGNS*"
-        )
+        is_valid, invalid_chars = validate_amino_acid_sequence("prot_001", "MKLVINLXVGNS*")
 
         assert is_valid is False
         assert len(invalid_chars) == 2
@@ -180,9 +178,7 @@ class TestAminoAcidValidation:
 
     def test_invalid_character_b(self):
         """Test detection of ambiguous amino acid B."""
-        is_valid, invalid_chars = validate_amino_acid_sequence(
-            "prot_001", "MKLBINLV"
-        )
+        is_valid, invalid_chars = validate_amino_acid_sequence("prot_001", "MKLBINLV")
 
         assert is_valid is False
         assert ("B", 3) in invalid_chars
@@ -223,10 +219,12 @@ class TestProteinSequencesValidation:
     def test_empty_sequence_error(self):
         """Test error when sequence is empty."""
         with pytest.raises(ValidationError) as exc_info:
-            validate_protein_sequences({
-                "prot_001": "",
-                "prot_002": "MKLVINLV",
-            })
+            validate_protein_sequences(
+                {
+                    "prot_001": "",
+                    "prot_002": "MKLVINLV",
+                }
+            )
 
         error = exc_info.value
         assert error.error_code == "INVALID_AMINO_ACIDS"

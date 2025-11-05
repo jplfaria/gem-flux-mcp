@@ -44,7 +44,9 @@ def mock_model():
     # Create Mock for reactions that supports both iteration and 'in' operator
     reactions_mock = Mock()
     reactions_mock.__iter__ = Mock(return_value=iter(mock_reactions_list))
-    reactions_mock.__contains__ = Mock(side_effect=lambda x: x in [r.id for r in mock_reactions_list])
+    reactions_mock.__contains__ = Mock(
+        side_effect=lambda x: x in [r.id for r in mock_reactions_list]
+    )
     reactions_mock.append = Mock(side_effect=mock_reactions_list.append)
     model.reactions = reactions_mock
 
@@ -86,11 +88,13 @@ def mock_template():
     # Mock reactions.get_by_id
     mock_reaction = Mock()
     mock_reaction.id = "rxn00001_c"
-    mock_reaction.to_reaction = Mock(return_value=Mock(
-        id="rxn00001_c0",
-        lower_bound=0,
-        upper_bound=1000,
-    ))
+    mock_reaction.to_reaction = Mock(
+        return_value=Mock(
+            id="rxn00001_c0",
+            lower_bound=0,
+            upper_bound=1000,
+        )
+    )
 
     template.reactions.get_by_id = Mock(return_value=mock_reaction)
     template.reactions.__contains__ = Mock(return_value=True)
@@ -101,14 +105,19 @@ def mock_template():
 @pytest.fixture
 def setup_storage(mock_model, mock_media):
     """Setup model and media storage."""
-    with patch("gem_flux_mcp.tools.gapfill_model.MODEL_STORAGE") as model_storage, \
-         patch("gem_flux_mcp.tools.gapfill_model.MEDIA_STORAGE") as media_storage:
-
-        model_storage.__getitem__ = Mock(side_effect=lambda k: mock_model if k == "model_001.draft" else None)
+    with (
+        patch("gem_flux_mcp.tools.gapfill_model.MODEL_STORAGE") as model_storage,
+        patch("gem_flux_mcp.tools.gapfill_model.MEDIA_STORAGE") as media_storage,
+    ):
+        model_storage.__getitem__ = Mock(
+            side_effect=lambda k: mock_model if k == "model_001.draft" else None
+        )
         model_storage.__contains__ = Mock(side_effect=lambda k: k == "model_001.draft")
         model_storage.keys = Mock(return_value=["model_001.draft"])
 
-        media_storage.__getitem__ = Mock(side_effect=lambda k: mock_media if k == "media_001" else None)
+        media_storage.__getitem__ = Mock(
+            side_effect=lambda k: mock_media if k == "media_001" else None
+        )
         media_storage.__contains__ = Mock(side_effect=lambda k: k == "media_001")
         media_storage.keys = Mock(return_value=["media_001"])
 
@@ -124,10 +133,11 @@ def test_validate_gapfill_inputs_success(setup_storage):
     """Test successful validation."""
     model_storage, media_storage = setup_storage
 
-    with patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True), \
-         patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True), \
-         patch("gem_flux_mcp.tools.gapfill_model.retrieve_model") as mock_retrieve:
-
+    with (
+        patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True),
+        patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True),
+        patch("gem_flux_mcp.tools.gapfill_model.retrieve_model") as mock_retrieve,
+    ):
         # Setup model with biomass
         mock_model = Mock()
         bio_rxn = Mock()
@@ -146,9 +156,10 @@ def test_validate_gapfill_inputs_success(setup_storage):
 
 def test_validate_gapfill_inputs_model_not_found():
     """Test validation fails when model not found."""
-    with patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=False), \
-         patch("gem_flux_mcp.tools.gapfill_model.MODEL_STORAGE", {"other_model": Mock()}):
-
+    with (
+        patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=False),
+        patch("gem_flux_mcp.tools.gapfill_model.MODEL_STORAGE", {"other_model": Mock()}),
+    ):
         with pytest.raises(NotFoundError) as exc_info:
             validate_gapfill_inputs(
                 model_id="nonexistent",
@@ -163,10 +174,11 @@ def test_validate_gapfill_inputs_model_not_found():
 
 def test_validate_gapfill_inputs_media_not_found():
     """Test validation fails when media not found."""
-    with patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True), \
-         patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=False), \
-         patch("gem_flux_mcp.tools.gapfill_model.MEDIA_STORAGE", {"other_media": Mock()}):
-
+    with (
+        patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True),
+        patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=False),
+        patch("gem_flux_mcp.tools.gapfill_model.MEDIA_STORAGE", {"other_media": Mock()}),
+    ):
         with pytest.raises(NotFoundError) as exc_info:
             validate_gapfill_inputs(
                 model_id="model_001.draft",
@@ -181,9 +193,10 @@ def test_validate_gapfill_inputs_media_not_found():
 
 def test_validate_gapfill_inputs_negative_growth_rate():
     """Test validation fails with negative growth rate."""
-    with patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True), \
-         patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True):
-
+    with (
+        patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True),
+        patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True),
+    ):
         with pytest.raises(ValidationError) as exc_info:
             validate_gapfill_inputs(
                 model_id="model_001.draft",
@@ -198,9 +211,10 @@ def test_validate_gapfill_inputs_negative_growth_rate():
 
 def test_validate_gapfill_inputs_zero_growth_rate():
     """Test validation fails with zero growth rate."""
-    with patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True), \
-         patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True):
-
+    with (
+        patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True),
+        patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True),
+    ):
         with pytest.raises(ValidationError) as exc_info:
             validate_gapfill_inputs(
                 model_id="model_001.draft",
@@ -214,9 +228,10 @@ def test_validate_gapfill_inputs_zero_growth_rate():
 
 def test_validate_gapfill_inputs_invalid_mode():
     """Test validation fails with invalid gapfill_mode."""
-    with patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True), \
-         patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True):
-
+    with (
+        patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True),
+        patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True),
+    ):
         with pytest.raises(ValidationError) as exc_info:
             validate_gapfill_inputs(
                 model_id="model_001.draft",
@@ -237,10 +252,11 @@ def test_validate_gapfill_inputs_no_biomass():
     (annotate_with_rast=False) and API correctness tests with empty models.
     ModelSEEDpy itself doesn't require biomass for gapfilling.
     """
-    with patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True), \
-         patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True), \
-         patch("gem_flux_mcp.tools.gapfill_model.retrieve_model") as mock_retrieve:
-
+    with (
+        patch("gem_flux_mcp.tools.gapfill_model.model_exists", return_value=True),
+        patch("gem_flux_mcp.tools.gapfill_model.media_exists", return_value=True),
+        patch("gem_flux_mcp.tools.gapfill_model.retrieve_model") as mock_retrieve,
+    ):
         # Model without biomass
         mock_model = Mock()
         mock_model.reactions = []  # No biomass reaction
@@ -310,7 +326,9 @@ def test_check_baseline_growth_sets_objective_correctly(mock_model, mock_media):
     mock_reactions_list = [bio_rxn, ex_rxn1, ex_rxn2]
     mock_reactions = Mock()
     mock_reactions.__iter__ = Mock(return_value=iter(mock_reactions_list))
-    mock_reactions.__contains__ = Mock(side_effect=lambda x: x in [r.id for r in mock_reactions_list])
+    mock_reactions.__contains__ = Mock(
+        side_effect=lambda x: x in [r.id for r in mock_reactions_list]
+    )
     mock_model.reactions = mock_reactions
 
     # Mock successful optimization
@@ -333,10 +351,12 @@ def test_check_baseline_growth_uses_shared_media_utility(mock_model, mock_media)
     """
 
     # Mock MSMedia.get_media_constraints
-    mock_media.get_media_constraints = Mock(return_value={
-        "cpd00027_e0": (-5.0, 100.0),  # Glucose
-        "cpd00007_e0": (-10.0, 100.0),  # Oxygen
-    })
+    mock_media.get_media_constraints = Mock(
+        return_value={
+            "cpd00027_e0": (-5.0, 100.0),  # Glucose
+            "cpd00007_e0": (-10.0, 100.0),  # Oxygen
+        }
+    )
 
     # Create mock reactions for iteration
     mock_reactions = []
@@ -369,7 +389,7 @@ def test_check_baseline_growth_uses_shared_media_utility(mock_model, mock_media)
     mock_media.get_media_constraints.assert_called_once()
 
     # Verify model.medium was set (shared utility pattern)
-    assert hasattr(mock_model, 'medium')
+    assert hasattr(mock_model, "medium")
 
     # Verify growth rate returned
     assert growth_rate == 0.75
@@ -406,7 +426,9 @@ def test_integrate_gapfill_solution_new_reactions(mock_template):
         "reversed": {},
     }
 
-    with patch("gem_flux_mcp.tools.gapfill_model.get_reaction_constraints_from_direction") as mock_bounds:
+    with patch(
+        "gem_flux_mcp.tools.gapfill_model.get_reaction_constraints_from_direction"
+    ) as mock_bounds:
         mock_bounds.side_effect = [(0, 1000), (-1000, 0)]
 
         added = integrate_gapfill_solution(mock_model, mock_template, solution)
@@ -455,7 +477,9 @@ def test_integrate_gapfill_solution_with_exchanges(mock_template):
 
     # Mock MSBuilder.add_exchanges_to_model (imported inside function)
     with patch("modelseedpy.core.msbuilder.MSBuilder") as mock_msbuilder:
-        with patch("gem_flux_mcp.tools.gapfill_model.get_reaction_constraints_from_direction") as mock_bounds:
+        with patch(
+            "gem_flux_mcp.tools.gapfill_model.get_reaction_constraints_from_direction"
+        ) as mock_bounds:
             # Return bounds for: oxygen exchange, internal reaction
             mock_bounds.side_effect = [(0, 1000), (0, 1000)]
 
@@ -463,9 +487,7 @@ def test_integrate_gapfill_solution_with_exchanges(mock_template):
 
     # Verify MSBuilder.add_exchanges_to_model was called once
     # Note: Implementation uses extra_cell='e0' to specify compartment
-    mock_msbuilder.add_exchanges_to_model.assert_called_once_with(
-        mock_model, extra_cell='e0'
-    )
+    mock_msbuilder.add_exchanges_to_model.assert_called_once_with(mock_model, extra_cell="e0")
 
     # Verify exchange reactions were added to results
     exchange_ids = [r["id"] for r in added if r["id"].startswith("EX_")]
@@ -489,10 +511,12 @@ def test_enrich_reaction_metadata_success():
     ]
 
     mock_db = Mock()
-    mock_db.get_reaction_by_id = Mock(side_effect=[
-        {"name": "hexokinase", "equation": "glucose + ATP => G6P + ADP"},
-        {"name": "phosphofructokinase", "equation": "F6P + ATP => FBP + ADP"},
-    ])
+    mock_db.get_reaction_by_id = Mock(
+        side_effect=[
+            {"name": "hexokinase", "equation": "glucose + ATP => G6P + ADP"},
+            {"name": "phosphofructokinase", "equation": "F6P + ATP => FBP + ADP"},
+        ]
+    )
 
     enriched = enrich_reaction_metadata(reactions, mock_db)
 
@@ -547,14 +571,18 @@ def test_gapfill_model_already_meets_target(setup_storage):
     """Test gapfilling when model already meets target growth."""
     model_storage, media_storage = setup_storage
 
-    with patch("gem_flux_mcp.tools.gapfill_model.validate_gapfill_inputs"), \
-         patch("gem_flux_mcp.tools.gapfill_model.retrieve_model") as mock_retrieve_model, \
-         patch("gem_flux_mcp.tools.gapfill_model.retrieve_media") as mock_retrieve_media, \
-         patch("gem_flux_mcp.tools.gapfill_model.check_baseline_growth", return_value=0.5), \
-         patch("gem_flux_mcp.tools.gapfill_model.transform_state_suffix", return_value="model_001.draft.gf"), \
-         patch("gem_flux_mcp.tools.gapfill_model.store_model") as mock_store, \
-         patch("copy.deepcopy") as mock_deepcopy:
-
+    with (
+        patch("gem_flux_mcp.tools.gapfill_model.validate_gapfill_inputs"),
+        patch("gem_flux_mcp.tools.gapfill_model.retrieve_model") as mock_retrieve_model,
+        patch("gem_flux_mcp.tools.gapfill_model.retrieve_media") as mock_retrieve_media,
+        patch("gem_flux_mcp.tools.gapfill_model.check_baseline_growth", return_value=0.5),
+        patch(
+            "gem_flux_mcp.tools.gapfill_model.transform_state_suffix",
+            return_value="model_001.draft.gf",
+        ),
+        patch("gem_flux_mcp.tools.gapfill_model.store_model") as mock_store,
+        patch("copy.deepcopy") as mock_deepcopy,
+    ):
         mock_model = Mock()
         mock_model.reactions = [Mock()]
         mock_model.metabolites = [Mock()]
@@ -593,19 +621,23 @@ def test_gapfill_model_full_workflow(setup_storage):
 
     mock_db = Mock()
 
-    with patch("gem_flux_mcp.tools.gapfill_model.validate_gapfill_inputs"), \
-         patch("gem_flux_mcp.tools.gapfill_model.retrieve_model") as mock_retrieve_model, \
-         patch("gem_flux_mcp.tools.gapfill_model.retrieve_media") as mock_retrieve_media, \
-         patch("gem_flux_mcp.tools.gapfill_model.check_baseline_growth") as mock_baseline, \
-         patch("gem_flux_mcp.tools.gapfill_model.get_template") as mock_get_template, \
-         patch("gem_flux_mcp.tools.gapfill_model.run_atp_correction") as mock_atp, \
-         patch("gem_flux_mcp.tools.gapfill_model.run_genome_scale_gapfilling") as mock_gapfill, \
-         patch("gem_flux_mcp.tools.gapfill_model.integrate_gapfill_solution") as mock_integrate, \
-         patch("gem_flux_mcp.tools.gapfill_model.enrich_reaction_metadata") as mock_enrich, \
-         patch("gem_flux_mcp.tools.gapfill_model.transform_state_suffix", return_value="model_001.draft.gf"), \
-         patch("gem_flux_mcp.tools.gapfill_model.store_model"), \
-         patch("copy.deepcopy") as mock_deepcopy:
-
+    with (
+        patch("gem_flux_mcp.tools.gapfill_model.validate_gapfill_inputs"),
+        patch("gem_flux_mcp.tools.gapfill_model.retrieve_model") as mock_retrieve_model,
+        patch("gem_flux_mcp.tools.gapfill_model.retrieve_media") as mock_retrieve_media,
+        patch("gem_flux_mcp.tools.gapfill_model.check_baseline_growth") as mock_baseline,
+        patch("gem_flux_mcp.tools.gapfill_model.get_template") as mock_get_template,
+        patch("gem_flux_mcp.tools.gapfill_model.run_atp_correction") as mock_atp,
+        patch("gem_flux_mcp.tools.gapfill_model.run_genome_scale_gapfilling") as mock_gapfill,
+        patch("gem_flux_mcp.tools.gapfill_model.integrate_gapfill_solution") as mock_integrate,
+        patch("gem_flux_mcp.tools.gapfill_model.enrich_reaction_metadata") as mock_enrich,
+        patch(
+            "gem_flux_mcp.tools.gapfill_model.transform_state_suffix",
+            return_value="model_001.draft.gf",
+        ),
+        patch("gem_flux_mcp.tools.gapfill_model.store_model"),
+        patch("copy.deepcopy") as mock_deepcopy,
+    ):
         # Setup mocks
         mock_model = Mock()
         mock_model.reactions = [Mock()]

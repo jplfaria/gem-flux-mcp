@@ -135,9 +135,7 @@ class TestApplyMediaToModel:
 
         # Create mock MSMedia
         media = Mock()
-        media.get_media_constraints = Mock(
-            return_value={"cpd00027_e0": (-5.0, 100.0)}
-        )
+        media.get_media_constraints = Mock(return_value={"cpd00027_e0": (-5.0, 100.0)})
 
         # Apply media - should raise ValueError
         with pytest.raises(ValueError, match="no exchange reactions matched"):
@@ -146,11 +144,9 @@ class TestApplyMediaToModel:
     def test_math_fabs_conversion(self):
         """Test that negative lower bounds are converted to positive uptake rates."""
         # Create mock model with exchange reactions
-        model = create_mock_model_with_exchanges([
-            "EX_cpd00027_e0",
-            "EX_cpd00007_e0",
-            "EX_cpd00001_e0"
-        ])
+        model = create_mock_model_with_exchanges(
+            ["EX_cpd00027_e0", "EX_cpd00007_e0", "EX_cpd00001_e0"]
+        )
 
         # Create mock MSMedia with various bounds
         media = Mock()
@@ -201,9 +197,7 @@ class TestApplyMediaToModel:
 
         # Create mock MSMedia with c0 compartment
         media = Mock()
-        media.get_media_constraints = Mock(
-            return_value={"cpd00027_c0": (-5.0, 100.0)}
-        )
+        media.get_media_constraints = Mock(return_value={"cpd00027_c0": (-5.0, 100.0)})
 
         # Apply media with custom compartment
         apply_media_to_model(model, media, compartment="c0")

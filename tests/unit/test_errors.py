@@ -600,7 +600,9 @@ class TestJsonRpcCompliance:
         ]
 
         for error_class, expected_code in error_classes:
-            error = error_class("test", "TEST") if error_class != ServerError else error_class("test")
+            error = (
+                error_class("test", "TEST") if error_class != ServerError else error_class("test")
+            )
             assert error.jsonrpc_error_code == expected_code
             # All codes should be negative integers in range -32768 to -32000 or standard codes
             assert isinstance(error.jsonrpc_error_code, int)

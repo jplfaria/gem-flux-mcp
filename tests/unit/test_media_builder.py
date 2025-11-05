@@ -81,8 +81,7 @@ class TestBuildMediaRequestValidation:
             BuildMediaRequest(compounds=[])
 
         error_msg = str(exc_info.value)
-        assert ("cannot be empty" in error_msg.lower() or
-                "non-empty list" in error_msg.lower())
+        assert "cannot be empty" in error_msg.lower() or "non-empty list" in error_msg.lower()
 
     def test_invalid_compound_id_format_error(self):
         """Test error when compound ID has invalid format."""
@@ -110,9 +109,7 @@ class TestBuildMediaRequestValidation:
 
     def test_whitespace_trimming(self):
         """Test whitespace is trimmed from compound IDs."""
-        request = BuildMediaRequest(
-            compounds=[" cpd00027 ", "cpd00007", "  cpd00001"]
-        )
+        request = BuildMediaRequest(compounds=[" cpd00027 ", "cpd00007", "  cpd00001"])
 
         assert request.compounds == ["cpd00027", "cpd00007", "cpd00001"]
 
@@ -130,9 +127,7 @@ class TestBuildMediaRequestValidation:
     def test_invalid_bounds_values_error(self):
         """Test error when lower bound >= upper bound."""
         with pytest.raises(PydanticValidationError) as exc_info:
-            BuildMediaRequest(
-                compounds=["cpd00027"], custom_bounds={"cpd00027": (100, -5)}
-            )
+            BuildMediaRequest(compounds=["cpd00027"], custom_bounds={"cpd00027": (100, -5)})
 
         error_msg = str(exc_info.value)
         assert "lower" in error_msg.lower()
@@ -141,18 +136,14 @@ class TestBuildMediaRequestValidation:
     def test_bounds_equal_allowed(self):
         """Test equal bounds are allowed (for blocked exchange)."""
         # This should NOT raise an error - equal bounds are valid for blocked exchange
-        request = BuildMediaRequest(
-            compounds=["cpd00027"], custom_bounds={"cpd00027": (0, 0)}
-        )
+        request = BuildMediaRequest(compounds=["cpd00027"], custom_bounds={"cpd00027": (0, 0)})
 
         assert request.custom_bounds["cpd00027"] == (0.0, 0.0)
 
     def test_custom_bounds_not_in_compounds_error(self):
         """Test error when custom_bounds compound not in compounds list."""
         with pytest.raises(PydanticValidationError) as exc_info:
-            BuildMediaRequest(
-                compounds=["cpd00027"], custom_bounds={"cpd00007": (-10, 100)}
-            )
+            BuildMediaRequest(compounds=["cpd00027"], custom_bounds={"cpd00007": (-10, 100)})
 
         error_msg = str(exc_info.value)
         assert "not in media" in error_msg.lower()
@@ -219,9 +210,7 @@ class TestBuildMediaFunction:
         # Create 50 compound IDs
         compounds = [f"cpd{i:05d}" for i in range(1, 51)]
         # Filter to only existing compounds in mock
-        existing_compounds = [
-            cpd for cpd in compounds if db_index.compound_exists(cpd)
-        ]
+        existing_compounds = [cpd for cpd in compounds if db_index.compound_exists(cpd)]
 
         # If we don't have 50 compounds in mock, test with what we have
         # but label it correctly
@@ -303,7 +292,7 @@ class TestBuildMediaFunction:
         stored_media = retrieve_media(media_id)
         assert stored_media is not None
         # MSMedia object should have get_media_constraints method
-        assert hasattr(stored_media, 'get_media_constraints')
+        assert hasattr(stored_media, "get_media_constraints")
         # Verify we can get constraints (should have 2 compounds)
         constraints = stored_media.get_media_constraints()
         assert len(constraints) == 2

@@ -41,7 +41,10 @@ def mock_mstemplate():
     """Mock MSTemplate object."""
     template = Mock()
     template.reactions = [Mock(), Mock()]  # 2 reactions
-    template.compounds = [Mock(), Mock()]  # 2 compounds (templates use .compounds, not .metabolites)
+    template.compounds = [
+        Mock(),
+        Mock(),
+    ]  # 2 compounds (templates use .compounds, not .metabolites)
     template.compartments = ["c0", "e0", "p0"]
     template.version = "6.0"
     return template
@@ -63,21 +66,29 @@ def temp_template_dir(tmp_path):
 
     # Create GramNegative template
     gram_neg = template_dir / "GramNegModelTemplateV6.json"
-    gram_neg.write_text(json.dumps({
-        "id": "GramNegative",
-        "reactions": [{"id": "rxn1"}, {"id": "rxn2"}],
-        "metabolites": [{"id": "cpd1"}],
-        "compartments": ["c0", "e0", "p0"]
-    }))
+    gram_neg.write_text(
+        json.dumps(
+            {
+                "id": "GramNegative",
+                "reactions": [{"id": "rxn1"}, {"id": "rxn2"}],
+                "metabolites": [{"id": "cpd1"}],
+                "compartments": ["c0", "e0", "p0"],
+            }
+        )
+    )
 
     # Create Core template
     core = template_dir / "Core-V5.2.json"
-    core.write_text(json.dumps({
-        "id": "Core",
-        "reactions": [{"id": "rxn1"}],
-        "metabolites": [{"id": "cpd1"}],
-        "compartments": ["c0", "e0"]
-    }))
+    core.write_text(
+        json.dumps(
+            {
+                "id": "Core",
+                "reactions": [{"id": "rxn1"}],
+                "metabolites": [{"id": "cpd1"}],
+                "compartments": ["c0", "e0"],
+            }
+        )
+    )
 
     return template_dir
 
@@ -105,7 +116,7 @@ class TestValidateTemplate:
 
     def test_validate_template_no_reactions_attribute(self):
         """Test validation fails when template missing reactions attribute."""
-        template = Mock(spec=['compounds', 'compartments'])  # Templates use .compounds
+        template = Mock(spec=["compounds", "compartments"])  # Templates use .compounds
         template.compounds = [Mock()]  # Templates use .compounds, not .metabolites
         template.compartments = ["c0", "e0"]
 
@@ -129,7 +140,7 @@ class TestValidateTemplate:
 
     def test_validate_template_no_compounds_attribute(self):
         """Test validation fails when template missing compounds attribute."""
-        template = Mock(spec=['reactions', 'compartments'])
+        template = Mock(spec=["reactions", "compartments"])
         template.reactions = [Mock()]
         template.compartments = ["c0", "e0"]
 
@@ -153,7 +164,7 @@ class TestValidateTemplate:
 
     def test_validate_template_no_compartments_attribute(self):
         """Test validation fails when template missing compartments attribute."""
-        template = Mock(spec=['reactions', 'compounds'])  # Templates use .compounds
+        template = Mock(spec=["reactions", "compounds"])  # Templates use .compounds
         template.reactions = [Mock()]
         template.compounds = [Mock()]  # Templates use .compounds, not .metabolites
 
@@ -184,7 +195,7 @@ class TestLoadTemplate:
         template_path.write_text(json.dumps(mock_template_dict))
 
         # Mock MSTemplateBuilder
-        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+        with patch("gem_flux_mcp.templates.loader.MSTemplateBuilder") as MockBuilder:
             MockBuilder.from_dict.return_value = mock_template_builder
 
             template = load_template(template_path, "GramNegative")
@@ -221,7 +232,7 @@ class TestLoadTemplate:
         template_path.write_text(json.dumps(mock_template_dict))
 
         # Mock MSTemplateBuilder to raise exception
-        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+        with patch("gem_flux_mcp.templates.loader.MSTemplateBuilder") as MockBuilder:
             mock_builder = Mock()
             mock_builder.build.side_effect = Exception("Build failed")
             MockBuilder.from_dict.return_value = mock_builder
@@ -252,7 +263,7 @@ class TestLoadTemplate:
         template_path.write_text(json.dumps(mock_template_dict))
 
         # Mock MSTemplateBuilder to return template with no reactions
-        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+        with patch("gem_flux_mcp.templates.loader.MSTemplateBuilder") as MockBuilder:
             mock_builder = Mock()
             invalid_template = Mock()
             invalid_template.reactions = []  # No reactions
@@ -273,7 +284,7 @@ class TestLoadTemplate:
         template_path.write_text(json.dumps(mock_template_dict))
 
         # Mock MSTemplateBuilder to return template with no compounds
-        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+        with patch("gem_flux_mcp.templates.loader.MSTemplateBuilder") as MockBuilder:
             mock_builder = Mock()
             invalid_template = Mock()
             invalid_template.reactions = [Mock()]
@@ -294,7 +305,7 @@ class TestLoadTemplate:
         template_path.write_text(json.dumps(mock_template_dict))
 
         # Mock MSTemplateBuilder to return template with no compartments
-        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+        with patch("gem_flux_mcp.templates.loader.MSTemplateBuilder") as MockBuilder:
             mock_builder = Mock()
             invalid_template = Mock()
             invalid_template.reactions = [Mock()]
@@ -315,7 +326,7 @@ class TestLoadTemplates:
 
     def test_load_templates_success(self, temp_template_dir, mock_template_builder):
         """Test successful loading of all templates."""
-        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+        with patch("gem_flux_mcp.templates.loader.MSTemplateBuilder") as MockBuilder:
             MockBuilder.from_dict.return_value = mock_template_builder
 
             templates = load_templates(temp_template_dir)
@@ -354,14 +365,16 @@ class TestLoadTemplates:
         assert "Required template missing" in error_msg
         assert "GramNegative" in error_msg
 
-    def test_load_templates_optional_template_missing(self, temp_template_dir, mock_template_builder):
+    def test_load_templates_optional_template_missing(
+        self, temp_template_dir, mock_template_builder
+    ):
         """Test warning when optional template missing (but continues)."""
         # Clear cache to ensure clean state
         TEMPLATE_CACHE.clear()
 
         # Remove optional GramPositive template (already doesn't exist)
 
-        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+        with patch("gem_flux_mcp.templates.loader.MSTemplateBuilder") as MockBuilder:
             MockBuilder.from_dict.return_value = mock_template_builder
 
             templates = load_templates(temp_template_dir)
@@ -396,15 +409,16 @@ class TestLoadTemplates:
 
         # Either "Invalid JSON" (fails on first template) or
         # "No templates successfully loaded" (all templates fail)
-        assert ("Invalid JSON" in str(exc_info.value) or
-                "No templates successfully loaded" in str(exc_info.value))
+        assert "Invalid JSON" in str(exc_info.value) or "No templates successfully loaded" in str(
+            exc_info.value
+        )
 
     def test_load_templates_logs_statistics(self, temp_template_dir, mock_template_builder):
         """Test that template loading returns correct templates with metadata."""
         # Clear cache to ensure clean state
         TEMPLATE_CACHE.clear()
 
-        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+        with patch("gem_flux_mcp.templates.loader.MSTemplateBuilder") as MockBuilder:
             MockBuilder.from_dict.return_value = mock_template_builder
 
             templates = load_templates(temp_template_dir)
@@ -423,7 +437,7 @@ class TestLoadTemplates:
         # Populate cache with dummy data
         TEMPLATE_CACHE["Dummy"] = Mock()
 
-        with patch('gem_flux_mcp.templates.loader.MSTemplateBuilder') as MockBuilder:
+        with patch("gem_flux_mcp.templates.loader.MSTemplateBuilder") as MockBuilder:
             MockBuilder.from_dict.return_value = mock_template_builder
 
             load_templates(temp_template_dir)
@@ -507,7 +521,9 @@ class TestListAvailableTemplates:
         # Create mock GramNegative template
         gram_neg = Mock()
         gram_neg.reactions = [Mock()] * 2035  # 2035 reactions
-        gram_neg.compounds = [Mock()] * 1542  # 1542 compounds (templates use .compounds, not .metabolites)
+        gram_neg.compounds = [
+            Mock()
+        ] * 1542  # 1542 compounds (templates use .compounds, not .metabolites)
         gram_neg.compartments = ["c0", "e0", "p0"]
         gram_neg.version = "6.0"
         TEMPLATE_CACHE["GramNegative"] = gram_neg
@@ -515,7 +531,9 @@ class TestListAvailableTemplates:
         # Create mock Core template
         core = Mock()
         core.reactions = [Mock()] * 452  # 452 reactions
-        core.compounds = [Mock()] * 300  # 300 compounds (templates use .compounds, not .metabolites)
+        core.compounds = [
+            Mock()
+        ] * 300  # 300 compounds (templates use .compounds, not .metabolites)
         core.compartments = ["c0", "e0"]
         core.version = "5.2"
         TEMPLATE_CACHE["Core"] = core
@@ -555,7 +573,9 @@ class TestListAvailableTemplates:
         """Test listing when template has no version attribute."""
         TEMPLATE_CACHE.clear()
 
-        mock_template = Mock(spec=['reactions', 'compounds', 'compartments'])  # Templates use .compounds
+        mock_template = Mock(
+            spec=["reactions", "compounds", "compartments"]
+        )  # Templates use .compounds
         mock_template.reactions = []
         mock_template.compounds = []  # Templates use .compounds, not .metabolites
         mock_template.compartments = []

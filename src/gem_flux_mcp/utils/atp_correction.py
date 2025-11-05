@@ -104,7 +104,9 @@ def apply_atp_correction(
         logger.info("Building test conditions...")
         test_conditions = atp_correction.build_tests()
 
-        logger.info(f"ATP correction completed: model has {len(model.reactions)} reactions, {len(test_conditions)} test conditions")
+        logger.info(
+            f"ATP correction completed: model has {len(model.reactions)} reactions, {len(test_conditions)} test conditions"
+        )
 
         return model, test_conditions
 
@@ -144,7 +146,10 @@ def get_atp_correction_statistics(
     reactions_added = corrected_num_reactions - original_num_reactions
 
     # Extract media names from test conditions
-    media_names = [tc.get("media", {}).id if hasattr(tc.get("media", {}), "id") else "unknown" for tc in test_conditions]
+    media_names = [
+        tc.get("media", {}).id if hasattr(tc.get("media", {}), "id") else "unknown"
+        for tc in test_conditions
+    ]
 
     return {
         "atp_correction_applied": True,
@@ -152,7 +157,9 @@ def get_atp_correction_statistics(
         "reactions_after_correction": corrected_num_reactions,
         "reactions_added_by_correction": reactions_added,
         "num_test_conditions": len(test_conditions),
-        "test_media": media_names[:10] if len(media_names) > 10 else media_names,  # Limit for readability
+        "test_media": media_names[:10]
+        if len(media_names) > 10
+        else media_names,  # Limit for readability
         "biological_realism": "enhanced",
         "expected_growth_impact": "More constrained, biologically realistic growth rates",
     }

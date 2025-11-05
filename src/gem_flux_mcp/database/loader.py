@@ -301,9 +301,7 @@ def load_reactions_database(file_path: str | Path) -> pd.DataFrame:
     df = df.set_index("id")
 
     # Convert is_transport to int
-    df["is_transport"] = pd.to_numeric(df["is_transport"], errors="coerce").astype(
-        "Int64"
-    )
+    df["is_transport"] = pd.to_numeric(df["is_transport"], errors="coerce").astype("Int64")
 
     logger.info(f"Successfully loaded and indexed {len(df)} reactions")
     return df

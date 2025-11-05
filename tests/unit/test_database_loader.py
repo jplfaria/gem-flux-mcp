@@ -4,7 +4,6 @@ Unit tests for database loader module.
 Tests database loading, validation, and alias parsing functions.
 """
 
-
 import pandas as pd
 import pytest
 
@@ -41,8 +40,12 @@ def valid_compounds_tsv(tmp_path):
 
     # Add some well-known compounds for specific tests (with IDs outside the loop range)
     content += "cpd00027\tglc__D\tD-Glucose\tC6H12O6\t180.0\t0\tWQZGKKKJIJFFOK-GASJEMHNSA-N\tOC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O\tKEGG: C00031|BiGG: glc__D|MetaCyc: GLC\n"
-    content += "cpd00007\to2\tO2\tO2\t32.0\t0\tMYMFRHVKRCKBQM-UHFFFAOYSA-N\tO=O\tKEGG: C00007|BiGG: o2\n"
-    content += "cpd00001\th2o\tH2O\tH2O\t18.0\t0\tXLYOFNOQVPJJNP-UHFFFAOYSA-N\tO\tKEGG: C00001|BiGG: h2o\n"
+    content += (
+        "cpd00007\to2\tO2\tO2\t32.0\t0\tMYMFRHVKRCKBQM-UHFFFAOYSA-N\tO=O\tKEGG: C00007|BiGG: o2\n"
+    )
+    content += (
+        "cpd00001\th2o\tH2O\tH2O\t18.0\t0\tXLYOFNOQVPJJNP-UHFFFAOYSA-N\tO\tKEGG: C00001|BiGG: h2o\n"
+    )
 
     file_path = tmp_path / "compounds.tsv"
     file_path.write_text(content)
@@ -73,7 +76,9 @@ def valid_reactions_tsv(tmp_path):
 def minimal_compounds_tsv(tmp_path):
     """Create a minimal valid compounds TSV (below minimum count)."""
     content = "\t".join(REQUIRED_COMPOUND_COLUMNS) + "\n"
-    content += "cpd00027\tglc__D\tD-Glucose\tC6H12O6\t180.0\t0\tTEST-KEY\tTEST-SMILES\tKEGG: C00031\n"
+    content += (
+        "cpd00027\tglc__D\tD-Glucose\tC6H12O6\t180.0\t0\tTEST-KEY\tTEST-SMILES\tKEGG: C00031\n"
+    )
     content += "cpd00007\to2\tO2\tO2\t32.0\t0\tTEST-KEY\tTEST-SMILES\tKEGG: C00007\n"
 
     file_path = tmp_path / "compounds_minimal.tsv"
@@ -97,7 +102,9 @@ def invalid_id_compounds_tsv(tmp_path):
 def duplicate_id_compounds_tsv(tmp_path):
     """Create a compounds TSV with duplicate IDs."""
     content = "\t".join(REQUIRED_COMPOUND_COLUMNS) + "\n"
-    content += "cpd00027\tglc__D\tD-Glucose\tC6H12O6\t180.0\t0\tTEST-KEY\tTEST-SMILES\tKEGG: C00031\n"
+    content += (
+        "cpd00027\tglc__D\tD-Glucose\tC6H12O6\t180.0\t0\tTEST-KEY\tTEST-SMILES\tKEGG: C00031\n"
+    )
     content += "cpd00027\tglc__D2\tD-Glucose-Duplicate\tC6H12O6\t180.0\t0\tTEST-KEY\tTEST-SMILES\tKEGG: C00031\n"  # Duplicate
 
     file_path = tmp_path / "compounds_duplicates.tsv"
@@ -169,7 +176,11 @@ def test_load_compounds_corrupted_file(corrupted_tsv):
 
     error = exc_info.value
     # Corrupted file may be detected as missing columns or parse error
-    assert "missing" in str(error).lower() or "parse" in str(error).lower() or "failed" in str(error).lower()
+    assert (
+        "missing" in str(error).lower()
+        or "parse" in str(error).lower()
+        or "failed" in str(error).lower()
+    )
 
 
 def test_load_compounds_missing_columns(missing_columns_compounds_tsv):
@@ -288,7 +299,9 @@ def test_load_reactions_is_transport_conversion(valid_reactions_tsv):
 
     hexokinase = df.loc["rxn00148"]
     # is_transport can be int, pandas Int64, or numpy int64
-    assert isinstance(hexokinase["is_transport"], (int, np.integer)) or pd.isna(hexokinase["is_transport"])
+    assert isinstance(hexokinase["is_transport"], (int, np.integer)) or pd.isna(
+        hexokinase["is_transport"]
+    )
 
 
 # ============================================================================

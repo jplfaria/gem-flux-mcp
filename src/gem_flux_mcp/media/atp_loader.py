@@ -105,13 +105,15 @@ def get_atp_media_info() -> list[dict[str, Any]]:
 
     for media, min_obj in ATP_MEDIA_CACHE:
         # Count compounds in media (media is dict-like with compound IDs as keys)
-        num_compounds = len(media.mediacompounds) if hasattr(media, 'mediacompounds') else 0
+        num_compounds = len(media.mediacompounds) if hasattr(media, "mediacompounds") else 0
 
-        media_info.append({
-            "id": media.id,
-            "name": media.name,
-            "num_compounds": num_compounds,
-            "min_objective": min_obj
-        })
+        media_info.append(
+            {
+                "id": media.id,
+                "name": media.name,
+                "num_compounds": num_compounds,
+                "min_objective": min_obj,
+            }
+        )
 
     return media_info

@@ -44,7 +44,12 @@ def load_all_templates():
 @pytest.fixture
 def ecoli_fasta_path():
     """Path to E. coli proteins FASTA file."""
-    fasta_path = Path(__file__).parent.parent.parent / "specs-source" / "build_metabolic_model" / "GCF_000005845.2_ASM584v2_protein.faa"
+    fasta_path = (
+        Path(__file__).parent.parent.parent
+        / "specs-source"
+        / "build_metabolic_model"
+        / "GCF_000005845.2_ASM584v2_protein.faa"
+    )
     if not fasta_path.exists():
         # Fallback to examples directory
         fasta_path = Path(__file__).parent.parent.parent / "examples" / "ecoli_proteins.fasta"
@@ -100,7 +105,7 @@ class TestNotebookReplication:
             template="GramNegative",
             model_name="ecoli_notebook_replication",
             annotate_with_rast=True,
-            apply_atp_correction=True  # Explicit for clarity (this is default)
+            apply_atp_correction=True,  # Explicit for clarity (this is default)
         )
 
         # Verify build succeeded
@@ -114,7 +119,9 @@ class TestNotebookReplication:
         # Verify ATP correction was applied
         assert "atp_correction" in build_response, "Response should include ATP correction stats"
         atp_stats = build_response["atp_correction"]
-        assert atp_stats["atp_correction_applied"] is True, "ATP correction should be applied by default"
+        assert atp_stats["atp_correction_applied"] is True, (
+            "ATP correction should be applied by default"
+        )
 
         reactions_added_by_atp = atp_stats["reactions_added_by_correction"]
         print("\n  ATP Correction Statistics:")
@@ -156,7 +163,7 @@ class TestNotebookReplication:
             custom_bounds={
                 "cpd00027": (-10.0, 100.0),  # Glucose uptake limit
                 "cpd00007": (-20.0, 100.0),  # O2 uptake limit
-            }
+            },
         )
 
         media_response = build_media(media_request, real_database)
@@ -210,8 +217,9 @@ class TestNotebookReplication:
 
         # Verify model can grow
         assert gapfill_result["gapfilling_successful"] is True, "Gapfilling should enable growth"
-        assert gapfill_result["growth_rate_after"] >= gapfill_result["target_growth_rate"], \
+        assert gapfill_result["growth_rate_after"] >= gapfill_result["target_growth_rate"], (
             "Model should reach target growth rate"
+        )
 
         # Step 4: Run FBA on gapfilled model
         print("\n=== STEP 4: Running FBA on gapfilled model ===")
@@ -225,7 +233,7 @@ class TestNotebookReplication:
             db_index=real_database,
             objective="bio1",
             maximize=True,
-            flux_threshold=0.001
+            flux_threshold=0.001,
         )
 
         # Verify FBA succeeded
@@ -262,8 +270,9 @@ class TestNotebookReplication:
             print(f"    Tolerance: {TOLERANCE}")
 
         # Final assertion
-        assert growth_rate_matches, \
+        assert growth_rate_matches, (
             f"Growth rate {growth_rate:.6f} should match notebook value {EXPECTED_GROWTH_RATE:.6f} (±{TOLERANCE})"
+        )
 
         # Summary
         print("\n" + "=" * 80)

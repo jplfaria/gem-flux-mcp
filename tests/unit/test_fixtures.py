@@ -279,7 +279,9 @@ class TestModelSEEDpyMocks:
         """Test Core MSTemplate mock."""
         assert mock_mstemplate_core.id == "Core"
         assert mock_mstemplate_core.num_reactions == 452
-        assert mock_mstemplate_core.num_compounds == 325  # Templates use .compounds, not .metabolites
+        assert (
+            mock_mstemplate_core.num_compounds == 325
+        )  # Templates use .compounds, not .metabolites
         assert len(mock_mstemplate_core.compartments) == 2
 
 
@@ -322,7 +324,7 @@ class TestCOBRApyMocks:
     def test_mock_cobra_solution_unbounded(self, mock_cobra_solution_unbounded):
         """Test unbounded solution mock."""
         assert mock_cobra_solution_unbounded.status == "unbounded"
-        assert mock_cobra_solution_unbounded.objective_value == float('inf')
+        assert mock_cobra_solution_unbounded.objective_value == float("inf")
 
 
 class TestSessionStorageMocks:

@@ -168,9 +168,7 @@ def test_list_models_all_filter():
     MODEL_STORAGE["model_abc.draft"] = draft_model
 
     # Add gapfilled model
-    gf_model = create_mock_model(
-        num_reactions=892, created_at="2025-10-27T14:35:00Z"
-    )
+    gf_model = create_mock_model(num_reactions=892, created_at="2025-10-27T14:35:00Z")
     MODEL_STORAGE["model_abc.draft.gf"] = gf_model
 
     request = ListModelsRequest(filter_state="all")
@@ -262,15 +260,11 @@ def test_list_models_multiple_states():
     MODEL_STORAGE["model_abc.draft"] = draft
 
     # First gapfill
-    gf1 = create_mock_model(
-        num_reactions=892, created_at="2025-10-27T14:35:00Z"
-    )
+    gf1 = create_mock_model(num_reactions=892, created_at="2025-10-27T14:35:00Z")
     MODEL_STORAGE["model_abc.draft.gf"] = gf1
 
     # Second gapfill
-    gf2 = create_mock_model(
-        num_reactions=920, created_at="2025-10-27T14:40:00Z"
-    )
+    gf2 = create_mock_model(num_reactions=920, created_at="2025-10-27T14:40:00Z")
     MODEL_STORAGE["model_abc.draft.gf.gf"] = gf2
 
     request = ListModelsRequest(filter_state="all")

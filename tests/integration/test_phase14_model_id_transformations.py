@@ -51,6 +51,7 @@ def setup_storage():
 # Test 1: build_model creates .draft suffix
 # ============================================================================
 
+
 def test_build_model_creates_draft_suffix():
     """Test that build_model creates model with .draft suffix.
 
@@ -111,13 +112,13 @@ def test_build_model_user_provided_name_has_draft_suffix():
     model_id = generate_model_id_from_name(
         model_name=user_name,
         state="draft",
-        existing_ids=set()  # No collisions
+        existing_ids=set(),  # No collisions
     )
 
     # Verify format
     assert model_id == f"{user_name}.draft", f"Expected {user_name}.draft, got: {model_id}"
     # Verify no collision timestamp was added (should be exactly the user name + .draft)
-    parts = model_id.split('.')
+    parts = model_id.split(".")
     assert len(parts) == 2, f"Expected 2 parts (name.draft), got: {parts}"
     assert parts[0] == user_name, f"Expected user name {user_name}, got: {parts[0]}"
     assert parts[1] == "draft", f"Expected 'draft' suffix, got: {parts[1]}"
@@ -151,9 +152,7 @@ def test_build_model_collision_handling():
     # Create first model with user name
     first_name = "Ecoli_strain1"
     first_model_id = generate_model_id_from_name(
-        model_name=first_name,
-        state="draft",
-        existing_ids=set()
+        model_name=first_name, state="draft", existing_ids=set()
     )
 
     first_model = Mock()
@@ -163,9 +162,7 @@ def test_build_model_collision_handling():
     # Attempt to create second model with same name (collision)
     existing_ids = {first_model_id}
     second_model_id = generate_model_id_from_name(
-        model_name=first_name,
-        state="draft",
-        existing_ids=existing_ids
+        model_name=first_name, state="draft", existing_ids=existing_ids
     )
 
     # Verify collision handling
@@ -173,8 +170,9 @@ def test_build_model_collision_handling():
     assert second_model_id.startswith(first_name), f"Name not preserved: {second_model_id}"
     assert second_model_id.endswith(".draft"), f"State suffix lost: {second_model_id}"
     # Should have timestamp between name and suffix
-    assert len(second_model_id.split("_")) > len(first_model_id.split("_")), \
+    assert len(second_model_id.split("_")) > len(first_model_id.split("_")), (
         f"Timestamp not added: {second_model_id}"
+    )
 
     # Store second model
     second_model = Mock()
@@ -189,6 +187,7 @@ def test_build_model_collision_handling():
 # ============================================================================
 # Test 2: gapfill_model transforms .draft → .draft.gf
 # ============================================================================
+
 
 def test_gapfill_transforms_draft_to_draft_gf():
     """Test that gapfill_model transforms .draft → .draft.gf.
@@ -216,11 +215,11 @@ def test_gapfill_transforms_draft_to_draft_gf():
     gf_model_id = transform_state_suffix(draft_model_id)
 
     # Verify transformation
-    assert gf_model_id == "model_test_001.draft.gf", \
+    assert gf_model_id == "model_test_001.draft.gf", (
         f"Expected model_test_001.draft.gf, got: {gf_model_id}"
+    )
     assert gf_model_id.endswith(".draft.gf"), f"Wrong suffix: {gf_model_id}"
-    assert not gf_model_id.endswith(".draft.gf.draft"), \
-        f"Incorrect transformation: {gf_model_id}"
+    assert not gf_model_id.endswith(".draft.gf.draft"), f"Incorrect transformation: {gf_model_id}"
 
     # Create gapfilled model (simulates gapfill_model output)
     gf_model = Mock()
@@ -279,6 +278,7 @@ def test_gapfill_preserves_user_provided_name():
 # Test 3: Re-gapfilling appends .gf: .draft.gf → .draft.gf.gf
 # ============================================================================
 
+
 def test_regapfill_appends_gf_suffix():
     """Test that re-gapfilling appends .gf suffix.
 
@@ -304,11 +304,13 @@ def test_regapfill_appends_gf_suffix():
     second_gf_model_id = transform_state_suffix(first_gf_model_id)
 
     # Verify transformation
-    assert second_gf_model_id == "model_iterative.draft.gf.gf", \
+    assert second_gf_model_id == "model_iterative.draft.gf.gf", (
         f"Expected .draft.gf.gf, got: {second_gf_model_id}"
+    )
     assert second_gf_model_id.endswith(".gf.gf"), f"Wrong suffix: {second_gf_model_id}"
-    assert second_gf_model_id.count(".gf") == 2, \
+    assert second_gf_model_id.count(".gf") == 2, (
         f"Expected two .gf suffixes, got: {second_gf_model_id}"
+    )
 
     # Store second gapfilled model
     second_gf_model = Mock()
@@ -353,8 +355,9 @@ def test_multiple_regapfilling_iterations():
 
         # Verify suffix count
         gf_count = next_id.count(".gf")
-        assert gf_count == iteration, \
+        assert gf_count == iteration, (
             f"Iteration {iteration}: expected {iteration} .gf suffixes, got {gf_count} in {next_id}"
+        )
 
         # Create new model
         model = Mock()
@@ -372,13 +375,15 @@ def test_multiple_regapfilling_iterations():
 
     # Verify final model ID format
     final_id = all_ids[-1]
-    assert final_id == f"{base_name}.draft.gf.gf.gf.gf", \
+    assert final_id == f"{base_name}.draft.gf.gf.gf.gf", (
         f"Expected {base_name}.draft.gf.gf.gf.gf, got: {final_id}"
+    )
 
 
 # ============================================================================
 # Test 4: Gapfilling from .gf suffix: .gf → .gf.gf
 # ============================================================================
+
 
 def test_gapfill_gf_to_gf_gf():
     """Test gapfilling a model with .gf suffix (no .draft).
@@ -404,11 +409,11 @@ def test_gapfill_gf_to_gf_gf():
     double_gf_model_id = transform_state_suffix(gf_model_id)
 
     # Verify transformation
-    assert double_gf_model_id == "model_from_gf.gf.gf", \
+    assert double_gf_model_id == "model_from_gf.gf.gf", (
         f"Expected .gf.gf, got: {double_gf_model_id}"
+    )
     assert double_gf_model_id.endswith(".gf.gf"), f"Wrong suffix: {double_gf_model_id}"
-    assert ".draft" not in double_gf_model_id, \
-        f"Should not add .draft: {double_gf_model_id}"
+    assert ".draft" not in double_gf_model_id, f"Should not add .draft: {double_gf_model_id}"
 
     # Store double-gapfilled model
     double_gf_model = Mock()
@@ -424,6 +429,7 @@ def test_gapfill_gf_to_gf_gf():
 # ============================================================================
 # Test 5: Complete Transformation Workflow
 # ============================================================================
+
 
 def test_complete_transformation_workflow():
     """Test complete model ID transformation workflow.
@@ -484,9 +490,7 @@ def test_complete_transformation_workflow():
     # Step 1: build_model with user name creates .draft
     user_name = "Salmonella_typhimurium"
     user_id_draft = generate_model_id_from_name(
-        model_name=user_name,
-        state="draft",
-        existing_ids=set()
+        model_name=user_name, state="draft", existing_ids=set()
     )
     assert user_id_draft == f"{user_name}.draft"
 
@@ -533,6 +537,7 @@ def test_complete_transformation_workflow():
 # Test 6: Edge Cases and Error Handling
 # ============================================================================
 
+
 def test_transform_state_suffix_edge_cases():
     """Test edge cases in state suffix transformation.
 
@@ -549,21 +554,24 @@ def test_transform_state_suffix_edge_cases():
     # Edge case 1: Multiple dots in base name
     model_id_dots = "model_ecoli.k12.mg1655.draft"
     transformed = transform_state_suffix(model_id_dots)
-    assert transformed == "model_ecoli.k12.mg1655.draft.gf", \
+    assert transformed == "model_ecoli.k12.mg1655.draft.gf", (
         f"Dots in name broke transformation: {transformed}"
+    )
 
     # Edge case 2: Already has multiple .gf suffixes
     model_id_multi = "model_test.draft.gf.gf.gf"
     transformed_multi = transform_state_suffix(model_id_multi)
-    assert transformed_multi == "model_test.draft.gf.gf.gf.gf", \
+    assert transformed_multi == "model_test.draft.gf.gf.gf.gf", (
         f"Multiple .gf broke transformation: {transformed_multi}"
+    )
 
     # Edge case 3: Very long base name
     long_name = "a" * 200
     model_id_long = f"{long_name}.draft"
     transformed_long = transform_state_suffix(model_id_long)
-    assert transformed_long == f"{long_name}.draft.gf", \
+    assert transformed_long == f"{long_name}.draft.gf", (
         f"Long name broke transformation: {transformed_long[:50]}..."
+    )
 
 
 def test_state_suffix_idempotency():
@@ -596,6 +604,7 @@ def test_state_suffix_idempotency():
 # ============================================================================
 # Test 7: Integration with Storage Operations
 # ============================================================================
+
 
 def test_model_id_transformations_with_storage_lifecycle():
     """Test model ID transformations integrate correctly with storage operations.

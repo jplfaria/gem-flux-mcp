@@ -38,7 +38,12 @@ class TestModelPersistenceWithMedia:
 
         # Setup paths
         self.project_root = Path(__file__).parent.parent.parent
-        self.fasta_path = self.project_root / "specs-source" / "build_metabolic_model" / "GCF_000005845.2_ASM584v2_protein.faa"
+        self.fasta_path = (
+            self.project_root
+            / "specs-source"
+            / "build_metabolic_model"
+            / "GCF_000005845.2_ASM584v2_protein.faa"
+        )
         self.db_dir = self.project_root / "data" / "database"
         self.template_dir = self.project_root / "data" / "templates"
         self.media_file = self.project_root / "data" / "media" / "glucose_minimal_aerobic.json"
@@ -77,7 +82,7 @@ class TestModelPersistenceWithMedia:
             template="GramNegative",
             model_name="ecoli_persistence_test",
             annotate_with_rast=True,
-            apply_atp_correction=True
+            apply_atp_correction=True,
         )
 
         assert build_response["success"] is True
@@ -93,14 +98,12 @@ class TestModelPersistenceWithMedia:
 
         compounds = []
         custom_bounds = {}
-        for cpd_id, cpd_data in media_json['compounds'].items():
+        for cpd_id, cpd_data in media_json["compounds"].items():
             compounds.append(cpd_id)
-            custom_bounds[cpd_id] = tuple(cpd_data['bounds'])
+            custom_bounds[cpd_id] = tuple(cpd_data["bounds"])
 
         media_request = BuildMediaRequest(
-            compounds=compounds,
-            default_uptake=100.0,
-            custom_bounds=custom_bounds
+            compounds=compounds, default_uptake=100.0, custom_bounds=custom_bounds
         )
 
         media_response = build_media(media_request, self.db_index)
@@ -133,7 +136,7 @@ class TestModelPersistenceWithMedia:
             db_index=self.db_index,
             objective="bio1",
             maximize=True,
-            flux_threshold=0.001
+            flux_threshold=0.001,
         )
 
         assert fba_before["status"] == "optimal"
@@ -142,18 +145,20 @@ class TestModelPersistenceWithMedia:
 
         # Verify growth rate is close to expected 0.5544
         expected_growth = 0.5544
-        assert abs(growth_before - expected_growth) < 0.001, \
+        assert abs(growth_before - expected_growth) < 0.001, (
             f"Growth rate {growth_before:.6f} differs from expected {expected_growth:.6f}"
+        )
 
         # Step 5: Save model to JSON file
         print("\n=== Step 5: Save Model to JSON ===")
-        model_file_path = tempfile.mktemp(suffix='.json')
+        model_file_path = tempfile.mktemp(suffix=".json")
 
         # Get model from storage
         model = MODEL_STORAGE[gapfilled_model_id]
 
         # Save using COBRApy's save_json_model
         from cobra.io import save_json_model
+
         save_json_model(model, model_file_path)
         print(f"Model saved to: {model_file_path}")
 
@@ -163,6 +168,7 @@ class TestModelPersistenceWithMedia:
 
         # Load model from JSON file using COBRApy's load_json_model
         from cobra.io import load_json_model
+
         loaded_model = load_json_model(model_file_path)
 
         # Store loaded model with new ID
@@ -187,7 +193,7 @@ class TestModelPersistenceWithMedia:
             db_index=self.db_index,
             objective="bio1",
             maximize=True,
-            flux_threshold=0.001
+            flux_threshold=0.001,
         )
 
         assert fba_after["status"] == "optimal"
@@ -202,12 +208,14 @@ class TestModelPersistenceWithMedia:
         print(f"Difference (before-after): {abs(growth_before - growth_after):.6f}")
 
         # Assert growth rates are identical (within numerical precision)
-        assert abs(growth_before - growth_after) < 0.000001, \
+        assert abs(growth_before - growth_after) < 0.000001, (
             f"Growth rates differ: {growth_before:.6f} vs {growth_after:.6f}"
+        )
 
         # Assert both match expected growth rate
-        assert abs(growth_after - expected_growth) < 0.001, \
+        assert abs(growth_after - expected_growth) < 0.001, (
             f"Loaded model growth rate {growth_after:.6f} differs from expected {expected_growth:.6f}"
+        )
 
         print("\n✓ Model persistence test PASSED!")
         print(f"✓ Saved and loaded model produces identical growth rate: {growth_after:.6f}")
@@ -233,7 +241,7 @@ class TestModelPersistenceWithMedia:
             template="GramNegative",
             model_name="ecoli_multi_cycle",
             annotate_with_rast=True,
-            apply_atp_correction=True
+            apply_atp_correction=True,
         )
         model_id = build_response["model_id"]
 
@@ -243,14 +251,12 @@ class TestModelPersistenceWithMedia:
 
         compounds = []
         custom_bounds = {}
-        for cpd_id, cpd_data in media_json['compounds'].items():
+        for cpd_id, cpd_data in media_json["compounds"].items():
             compounds.append(cpd_id)
-            custom_bounds[cpd_id] = tuple(cpd_data['bounds'])
+            custom_bounds[cpd_id] = tuple(cpd_data["bounds"])
 
         media_request = BuildMediaRequest(
-            compounds=compounds,
-            default_uptake=100.0,
-            custom_bounds=custom_bounds
+            compounds=compounds, default_uptake=100.0, custom_bounds=custom_bounds
         )
 
         media_response = build_media(media_request, self.db_index)
@@ -273,7 +279,7 @@ class TestModelPersistenceWithMedia:
             db_index=self.db_index,
             objective="bio1",
             maximize=True,
-            flux_threshold=0.001
+            flux_threshold=0.001,
         )
         growth_initial = fba_initial["objective_value"]
         print(f"Initial growth rate: {growth_initial:.6f}")
@@ -287,15 +293,17 @@ class TestModelPersistenceWithMedia:
             print(f"\n=== Cycle {cycle}: Save and Load ===")
 
             # Save
-            temp_file = tempfile.mktemp(suffix='.json')
+            temp_file = tempfile.mktemp(suffix=".json")
             model = MODEL_STORAGE[current_model_id]
             from cobra.io import save_json_model
+
             save_json_model(model, temp_file)
 
             # Clear and load
             clear_all_models()
 
             from cobra.io import load_json_model
+
             loaded_model = load_json_model(temp_file)
 
             loaded_model_id = f"ecoli_multi_cycle.cycle{cycle}"
@@ -312,7 +320,7 @@ class TestModelPersistenceWithMedia:
                 db_index=self.db_index,
                 objective="bio1",
                 maximize=True,
-                flux_threshold=0.001
+                flux_threshold=0.001,
             )
 
             growth = fba_result["objective_value"]
@@ -331,9 +339,10 @@ class TestModelPersistenceWithMedia:
 
         # All growth rates should be identical
         for i in range(len(growth_rates) - 1):
-            diff = abs(growth_rates[i] - growth_rates[i+1])
-            assert diff < 0.000001, \
-                f"Growth rate changed between cycles: {growth_rates[i]:.6f} vs {growth_rates[i+1]:.6f}"
+            diff = abs(growth_rates[i] - growth_rates[i + 1])
+            assert diff < 0.000001, (
+                f"Growth rate changed between cycles: {growth_rates[i]:.6f} vs {growth_rates[i + 1]:.6f}"
+            )
 
         print("\n✓ Multiple save/load cycles test PASSED!")
         print(f"✓ Growth rate remained stable across {len(growth_rates)} measurements")

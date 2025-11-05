@@ -35,9 +35,7 @@ def mock_atp_media():
         mock_media = MagicMock()
         mock_media.id = f"test_media_{i}"
         mock_media.name = f"Test Media {i}"
-        mock_media.mediacompounds = {
-            f"cpd0000{j}": (-10, 100) for j in range(5)
-        }
+        mock_media.mediacompounds = {f"cpd0000{j}": (-10, 100) for j in range(5)}
         min_obj = 0.01 + (i * 0.005)  # Varying min_obj values
         mock_medias.append((mock_media, min_obj))
 
@@ -49,7 +47,7 @@ class TestLoadATPMedia:
 
     def test_load_atp_media_success(self, clear_atp_cache, mock_atp_media):
         """Test successful loading of ATP media."""
-        with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
+        with patch("gem_flux_mcp.media.atp_loader.load_default_medias") as mock_load:
             mock_load.return_value = mock_atp_media
 
             result = load_atp_media()
@@ -69,7 +67,7 @@ class TestLoadATPMedia:
         """Test loading ATP media with custom path."""
         custom_path = "/path/to/custom_atp_medias.tsv"
 
-        with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
+        with patch("gem_flux_mcp.media.atp_loader.load_default_medias") as mock_load:
             mock_load.return_value = mock_atp_media
 
             result = load_atp_media(media_path=custom_path)
@@ -81,7 +79,7 @@ class TestLoadATPMedia:
 
     def test_load_atp_media_populates_cache(self, clear_atp_cache, mock_atp_media):
         """Test that successful loading populates the cache correctly."""
-        with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
+        with patch("gem_flux_mcp.media.atp_loader.load_default_medias") as mock_load:
             mock_load.return_value = mock_atp_media
 
             result = load_atp_media()
@@ -93,7 +91,7 @@ class TestLoadATPMedia:
 
     def test_load_atp_media_empty_result(self, clear_atp_cache):
         """Test loading ATP media when ModelSEEDpy returns empty list."""
-        with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
+        with patch("gem_flux_mcp.media.atp_loader.load_default_medias") as mock_load:
             mock_load.return_value = []
 
             result = load_atp_media()
@@ -103,7 +101,7 @@ class TestLoadATPMedia:
 
     def test_load_atp_media_file_not_found(self, clear_atp_cache):
         """Test handling of FileNotFoundError during loading."""
-        with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
+        with patch("gem_flux_mcp.media.atp_loader.load_default_medias") as mock_load:
             mock_load.side_effect = FileNotFoundError("ATP media file not found")
 
             result = load_atp_media()
@@ -116,7 +114,7 @@ class TestLoadATPMedia:
 
     def test_load_atp_media_generic_error(self, clear_atp_cache):
         """Test handling of generic exception during loading."""
-        with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
+        with patch("gem_flux_mcp.media.atp_loader.load_default_medias") as mock_load:
             mock_load.side_effect = Exception("Unexpected error")
 
             result = load_atp_media()
@@ -134,7 +132,7 @@ class TestLoadATPMedia:
         assert len(ATP_MEDIA_CACHE) == 1
 
         # Load new media
-        with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
+        with patch("gem_flux_mcp.media.atp_loader.load_default_medias") as mock_load:
             mock_load.return_value = mock_atp_media
 
             load_atp_media()
@@ -214,7 +212,7 @@ class TestGetATPMediaInfo:
         mock_media.id = "test_media"
         mock_media.name = "Test Media"
         # Don't set mediacompounds attribute
-        delattr(mock_media, 'mediacompounds')
+        delattr(mock_media, "mediacompounds")
 
         ATP_MEDIA_CACHE.append((mock_media, 0.01))
 
@@ -234,7 +232,7 @@ class TestATPMediaIntegration:
         assert get_atp_media() == []
 
         # Load media
-        with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
+        with patch("gem_flux_mcp.media.atp_loader.load_default_medias") as mock_load:
             mock_load.return_value = mock_atp_media
 
             load_atp_media()
@@ -254,7 +252,7 @@ class TestATPMediaIntegration:
     def test_loading_failure_workflow(self, clear_atp_cache):
         """Test workflow when loading fails."""
         # Attempt to load with error
-        with patch('gem_flux_mcp.media.atp_loader.load_default_medias') as mock_load:
+        with patch("gem_flux_mcp.media.atp_loader.load_default_medias") as mock_load:
             mock_load.side_effect = FileNotFoundError("File not found")
 
             result = load_atp_media()

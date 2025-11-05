@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 def _get_next_steps() -> list[str]:
     """Get next_steps from centralized prompt."""
     from gem_flux_mcp.prompts import render_prompt
+
     next_steps_text = render_prompt("next_steps/build_media")
     return [
         line.strip()[2:].strip()
@@ -95,9 +96,7 @@ class BuildMediaRequest(BaseModel):
             seen.add(cpd_id)
 
         if duplicates:
-            raise ValueError(
-                f"Duplicate compound IDs found: {', '.join(sorted(duplicates))}"
-            )
+            raise ValueError(f"Duplicate compound IDs found: {', '.join(sorted(duplicates))}")
 
         # Validate format for each compound
         invalid_formats = []
@@ -139,12 +138,8 @@ class BuildMediaRequest(BaseModel):
                 )
 
             lower, upper = bounds
-            if not isinstance(lower, (int, float)) or not isinstance(
-                upper, (int, float)
-            ):
-                raise ValueError(
-                    f"Bounds for {cpd_id} must be numeric values, got: {bounds}"
-                )
+            if not isinstance(lower, (int, float)) or not isinstance(upper, (int, float)):
+                raise ValueError(f"Bounds for {cpd_id} must be numeric values, got: {bounds}")
 
             if lower > upper:
                 raise ValueError(
@@ -181,22 +176,12 @@ class BuildMediaResponse(BaseModel):
 
     success: bool = Field(default=True)
     media_id: str = Field(..., description="Unique media identifier")
-    compounds: list[CompoundMetadata] = Field(
-        ..., description="List of compounds with metadata"
-    )
+    compounds: list[CompoundMetadata] = Field(..., description="List of compounds with metadata")
     num_compounds: int = Field(..., description="Total number of compounds")
-    media_type: str = Field(
-        ..., description="Media classification: 'minimal' or 'rich'"
-    )
-    default_uptake_rate: float = Field(
-        ..., description="Default uptake rate used (mmol/gDW/h)"
-    )
-    custom_bounds_applied: int = Field(
-        ..., description="Number of compounds with custom bounds"
-    )
-    next_steps: list[str] = Field(
-        ..., description="Suggested next steps for using this media"
-    )
+    media_type: str = Field(..., description="Media classification: 'minimal' or 'rich'")
+    default_uptake_rate: float = Field(..., description="Default uptake rate used (mmol/gDW/h)")
+    custom_bounds_applied: int = Field(..., description="Number of compounds with custom bounds")
+    next_steps: list[str] = Field(..., description="Suggested next steps for using this media")
 
 
 # =============================================================================
@@ -334,8 +319,6 @@ def build_media(request: BuildMediaRequest, db_index: DatabaseIndex) -> dict:
         next_steps=_get_next_steps(),
     )
 
-    logger.info(
-        f"Successfully built media: {media_id} ({media_type}, {num_compounds} compounds)"
-    )
+    logger.info(f"Successfully built media: {media_id} ({media_type}, {num_compounds} compounds)")
 
     return response.model_dump()

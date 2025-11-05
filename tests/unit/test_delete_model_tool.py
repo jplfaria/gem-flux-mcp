@@ -1,4 +1,4 @@
-""" MCP tool functions return dictionaries (not Pydantic objects) for JSON-RPC
+"""MCP tool functions return dictionaries (not Pydantic objects) for JSON-RPC
 serialize. Tests must use dictionary access (response["key"]) not attribute
 access (response.key).Unit tests for delete_model tool.
 

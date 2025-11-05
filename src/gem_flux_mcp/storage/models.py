@@ -36,9 +36,7 @@ def generate_model_id(state: str = "draft") -> str:
         raise ValueError("State parameter cannot be empty")
 
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    random_suffix = "".join(
-        random.choices(string.ascii_lowercase + string.digits, k=6)
-    )
+    random_suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=6))
     return f"model_{timestamp}_{random_suffix}.{state}"
 
 
@@ -86,9 +84,7 @@ def generate_model_id_from_name(
         collision_id = f"{model_name}_{timestamp}_{microseconds}.{state}"
 
         if collision_id not in existing_ids:
-            logger.warning(
-                f"Model name collision for '{model_name}', using: {collision_id}"
-            )
+            logger.warning(f"Model name collision for '{model_name}', using: {collision_id}")
             return collision_id
 
         # Small delay to ensure timestamp changes

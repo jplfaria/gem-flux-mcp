@@ -46,7 +46,7 @@ def _parse_frontmatter(content: str) -> tuple[Dict[str, Any], str]:
         Tuple of (metadata dict, content without frontmatter)
     """
     # Match YAML frontmatter: ---\n...yaml...\n---
-    frontmatter_pattern = r'^---\s*\n(.*?)\n---\s*\n(.*)$'
+    frontmatter_pattern = r"^---\s*\n(.*?)\n---\s*\n(.*)$"
     match = re.match(frontmatter_pattern, content, re.DOTALL)
 
     if match:
@@ -88,8 +88,7 @@ def load_prompt(prompt_path: str) -> tuple[Dict[str, Any], str]:
 
     if not file_path.exists():
         raise FileNotFoundError(
-            f"Prompt file not found: {file_path}\n"
-            f"Looking for: {prompt_path}.md in {prompts_dir}"
+            f"Prompt file not found: {file_path}\nLooking for: {prompt_path}.md in {prompts_dir}"
         )
 
     logger.debug(f"Loading prompt from {file_path}")
@@ -127,6 +126,7 @@ def render_prompt(prompt_path: str, **variables) -> str:
 
     # Create Jinja2 template
     from jinja2 import StrictUndefined
+
     template = Template(template_content, undefined=StrictUndefined)
 
     # Render with variables

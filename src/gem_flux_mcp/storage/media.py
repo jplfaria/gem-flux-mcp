@@ -32,9 +32,7 @@ def generate_media_id() -> str:
         - random: 6 alphanumeric characters (lowercase letters and digits)
     """
     timestamp = time.strftime("%Y%m%d_%H%M%S")
-    random_suffix = "".join(
-        random.choices(string.ascii_lowercase + string.digits, k=6)
-    )
+    random_suffix = "".join(random.choices(string.ascii_lowercase + string.digits, k=6))
     return f"media_{timestamp}_{random_suffix}"
 
 

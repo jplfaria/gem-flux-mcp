@@ -68,7 +68,7 @@ class TestBuildModelIntegration:
             fasta_file_path=str(ecoli_fasta_path),
             template="GramNegative",
             model_name="ecoli_test",
-            annotate_with_rast=True
+            annotate_with_rast=True,
         )
 
         # Verify response structure
@@ -88,7 +88,7 @@ class TestBuildModelIntegration:
         print(f"  - Genes: {response['num_genes']}")
         print(f"  - Reactions: {response['num_reactions']}")
         print(f"  - Metabolites: {response['num_metabolites']}")
-        if 'gene_coverage' in response:
+        if "gene_coverage" in response:
             print(f"  - Coverage: {response['gene_coverage']:.1f}%")
 
         # Verify model is stored
@@ -108,7 +108,7 @@ class TestBuildModelIntegration:
             fasta_file_path=str(ecoli_fasta_path),
             template="GramNegative",
             model_name="ecoli_fba_test",
-            annotate_with_rast=True
+            annotate_with_rast=True,
         )
 
         assert build_response["success"] is True
@@ -142,7 +142,7 @@ class TestBuildModelIntegration:
             custom_bounds={
                 "cpd00027": (-10.0, 100.0),  # Glucose limited
                 "cpd00007": (-20.0, 100.0),  # O2 available
-            }
+            },
         )
 
         media_response = build_media(media_request, real_database)
@@ -157,7 +157,7 @@ class TestBuildModelIntegration:
             db_index=real_database,
             objective="bio1",
             maximize=True,
-            flux_threshold=0.001
+            flux_threshold=0.001,
         )
 
         # Verify FBA results
@@ -173,7 +173,7 @@ class TestBuildModelIntegration:
         print("✓ FBA successful:")
         print(f"  Status: {fba_result['status']}")
         print(f"  Growth rate: {fba_result['objective_value']:.4f}")
-        if 'summary' in fba_result and fba_result['summary']:
+        if "summary" in fba_result and fba_result["summary"]:
             print(f"  Active reactions: {fba_result['summary'].get('active_reactions', 'N/A')}")
         print(f"  Uptake fluxes: {len(fba_result.get('uptake_fluxes', {}))}")
 
@@ -196,7 +196,7 @@ class TestBuildModelIntegration:
             protein_sequences=protein_sequences,
             template="GramNegative",
             model_name="small_test",
-            annotate_with_rast=True  # Use RAST annotation
+            annotate_with_rast=True,  # Use RAST annotation
         )
 
         assert response["success"] is True
@@ -219,21 +219,19 @@ class TestBuildModelIntegration:
                 fasta_file_path="/nonexistent/path.fasta",
                 template="GramNegative",
                 model_name="error_test",
-                annotate_with_rast=False
+                annotate_with_rast=False,
             )
 
     async def test_build_model_stores_correctly(self, real_database):
         """Test that built models are stored correctly."""
 
-        protein_sequences = {
-            "test_prot": "MKRISTTITTTITITTGNGAG"
-        }
+        protein_sequences = {"test_prot": "MKRISTTITTTITITTGNGAG"}
 
         response = await build_model(
             protein_sequences=protein_sequences,
             template="GramNegative",
             model_name="storage_test",
-            annotate_with_rast=False  # Use template-based reconstruction without RAST
+            annotate_with_rast=False,  # Use template-based reconstruction without RAST
         )
         model_id = response["model_id"]
 
@@ -259,7 +257,7 @@ class TestBuildModelIntegration:
             protein_sequences=protein_sequences,
             template="GramNegative",
             model_name="atpm_test",
-            annotate_with_rast=False
+            annotate_with_rast=False,
         )
 
         # Verify ATPM reaction ID is in response
@@ -270,7 +268,9 @@ class TestBuildModelIntegration:
 
         # Retrieve model and verify ATPM reaction exists
         model = retrieve_model(response["model_id"])
-        assert atpm_id in [r.id for r in model.reactions], f"Model should contain ATPM reaction {atpm_id}"
+        assert atpm_id in [r.id for r in model.reactions], (
+            f"Model should contain ATPM reaction {atpm_id}"
+        )
 
         # Get the ATPM reaction
         atpm_reaction = model.reactions.get_by_id(atpm_id)
@@ -280,8 +280,12 @@ class TestBuildModelIntegration:
         metabolite_ids = [m.id for m in atpm_reaction.metabolites]
 
         # Check that ATP and ADP are involved
-        assert any("cpd00002" in mid for mid in metabolite_ids), "ATPM should consume ATP (cpd00002)"
-        assert any("cpd00008" in mid for mid in metabolite_ids), "ATPM should produce ADP (cpd00008)"
+        assert any("cpd00002" in mid for mid in metabolite_ids), (
+            "ATPM should consume ATP (cpd00002)"
+        )
+        assert any("cpd00008" in mid for mid in metabolite_ids), (
+            "ATPM should produce ADP (cpd00008)"
+        )
 
         print(f"  ✓ ATPM stoichiometry: {atpm_reaction.reaction}")
 
@@ -302,16 +306,14 @@ class TestBuildModelPerformance:
         """Test that small genomes build quickly."""
         import time
 
-        protein_sequences = {
-            f"prot{i}": "MKRISTTITTTITITTGNGAG" for i in range(10)
-        }
+        protein_sequences = {f"prot{i}": "MKRISTTITTTITITTGNGAG" for i in range(10)}
 
         start = time.perf_counter()
         response = await build_model(
             protein_sequences=protein_sequences,
             template="GramNegative",
             model_name="perf_test",
-            annotate_with_rast=False  # Use template-based reconstruction without RAST
+            annotate_with_rast=False,  # Use template-based reconstruction without RAST
         )
         elapsed = time.perf_counter() - start
 
@@ -361,7 +363,7 @@ class TestATPCorrectionIntegration:
             protein_sequences=protein_sequences,
             template="GramNegative",
             model_name="atp_build_test",
-            annotate_with_rast=True
+            annotate_with_rast=True,
         )
 
         # Verify build succeeded
@@ -373,9 +375,12 @@ class TestATPCorrectionIntegration:
         assert "atp_correction" in response, "Response should include ATP correction statistics"
         atp_stats = response["atp_correction"]
 
-        assert atp_stats["atp_correction_applied"] is True, "ATP correction should be applied by default"
-        assert atp_stats["reactions_after_correction"] > atp_stats["reactions_before_correction"], \
+        assert atp_stats["atp_correction_applied"] is True, (
+            "ATP correction should be applied by default"
+        )
+        assert atp_stats["reactions_after_correction"] > atp_stats["reactions_before_correction"], (
             "ATP correction should add reactions"
+        )
 
         reactions_added = atp_stats["reactions_added_by_correction"]
         print(f"  ✓ ATP correction added {reactions_added} reactions")
@@ -384,8 +389,9 @@ class TestATPCorrectionIntegration:
 
         # Verify test_conditions were stored
         test_conditions_id = f"{model_id}.test_conditions"
-        assert test_conditions_id in MODEL_STORAGE, \
+        assert test_conditions_id in MODEL_STORAGE, (
             f"Test conditions should be stored at {test_conditions_id}"
+        )
 
         stored_test_conditions = MODEL_STORAGE[test_conditions_id]
         assert isinstance(stored_test_conditions, list), "Test conditions should be a list"
@@ -421,7 +427,7 @@ class TestATPCorrectionIntegration:
             template="GramNegative",
             model_name="no_atp_test",
             annotate_with_rast=True,
-            apply_atp_correction=False  # Disable ATP correction
+            apply_atp_correction=False,  # Disable ATP correction
         )
         elapsed = time.perf_counter() - start_time
 
@@ -439,8 +445,9 @@ class TestATPCorrectionIntegration:
 
         # Verify test_conditions were NOT stored
         test_conditions_id = f"{model_id}.test_conditions"
-        assert test_conditions_id not in MODEL_STORAGE, \
+        assert test_conditions_id not in MODEL_STORAGE, (
             "Test conditions should NOT be stored when ATP correction is disabled"
+        )
 
         print("  ✓ No test conditions stored (as expected)")
         print("\n✓ ATP correction successfully disabled")
@@ -471,7 +478,7 @@ class TestATPCorrectionIntegration:
             template="GramNegative",
             model_name="reuse_test_model",
             annotate_with_rast=True,
-            apply_atp_correction=True  # Enable ATP correction
+            apply_atp_correction=True,  # Enable ATP correction
         )
 
         assert build_response["success"] is True
@@ -505,7 +512,7 @@ class TestATPCorrectionIntegration:
             custom_bounds={
                 "cpd00027": (-10.0, 100.0),
                 "cpd00007": (-20.0, 100.0),
-            }
+            },
         )
         media_response = build_media(media_request, real_database)
         media_id = media_response["media_id"]
@@ -529,12 +536,19 @@ class TestATPCorrectionIntegration:
         assert "atp_correction" in gapfill_result
         atp_stats = gapfill_result["atp_correction"]
 
-        assert atp_stats["performed"] is False, "ATP correction should be skipped (test_conditions reused)"
+        assert atp_stats["performed"] is False, (
+            "ATP correction should be skipped (test_conditions reused)"
+        )
         assert "note" in atp_stats, "Should have note explaining why ATP correction was skipped"
-        assert "already applied" in atp_stats["note"].lower(), "Note should mention ATP correction was already applied"
-        assert "test_conditions_reused" in atp_stats, "Should report number of test_conditions reused"
-        assert atp_stats["test_conditions_reused"] == num_stored_conditions, \
+        assert "already applied" in atp_stats["note"].lower(), (
+            "Note should mention ATP correction was already applied"
+        )
+        assert "test_conditions_reused" in atp_stats, (
+            "Should report number of test_conditions reused"
+        )
+        assert atp_stats["test_conditions_reused"] == num_stored_conditions, (
             f"Should reuse all {num_stored_conditions} stored test_conditions"
+        )
 
         print("  ✓ ATP correction skipped (test_conditions reused)")
         print(f"    Note: {atp_stats['note']}")
@@ -568,7 +582,7 @@ class TestATPCorrectionIntegration:
             template="GramNegative",
             model_name="no_stored_conditions_test",
             annotate_with_rast=True,
-            apply_atp_correction=False  # Disable ATP correction
+            apply_atp_correction=False,  # Disable ATP correction
         )
 
         assert build_response["success"] is True
@@ -601,7 +615,7 @@ class TestATPCorrectionIntegration:
             custom_bounds={
                 "cpd00027": (-10.0, 100.0),
                 "cpd00007": (-20.0, 100.0),
-            }
+            },
         )
         media_response = build_media(media_request, real_database)
         media_id = media_response["media_id"]
@@ -625,7 +639,9 @@ class TestATPCorrectionIntegration:
         assert "atp_correction" in gapfill_result
         atp_stats = gapfill_result["atp_correction"]
 
-        assert atp_stats["performed"] is True, "ATP correction should be performed (no stored test_conditions)"
+        assert atp_stats["performed"] is True, (
+            "ATP correction should be performed (no stored test_conditions)"
+        )
         assert "media_tested" in atp_stats, "Should report media tested"
         assert atp_stats["media_tested"] == 54, "Should test 54 default media"
 
@@ -656,7 +672,7 @@ class TestATPCorrectionIntegration:
             fasta_file_path=str(ecoli_fasta_path),
             template="GramNegative",
             model_name="atp_ecoli_test",
-            annotate_with_rast=True
+            annotate_with_rast=True,
         )
 
         assert build_response["success"] is True
@@ -691,7 +707,7 @@ class TestATPCorrectionIntegration:
             custom_bounds={
                 "cpd00027": (-5.0, 100.0),
                 "cpd00007": (-10.0, 100.0),
-            }
+            },
         )
 
         media_response = build_media(media_request, real_database)
@@ -782,7 +798,7 @@ class TestATPCorrectionIntegration:
             fasta_file_path=str(ecoli_fasta_path),
             template="GramNegative",
             model_name="genomescale_ecoli_test",
-            annotate_with_rast=True
+            annotate_with_rast=True,
         )
 
         assert build_response["success"] is True
@@ -817,7 +833,7 @@ class TestATPCorrectionIntegration:
             custom_bounds={
                 "cpd00027": (-10.0, 100.0),  # More glucose for growth
                 "cpd00007": (-20.0, 100.0),  # More O2 for aerobic growth
-            }
+            },
         )
 
         media_response = build_media(media_request, real_database)
@@ -860,8 +876,9 @@ class TestATPCorrectionIntegration:
         print(f"  Gapfilling successful: {gapfill_result['gapfilling_successful']}")
 
         # CRITICAL: Verify model can grow
-        assert growth_after >= target_growth, \
+        assert growth_after >= target_growth, (
             f"Model should grow after genome-scale gapfilling (achieved {growth_after:.6f} >= target {target_growth:.6f})"
+        )
 
         # Verify model has .gf suffix
         new_model_id = gapfill_result["model_id"]

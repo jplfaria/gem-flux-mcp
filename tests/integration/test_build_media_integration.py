@@ -51,7 +51,7 @@ class TestBuildMediaIntegration:
             custom_bounds={
                 "cpd00027": (-5.0, 100.0),
                 "cpd00007": (-10.0, 100.0),
-            }
+            },
         )
 
         # Execute
@@ -125,13 +125,61 @@ class TestBuildMediaIntegration:
         """Test building rich media (>50 compounds)."""
         # Build a rich media with many compounds
         compounds = [
-            f"cpd{str(i).zfill(5)}" for i in [
-                27, 7, 1, 9, 11, 13, 67,  # Basic minimal
-                23, 33, 35, 39, 41, 51, 54, 60, 66, 69,  # Amino acids
-                2, 8, 10, 12, 15, 18, 20, 22, 24, 26,  # More metabolites
-                28, 29, 30, 31, 32, 34, 36, 37, 38, 40,
-                42, 43, 44, 45, 46, 47, 48, 49, 50, 52,
-                53, 55, 56, 57, 58, 59,  # Even more to exceed 50
+            f"cpd{str(i).zfill(5)}"
+            for i in [
+                27,
+                7,
+                1,
+                9,
+                11,
+                13,
+                67,  # Basic minimal
+                23,
+                33,
+                35,
+                39,
+                41,
+                51,
+                54,
+                60,
+                66,
+                69,  # Amino acids
+                2,
+                8,
+                10,
+                12,
+                15,
+                18,
+                20,
+                22,
+                24,
+                26,  # More metabolites
+                28,
+                29,
+                30,
+                31,
+                32,
+                34,
+                36,
+                37,
+                38,
+                40,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                52,
+                53,
+                55,
+                56,
+                57,
+                58,
+                59,  # Even more to exceed 50
             ]
         ]
 
@@ -153,7 +201,7 @@ class TestBuildMediaIntegration:
             default_uptake=50.0,  # Default
             custom_bounds={
                 "cpd00027": (-10.0, 200.0),  # Custom override
-            }
+            },
         )
 
         response = build_media(request, real_database)
@@ -200,7 +248,7 @@ class TestBuildMediaIntegration:
             BuildMediaRequest(
                 compounds=[
                     "cpd00027",  # Valid
-                    "invalid",   # Invalid - wrong format
+                    "invalid",  # Invalid - wrong format
                 ],
                 default_uptake=100.0,
             )
@@ -249,7 +297,7 @@ class TestBuildMediaIntegration:
             default_uptake=100.0,
             custom_bounds={
                 "cpd00027": (-5.0, 100.0),
-            }
+            },
         )
 
         response = build_media(request, real_database)

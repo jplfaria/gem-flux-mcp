@@ -19,7 +19,6 @@ Test coverage spans all MCP tools:
 - Session management errors
 """
 
-
 import pandas as pd
 import pytest
 
@@ -623,7 +622,9 @@ class TestErrorRecoveryWorkflows:
 
         assert error.details["available_models"] == available
         assert error.details["num_available"] == 3
-        assert "available" in error.message.lower() or "models" in " ".join(error.suggestions).lower()
+        assert (
+            "available" in error.message.lower() or "models" in " ".join(error.suggestions).lower()
+        )
 
     def test_invalid_compound_shows_valid_examples(self):
         """Test that invalid compound error provides valid examples."""
@@ -647,7 +648,11 @@ class TestErrorRecoveryWorkflows:
         )
 
         suggestions_text = " ".join(error.suggestions).lower()
-        assert "media" in suggestions_text or "carbon" in suggestions_text or "nutrient" in suggestions_text
+        assert (
+            "media" in suggestions_text
+            or "carbon" in suggestions_text
+            or "nutrient" in suggestions_text
+        )
 
 
 # ============================================================================

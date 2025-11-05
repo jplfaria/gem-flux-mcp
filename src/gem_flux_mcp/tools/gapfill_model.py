@@ -77,6 +77,7 @@ logger = get_logger(__name__)
 def _get_next_steps_gapfill() -> list[str]:
     """Get next_steps from centralized prompt."""
     from gem_flux_mcp.prompts import render_prompt
+
     next_steps_text = render_prompt("next_steps/gapfill_model")
     return [
         line.strip()[2:].strip()
@@ -198,7 +199,9 @@ def check_baseline_growth(model: Any, media: Any, objective: str = "bio1") -> fl
             model.objective_direction = "max"
             logger.debug(f"Set objective to {objective} (maximize)")
         else:
-            logger.warning(f"Objective reaction {objective} not found in model, using current objective")
+            logger.warning(
+                f"Objective reaction {objective} not found in model, using current objective"
+            )
 
         # Run FBA
         solution = model.optimize()
@@ -270,22 +273,26 @@ def run_atp_correction(
         failed_media_examples = []
 
         for test in tests:
-            test_media = test['media']
+            test_media = test["media"]
             stats = atp_correction.media_gapfill_stats.get(test_media)
 
             if stats is None:
                 # No solution found for this media
                 media_failed += 1
                 if len(failed_media_examples) < 5:
-                    failed_media_examples.append(test_media.id if hasattr(test_media, 'id') else str(test_media))
+                    failed_media_examples.append(
+                        test_media.id if hasattr(test_media, "id") else str(test_media)
+                    )
             else:
                 # Solution found
                 media_passed += 1
                 # Count reactions added from this media
-                if 'new' in stats:
-                    reactions_added += len(stats['new'])
+                if "new" in stats:
+                    reactions_added += len(stats["new"])
 
-        logger.info(f"ATP correction complete: {media_passed}/{media_tested} media passed, {reactions_added} reactions added")
+        logger.info(
+            f"ATP correction complete: {media_passed}/{media_tested} media passed, {reactions_added} reactions added"
+        )
 
         return {
             "performed": True,
@@ -365,11 +372,13 @@ def run_genome_scale_gapfilling(
             }
 
         # Parse solution
-        reversed_reactions = len(gapfill_solution.get('reversed', {}))
-        new_reactions = len(gapfill_solution.get('new', {}))
+        reversed_reactions = len(gapfill_solution.get("reversed", {}))
+        new_reactions = len(gapfill_solution.get("new", {}))
         reactions_added = reversed_reactions + new_reactions
 
-        logger.info(f"Gapfilling solution: {new_reactions} new reactions, {reversed_reactions} reversed reactions")
+        logger.info(
+            f"Gapfilling solution: {new_reactions} new reactions, {reversed_reactions} reversed reactions"
+        )
 
         return {
             "performed": True,
@@ -421,19 +430,19 @@ def integrate_gapfill_solution(
     logger.info("Integrating gapfilling solution into model...")
 
     added_reactions = []
-    new_reactions = solution.get('new', {})
+    new_reactions = solution.get("new", {})
 
     # STEP 1: Add non-exchange reactions first (these may introduce new metabolites)
     logger.info("Step 1: Adding non-exchange reactions from template...")
     for rxn_id, direction in new_reactions.items():
         # Skip exchange reactions for now - process them after MSBuilder
-        if rxn_id.startswith('EX_'):
+        if rxn_id.startswith("EX_"):
             continue
 
         try:
             # Convert model reaction ID (indexed) to template reaction ID (non-indexed)
             # Model uses: rxn05481_c0, Template uses: rxn05481_c
-            if rxn_id.endswith('0'):
+            if rxn_id.endswith("0"):
                 template_rxn_id = rxn_id[:-1]  # rxn05481_c0 → rxn05481_c
             else:
                 template_rxn_id = rxn_id
@@ -457,11 +466,13 @@ def integrate_gapfill_solution(
             model.add_reactions([model_reaction])
 
             # Record metadata
-            added_reactions.append({
-                "id": rxn_id,
-                "direction": direction,
-                "bounds": [lb, ub],
-            })
+            added_reactions.append(
+                {
+                    "id": rxn_id,
+                    "direction": direction,
+                    "bounds": [lb, ub],
+                }
+            )
 
             logger.debug(f"Added reaction: {rxn_id} (direction: {direction})")
 
@@ -472,20 +483,21 @@ def integrate_gapfill_solution(
     # STEP 2: Now that new reactions (and their metabolites) are in the model,
     # call MSBuilder to create exchange reactions for any new metabolites
     from modelseedpy.core.msbuilder import MSBuilder
+
     exchange_reactions_in_solution = [
-        rxn_id for rxn_id in new_reactions.keys() if rxn_id.startswith('EX_')
+        rxn_id for rxn_id in new_reactions.keys() if rxn_id.startswith("EX_")
     ]
 
     if exchange_reactions_in_solution:
         logger.info("Step 2: Creating exchange reactions for new metabolites...")
         # MSBuilder will create exchanges for all metabolites that don't have them yet
-        added_exchanges = MSBuilder.add_exchanges_to_model(model, extra_cell='e0')
+        added_exchanges = MSBuilder.add_exchanges_to_model(model, extra_cell="e0")
         logger.info(f"MSBuilder added {len(added_exchanges)} exchange reactions")
 
         # STEP 3: Set bounds on exchange reactions based on gapfill solution
         logger.info("Step 3: Setting bounds on exchange reactions...")
         for rxn_id, direction in new_reactions.items():
-            if not rxn_id.startswith('EX_'):
+            if not rxn_id.startswith("EX_"):
                 continue
 
             try:
@@ -496,13 +508,17 @@ def integrate_gapfill_solution(
                     existing_rxn.upper_bound = ub
                     logger.debug(f"Set exchange reaction {rxn_id} bounds to ({lb}, {ub})")
 
-                    added_reactions.append({
-                        "id": rxn_id,
-                        "direction": direction,
-                        "bounds": [lb, ub],
-                    })
+                    added_reactions.append(
+                        {
+                            "id": rxn_id,
+                            "direction": direction,
+                            "bounds": [lb, ub],
+                        }
+                    )
                 else:
-                    logger.warning(f"Exchange reaction {rxn_id} not found after MSBuilder.add_exchanges_to_model()")
+                    logger.warning(
+                        f"Exchange reaction {rxn_id} not found after MSBuilder.add_exchanges_to_model()"
+                    )
 
             except Exception as e:
                 logger.warning(f"Failed to set bounds on exchange reaction {rxn_id}: {e}")
@@ -559,18 +575,22 @@ def enrich_reaction_metadata(
         direction_str = direction_map.get(rxn["direction"], rxn["direction"])
 
         # Simplified reaction info (remove long equation to save tokens)
-        enriched.append({
-            "id": rxn_id,
-            "name": name,
-            "direction": direction_str,
-            "compartment": compartment,
-            # "equation": equation,  # Removed to reduce response size - use get_reaction_name for details
-        })
+        enriched.append(
+            {
+                "id": rxn_id,
+                "name": name,
+                "direction": direction_str,
+                "compartment": compartment,
+                # "equation": equation,  # Removed to reduce response size - use get_reaction_name for details
+            }
+        )
 
     return enriched
 
 
-def categorize_reactions_by_pathway(enriched_reactions: list[dict], db_index: DatabaseIndex) -> dict:
+def categorize_reactions_by_pathway(
+    enriched_reactions: list[dict], db_index: DatabaseIndex
+) -> dict:
     """Categorize gapfilled reactions by biological pathway using ModelSEED database annotations.
 
     Uses actual pathway data from the ModelSEED reactions database instead of keyword matching.
@@ -610,10 +630,7 @@ def categorize_reactions_by_pathway(enriched_reactions: list[dict], db_index: Da
 
                     pathway_counts[pathway] += 1
                     if len(pathway_examples[pathway]) < 3:  # Keep up to 3 examples per pathway
-                        pathway_examples[pathway].append({
-                            "id": rxn["id"],
-                            "name": rxn["name"]
-                        })
+                        pathway_examples[pathway].append({"id": rxn["id"], "name": rxn["name"]})
             else:
                 # Reaction exists but has no pathway annotation
                 reactions_without_pathways += 1
@@ -622,10 +639,7 @@ def categorize_reactions_by_pathway(enriched_reactions: list[dict], db_index: Da
                     pathway_examples["Unannotated"] = []
                 pathway_counts["Unannotated"] += 1
                 if len(pathway_examples["Unannotated"]) < 3:
-                    pathway_examples["Unannotated"].append({
-                        "id": rxn["id"],
-                        "name": rxn["name"]
-                    })
+                    pathway_examples["Unannotated"].append({"id": rxn["id"], "name": rxn["name"]})
         else:
             # Reaction not found in database
             reactions_without_pathways += 1
@@ -634,30 +648,35 @@ def categorize_reactions_by_pathway(enriched_reactions: list[dict], db_index: Da
                 pathway_examples["Unknown"] = []
             pathway_counts["Unknown"] += 1
             if len(pathway_examples["Unknown"]) < 3:
-                pathway_examples["Unknown"].append({
-                    "id": rxn["id"],
-                    "name": rxn["name"]
-                })
+                pathway_examples["Unknown"].append({"id": rxn["id"], "name": rxn["name"]})
 
     # Build pathway summary (only include pathways with reactions)
     pathways = []
     for pathway, count in sorted(pathway_counts.items(), key=lambda x: x[1], reverse=True):
         if count > 0:
-            pathways.append({
-                "pathway": pathway,
-                "reactions_added": count,
-                "examples": pathway_examples[pathway]
-            })
+            pathways.append(
+                {
+                    "pathway": pathway,
+                    "reactions_added": count,
+                    "examples": pathway_examples[pathway],
+                }
+            )
 
     # Calculate annotated pathways (exclude Unknown and Unannotated)
-    num_annotated_pathways = len([p for p in pathways if p["pathway"] not in ["Unknown", "Unannotated"]])
+    num_annotated_pathways = len(
+        [p for p in pathways if p["pathway"] not in ["Unknown", "Unannotated"]]
+    )
 
     return {
         "total_reactions": len(enriched_reactions),
         "pathways": pathways,
         "num_pathways_affected": num_annotated_pathways,
         "reactions_without_pathways": reactions_without_pathways,
-        "reactions_without_pathways_percentage": round(reactions_without_pathways / len(enriched_reactions) * 100, 1) if len(enriched_reactions) > 0 else 0
+        "reactions_without_pathways_percentage": round(
+            reactions_without_pathways / len(enriched_reactions) * 100, 1
+        )
+        if len(enriched_reactions) > 0
+        else 0,
     }
 
 
@@ -688,7 +707,9 @@ def gapfill_model(
         InfeasibilityError: If gapfilling cannot find solution
         LibraryError: If ModelSEEDpy operation fails
     """
-    logger.info(f"Starting gapfill_model: model_id={model_id}, media_id={media_id}, target={target_growth_rate}")
+    logger.info(
+        f"Starting gapfill_model: model_id={model_id}, media_id={media_id}, target={target_growth_rate}"
+    )
 
     try:
         # Step 1: Validate inputs
@@ -707,7 +728,9 @@ def gapfill_model(
 
         # If already meets target, skip gapfilling
         if growth_rate_before >= target_growth_rate:
-            logger.info(f"Model already meets target growth rate ({growth_rate_before:.6f} >= {target_growth_rate})")
+            logger.info(
+                f"Model already meets target growth rate ({growth_rate_before:.6f} >= {target_growth_rate})"
+            )
             # Still create a .gf version but note no gapfilling was needed
             new_model_id = transform_state_suffix(model_id)
             store_model(new_model_id, model)
@@ -726,11 +749,11 @@ def gapfill_model(
                 "exchange_reactions_added": [],
                 "atp_correction": {
                     "performed": False,
-                    "note": "Model already meets target growth rate"
+                    "note": "Model already meets target growth rate",
                 },
                 "genomescale_gapfill": {
                     "performed": False,
-                    "note": "Model already meets target growth rate"
+                    "note": "Model already meets target growth rate",
                 },
                 "model_properties": {
                     "num_reactions": len(model.reactions),
@@ -753,7 +776,9 @@ def gapfill_model(
 
         if test_conditions_id in MODEL_STORAGE:
             stored_test_conditions = MODEL_STORAGE[test_conditions_id]
-            logger.info(f"Found stored ATP test_conditions from build_model: {len(stored_test_conditions)} conditions")
+            logger.info(
+                f"Found stored ATP test_conditions from build_model: {len(stored_test_conditions)} conditions"
+            )
 
         # Step 6.5: Run ATP correction (if enabled and not already done)
         atp_stats = {"performed": False}
@@ -799,11 +824,15 @@ def gapfill_model(
 
         if not gapfilling_successful:
             # Gapfilling failed to achieve target
-            logger.warning(f"Gapfilling failed: achieved {growth_rate_after:.6f} < target {target_growth_rate}")
+            logger.warning(
+                f"Gapfilling failed: achieved {growth_rate_after:.6f} < target {target_growth_rate}"
+            )
 
             # For atp_only mode, zero growth is EXPECTED (no bio1 objective yet)
             if gapfill_mode == "atp_only":
-                logger.info("ATP-only mode: zero growth expected (no biomass objective at this stage)")
+                logger.info(
+                    "ATP-only mode: zero growth expected (no biomass objective at this stage)"
+                )
             elif growth_rate_after == 0.0:
                 # Complete failure in full or genomescale_only mode - raise error
                 raise gapfill_infeasible_error(
@@ -815,7 +844,9 @@ def gapfill_model(
                 )
             else:
                 # Partial success - return with warning
-                logger.info(f"Partial gapfilling: achieved {growth_rate_after:.6f}, target was {target_growth_rate}")
+                logger.info(
+                    f"Partial gapfilling: achieved {growth_rate_after:.6f}, target was {target_growth_rate}"
+                )
 
         # Step 9: Transform model_id state suffix
         new_model_id = transform_state_suffix(model_id)
@@ -867,7 +898,9 @@ def gapfill_model(
 
         # Add warning if significant unknowns
         if unknown_count > 0:
-            interpretation["pathway_coverage_note"] = f"{unknown_count} of {num_reactions} reactions ({unknown_pct}%) lack pathway annotations in database"
+            interpretation["pathway_coverage_note"] = (
+                f"{unknown_count} of {num_reactions} reactions ({unknown_pct}%) lack pathway annotations in database"
+            )
 
         # Step 14: Build response with improved interpretation
         return {

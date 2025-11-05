@@ -145,6 +145,7 @@ def list_media(db_index=None) -> dict:
 
         # Build next_steps based on available media
         from gem_flux_mcp.prompts import render_prompt
+
         next_steps_text = render_prompt(
             "next_steps/list_media",
             predefined_count=predefined_count,

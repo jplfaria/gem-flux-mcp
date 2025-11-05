@@ -59,9 +59,7 @@ def test_extract_media_name_auto_generated():
 def test_extract_media_name_predefined():
     """Test extraction from predefined media ID."""
     assert extract_media_name("glucose_minimal_aerobic") == "glucose_minimal_aerobic"
-    assert (
-        extract_media_name("pyruvate_minimal_anaerobic") == "pyruvate_minimal_anaerobic"
-    )
+    assert extract_media_name("pyruvate_minimal_anaerobic") == "pyruvate_minimal_anaerobic"
 
 
 def test_extract_media_name_unknown():

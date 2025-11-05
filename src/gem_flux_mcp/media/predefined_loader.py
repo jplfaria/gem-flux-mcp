@@ -61,7 +61,7 @@ def load_predefined_media(media_dir: str = "data/media") -> Dict[str, Any]:
 
     for json_file in json_files:
         try:
-            with open(json_file, 'r') as f:
+            with open(json_file, "r") as f:
                 media_def = json.load(f)
 
             # Validate media definition structure
@@ -90,12 +90,11 @@ def load_predefined_media(media_dir: str = "data/media") -> Dict[str, Any]:
                 "description": media_def.get("description", ""),
                 "compounds": compounds_dict,
                 "created_at": PREDEFINED_MEDIA_TIMESTAMP,
-                "is_predefined": True
+                "is_predefined": True,
             }
 
             logger.info(
-                f"✓ Loaded predefined media: {media_name} "
-                f"({len(compounds_dict)} compounds)"
+                f"✓ Loaded predefined media: {media_name} ({len(compounds_dict)} compounds)"
             )
 
         except json.JSONDecodeError as e:
@@ -109,17 +108,13 @@ def load_predefined_media(media_dir: str = "data/media") -> Dict[str, Any]:
     PREDEFINED_MEDIA_CACHE.clear()
     PREDEFINED_MEDIA_CACHE.update(predefined_media)
 
-    logger.info(
-        f"Loaded {len(predefined_media)} predefined media compositions"
-    )
+    logger.info(f"Loaded {len(predefined_media)} predefined media compositions")
 
     # Verify all expected media were loaded
     loaded_names = set(predefined_media.keys())
     missing = PREDEFINED_MEDIA_IDS - loaded_names
     if missing:
-        logger.warning(
-            f"Some expected predefined media were not loaded: {missing}"
-        )
+        logger.warning(f"Some expected predefined media were not loaded: {missing}")
 
     return predefined_media
 

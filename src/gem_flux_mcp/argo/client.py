@@ -128,10 +128,7 @@ class ArgoMCPClient:
         self.max_tokens = max_tokens if max_tokens is not None else 4096
 
         # OpenAI client for argo-proxy
-        self.openai_client = OpenAI(
-            base_url=argo_base_url,
-            api_key=argo_api_key
-        )
+        self.openai_client = OpenAI(base_url=argo_base_url, api_key=argo_api_key)
 
         # Tool converter and selector
         self.converter = MCPToOpenAIConverter()
@@ -180,10 +177,7 @@ class ArgoMCPClient:
             raise RuntimeError(f"ArgoMCPClient initialization failed: {e}")
 
     async def chat(
-        self,
-        message: str,
-        system_prompt: Optional[str] = None,
-        reset_history: bool = False
+        self, message: str, system_prompt: Optional[str] = None, reset_history: bool = False
     ) -> str:
         """Send a message and get a response with automatic tool calling.
 
@@ -205,9 +199,7 @@ class ArgoMCPClient:
             RuntimeError: If not initialized or if tool execution fails
         """
         if not self.openai_tools or not self.mcp_tools:
-            raise RuntimeError(
-                "ArgoMCPClient not initialized. Call initialize() first."
-            )
+            raise RuntimeError("ArgoMCPClient not initialized. Call initialize() first.")
 
         # Reset history if requested
         if reset_history:
@@ -220,6 +212,7 @@ class ArgoMCPClient:
             else:
                 # Default system prompt to guide tool usage
                 from pathlib import Path
+
                 prompt_to_use = f"""You are a metabolic modeling expert assistant using Gem-Flux MCP tools.
 
 Working directory: {Path.cwd()}
@@ -233,20 +226,14 @@ CRITICAL RULES:
 6. Be concise and technical in your responses
 7. Execute ALL requested operations - do not skip steps
 
-Available tools: {', '.join(self.mcp_tools.keys()) if self.mcp_tools else 'loading...'}
+Available tools: {", ".join(self.mcp_tools.keys()) if self.mcp_tools else "loading..."}
 """
 
-            self.messages.append({
-                "role": "system",
-                "content": prompt_to_use
-            })
+            self.messages.append({"role": "system", "content": prompt_to_use})
             logger.info("Added system prompt to guide tool usage")
 
         # Add user message
-        self.messages.append({
-            "role": "user",
-            "content": message
-        })
+        self.messages.append({"role": "user", "content": message})
 
         logger.info(f"User message: {message}")
 
@@ -256,14 +243,14 @@ Available tools: {', '.join(self.mcp_tools.keys()) if self.mcp_tools else 'loadi
         while tool_call_count < self.max_tool_calls:
             # Dynamic tool selection: select relevant tools based on query
             selected_tool_names = self.tool_selector.select_tools(
-                message,
-                set(self.mcp_tools.keys())
+                message, set(self.mcp_tools.keys())
             )
 
             # Filter to only selected tools
             selected_tools = [
-                tool for tool in self.openai_tools
-                if tool['function']['name'] in selected_tool_names
+                tool
+                for tool in self.openai_tools
+                if tool["function"]["name"] in selected_tool_names
             ]
 
             logger.info(f"Sending {len(selected_tools)} tools to LLM: {selected_tool_names}")
@@ -313,20 +300,24 @@ Available tools: {', '.join(self.mcp_tools.keys()) if self.mcp_tools else 'loadi
                     logger.info(f"Tool result: {json.dumps(result)[:200]}...")
 
                     # Add tool result to messages
-                    self.messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "content": json.dumps(result)
-                    })
+                    self.messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": json.dumps(result),
+                        }
+                    )
 
                 except Exception as e:
                     logger.error(f"Tool execution failed: {e}")
                     # Add error result to messages
-                    self.messages.append({
-                        "role": "tool",
-                        "tool_call_id": tool_call.id,
-                        "content": json.dumps({"error": str(e)})
-                    })
+                    self.messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tool_call.id,
+                            "content": json.dumps({"error": str(e)}),
+                        }
+                    )
 
             tool_call_count += 1
 
@@ -366,7 +357,7 @@ Available tools: {', '.join(self.mcp_tools.keys()) if self.mcp_tools else 'loadi
 
             # FastMCP wraps tools in FunctionTool objects with .fn attribute
             # Access the wrapped function via .fn
-            if hasattr(tool_wrapper, 'fn') and callable(tool_wrapper.fn):
+            if hasattr(tool_wrapper, "fn") and callable(tool_wrapper.fn):
                 tool_fn = tool_wrapper.fn
             elif callable(tool_wrapper):
                 tool_fn = tool_wrapper

@@ -9,6 +9,7 @@ import pytest
 # Test Database Mocks
 # ============================================================================
 
+
 @pytest.fixture
 def mock_compounds_df():
     """Mock compounds DataFrame for testing."""
@@ -79,6 +80,7 @@ def mock_template():
 # ModelSEEDpy Class Mocks
 # ============================================================================
 
+
 @pytest.fixture
 def mock_msgenome():
     """Mock MSGenome class for genome data handling."""
@@ -100,7 +102,7 @@ def mock_msgenome_from_dict():
     genome.id = "test_genome_from_dict"
     genome.features = [
         {"id": "gene1", "sequence": "MKLAVTCDEF"},
-        {"id": "gene2", "sequence": "MSVALERYGIDEVASIGGLV"}
+        {"id": "gene2", "sequence": "MSVALERYGIDEVASIGGLV"},
     ]
     return genome
 
@@ -112,7 +114,7 @@ def mock_msgenome_from_fasta():
     genome.id = "test_genome_from_fasta"
     genome.features = [
         {"id": "ecoli_hex", "sequence": "MKLVINLVGNSGLGKSTFTQRLIN"},
-        {"id": "ecoli_pgk", "sequence": "MKQHKAMIVALERFRKEKRDAALL"}
+        {"id": "ecoli_pgk", "sequence": "MKQHKAMIVALERFRKEKRDAALL"},
     ]
     return genome
 
@@ -296,6 +298,7 @@ def mock_mstemplate_core():
 # COBRApy Mocks
 # ============================================================================
 
+
 @pytest.fixture
 def mock_cobra_model():
     """Mock COBRApy Model for FBA operations."""
@@ -331,13 +334,13 @@ def mock_cobra_model_with_fluxes():
     solution.objective_value = 0.874
     solution.status = "optimal"
     solution.fluxes = {
-        "bio1": 0.874,                  # Biomass
-        "EX_cpd00027_e0": -5.0,        # Glucose uptake
-        "EX_cpd00007_e0": -10.234,     # O2 uptake
-        "EX_cpd00011_e0": 8.456,       # CO2 secretion
-        "rxn00148_c0": 5.0,            # Hexokinase
-        "rxn00342_c0": 4.5,            # Glycolysis
-        "rxn00352_c0": 3.2,            # TCA cycle
+        "bio1": 0.874,  # Biomass
+        "EX_cpd00027_e0": -5.0,  # Glucose uptake
+        "EX_cpd00007_e0": -10.234,  # O2 uptake
+        "EX_cpd00011_e0": 8.456,  # CO2 secretion
+        "rxn00148_c0": 5.0,  # Hexokinase
+        "rxn00342_c0": 4.5,  # Glycolysis
+        "rxn00352_c0": 3.2,  # TCA cycle
     }
 
     # Mock active/total reactions
@@ -402,7 +405,7 @@ def mock_cobra_solution_infeasible():
 def mock_cobra_solution_unbounded():
     """Mock unbounded FBA solution."""
     solution = Mock()
-    solution.objective_value = float('inf')
+    solution.objective_value = float("inf")
     solution.status = "unbounded"
     solution.fluxes = {}
     return solution
@@ -411,6 +414,7 @@ def mock_cobra_solution_unbounded():
 # ============================================================================
 # Session Storage Mocks
 # ============================================================================
+
 
 @pytest.fixture
 def mock_model_storage():
@@ -437,7 +441,7 @@ def mock_model_storage():
         "get": get_model,
         "list": list_models,
         "delete": delete_model,
-        "storage": storage
+        "storage": storage,
     }
 
 
@@ -455,17 +459,13 @@ def mock_media_storage():
     def list_media():
         return list(storage.keys())
 
-    return {
-        "store": store_media,
-        "get": get_media,
-        "list": list_media,
-        "storage": storage
-    }
+    return {"store": store_media, "get": get_media, "list": list_media, "storage": storage}
 
 
 # ============================================================================
 # Test Data Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def sample_genome_fasta():
@@ -481,7 +481,7 @@ def sample_genome_dict():
         "features": [
             {"id": "gene1", "sequence": "ATGCGATCGATCGATC"},
             {"id": "gene2", "sequence": "CGATCGATCGATCGAT"},
-        ]
+        ],
     }
 
 
@@ -489,29 +489,27 @@ def sample_genome_dict():
 # Comprehensive Protein Sequence Fixtures
 # ============================================================================
 
+
 @pytest.fixture
 def comprehensive_protein_sequences_dict():
     """Comprehensive protein sequences dictionary covering various scenarios."""
     return {
         # Real E. coli proteins (truncated for testing)
-        "ecoli_hex": "MKLVINLVGNSGLGKSTFTQRLINSLQIDEDVRKQLAELSALQRGVKVVLTGSKGVTTS" \
-                     "HIAPERDVDLLAKLGVEVTTSGKMTSFVSRAKEKYNEKASQIAKELFPQYLGGVKD",
+        "ecoli_hex": "MKLVINLVGNSGLGKSTFTQRLINSLQIDEDVRKQLAELSALQRGVKVVLTGSKGVTTS"
+        "HIAPERDVDLLAKLGVEVTTSGKMTSFVSRAKEKYNEKASQIAKELFPQYLGGVKD",
         "ecoli_pgk": "MKQHKAMIVALERFRKEKRDAALLNLVRNPVADAGVIHYVDAKK",
-
         # Different length proteins
         "short_protein": "MKLAVTCDEF",  # 10 aa
         "medium_protein": "MKLAVTCDEFGHIKLMNPQRSTVWYAACDEFGHIKLMNPQRSTVWY",  # 46 aa
         "long_protein": "M" + "ACDEFGHIKLMNPQRSTVWY" * 20,  # 401 aa
-
         # Edge cases
         "single_aa": "M",
         "all_amino_acids": "ACDEFGHIKLMNPQRSTVWY",
         "repeated_motif": "MKLAVT" * 10,
-
         # Realistic protein sequences
         "glycolysis_enzyme": "MKLVINLVGNSGLGKSTFTQRLINSLQIDEDVRKQLAELS",
         "tca_enzyme": "MSVALERYGIDEVASIGGLVEVNNQYLNSSNGIIKQLLKKL",
-        "biosynthesis_enzyme": "MTIKVGINGFGRIGRLVLRAALFGKDKEVDVVAVNDPFI"
+        "biosynthesis_enzyme": "MTIKVGINGFGRIGRLVLRAALFGKDKEVDVVAVNDPFI",
     }
 
 
@@ -571,13 +569,14 @@ def predefined_media_minimal():
     return {
         "id": "minimal",
         "name": "Minimal Media",
-        "compounds": ["cpd00001", "cpd00007", "cpd00009", "cpd00011"]
+        "compounds": ["cpd00001", "cpd00007", "cpd00009", "cpd00011"],
     }
 
 
 # ============================================================================
 # Comprehensive Media Composition Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def comprehensive_media_compositions():
@@ -603,9 +602,9 @@ def comprehensive_media_compositions():
             ],
             "default_uptake": 100.0,
             "custom_bounds": {
-                "cpd00027": (-5.0, 100.0),   # Glucose limited
+                "cpd00027": (-5.0, 100.0),  # Glucose limited
                 "cpd00007": (-10.0, 100.0),  # Oxygen available
-            }
+            },
         },
         "glucose_minimal_anaerobic": {
             "id": "glucose_minimal_anaerobic",
@@ -627,8 +626,8 @@ def comprehensive_media_compositions():
             "default_uptake": 100.0,
             "custom_bounds": {
                 "cpd00027": (-10.0, 100.0),  # Higher glucose for anaerobic
-                "cpd00007": (0.0, 0.0),      # No oxygen
-            }
+                "cpd00007": (0.0, 0.0),  # No oxygen
+            },
         },
         "pyruvate_minimal": {
             "id": "pyruvate_minimal",
@@ -652,31 +651,65 @@ def comprehensive_media_compositions():
             "custom_bounds": {
                 "cpd00020": (-10.0, 100.0),  # Pyruvate
                 "cpd00007": (-10.0, 100.0),  # Oxygen
-            }
+            },
         },
         "rich_media": {
             "id": "rich_media",
             "name": "Rich Media (LB-like)",
             "compounds": [
                 # Carbon sources
-                "cpd00027", "cpd00020", "cpd00029", "cpd00100",
+                "cpd00027",
+                "cpd00020",
+                "cpd00029",
+                "cpd00100",
                 # Amino acids (all 20)
-                "cpd00035", "cpd00051", "cpd00132", "cpd00041", "cpd00084",
-                "cpd00023", "cpd00053", "cpd00033", "cpd00119", "cpd00322",
-                "cpd00107", "cpd00039", "cpd00060", "cpd00066", "cpd00129",
-                "cpd00054", "cpd00161", "cpd00065", "cpd00069", "cpd00156",
+                "cpd00035",
+                "cpd00051",
+                "cpd00132",
+                "cpd00041",
+                "cpd00084",
+                "cpd00023",
+                "cpd00053",
+                "cpd00033",
+                "cpd00119",
+                "cpd00322",
+                "cpd00107",
+                "cpd00039",
+                "cpd00060",
+                "cpd00066",
+                "cpd00129",
+                "cpd00054",
+                "cpd00161",
+                "cpd00065",
+                "cpd00069",
+                "cpd00156",
                 # Vitamins and cofactors
-                "cpd00010", "cpd00982", "cpd00975",
+                "cpd00010",
+                "cpd00982",
+                "cpd00975",
                 # Core metabolites
-                "cpd00001", "cpd00007", "cpd00009", "cpd00011", "cpd00013", "cpd00067",
+                "cpd00001",
+                "cpd00007",
+                "cpd00009",
+                "cpd00011",
+                "cpd00013",
+                "cpd00067",
                 # Ions
-                "cpd00099", "cpd00205", "cpd00254", "cpd00971", "cpd10515",
-                "cpd00048", "cpd00063", "cpd00030", "cpd00034", "cpd00058",
+                "cpd00099",
+                "cpd00205",
+                "cpd00254",
+                "cpd00971",
+                "cpd10515",
+                "cpd00048",
+                "cpd00063",
+                "cpd00030",
+                "cpd00034",
+                "cpd00058",
             ],
             "default_uptake": 100.0,
             "custom_bounds": {
                 "cpd00007": (-20.0, 100.0),  # High oxygen for rich media
-            }
+            },
         },
         "minimal_no_carbon": {
             "id": "minimal_no_carbon",
@@ -693,8 +726,8 @@ def comprehensive_media_compositions():
                 "cpd00048",  # Sulfate
             ],
             "default_uptake": 100.0,
-            "custom_bounds": {}
-        }
+            "custom_bounds": {},
+        },
     }
 
 
@@ -706,9 +739,9 @@ def media_with_custom_bounds():
             "compounds": ["cpd00027", "cpd00007"],
             "default_uptake": 100.0,
             "custom_bounds": {
-                "cpd00027": (-5.0, 0.0),   # Uptake only, no secretion
+                "cpd00027": (-5.0, 0.0),  # Uptake only, no secretion
                 "cpd00007": (-10.0, 0.0),  # Uptake only
-            }
+            },
         },
         "secretion_only": {
             "compounds": ["cpd00011", "cpd00067"],  # CO2, H+
@@ -716,23 +749,23 @@ def media_with_custom_bounds():
             "custom_bounds": {
                 "cpd00011": (0.0, 100.0),  # Secretion only
                 "cpd00067": (0.0, 100.0),  # Secretion only
-            }
+            },
         },
         "bidirectional": {
             "compounds": ["cpd00027", "cpd00001"],
             "default_uptake": 100.0,
             "custom_bounds": {
-                "cpd00027": (-5.0, 5.0),   # Both uptake and secretion
+                "cpd00027": (-5.0, 5.0),  # Both uptake and secretion
                 "cpd00001": (-100.0, 100.0),  # Fully bidirectional
-            }
+            },
         },
         "blocked": {
             "compounds": ["cpd00027"],
             "default_uptake": 100.0,
             "custom_bounds": {
                 "cpd00027": (0.0, 0.0),  # Completely blocked
-            }
-        }
+            },
+        },
     }
 
 
@@ -757,14 +790,15 @@ def invalid_media_compositions():
             "default_uptake": 100.0,
             "custom_bounds": {
                 "cpd00027": (5.0, -5.0),  # Lower > Upper (invalid)
-            }
-        }
+            },
+        },
     }
 
 
 # ============================================================================
 # Comprehensive ModelSEED Compound ID Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def comprehensive_compound_ids():
@@ -777,7 +811,6 @@ def comprehensive_compound_ids():
         "co2": "cpd00011",
         "ammonia": "cpd00013",
         "proton": "cpd00067",
-
         # Carbon sources
         "glucose": "cpd00027",
         "pyruvate": "cpd00020",
@@ -785,7 +818,6 @@ def comprehensive_compound_ids():
         "lactose": "cpd00108",
         "glycerol": "cpd00100",
         "succinate": "cpd00036",
-
         # Amino acids (essential set)
         "L-alanine": "cpd00035",
         "L-arginine": "cpd00051",
@@ -807,7 +839,6 @@ def comprehensive_compound_ids():
         "L-tryptophan": "cpd00065",
         "L-tyrosine": "cpd00069",
         "L-valine": "cpd00156",
-
         # Energy metabolites
         "ATP": "cpd00002",
         "ADP": "cpd00008",
@@ -816,12 +847,10 @@ def comprehensive_compound_ids():
         "NADH": "cpd00004",
         "NADP": "cpd00006",
         "NADPH": "cpd00005",
-
         # Cofactors
         "CoA": "cpd00010",
         "FAD": "cpd00982",
         "FMN": "cpd00975",
-
         # Ions
         "chloride": "cpd00099",
         "potassium": "cpd00205",
@@ -852,7 +881,7 @@ def comprehensive_compound_metadata():
             "charge": 0,
             "inchikey": "WQZGKKKJIJFFOK-GASJEMHNSA-N",
             "smiles": "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O",
-            "aliases": "KEGG: C00031|BiGG: glc__D|MetaCyc: GLC"
+            "aliases": "KEGG: C00031|BiGG: glc__D|MetaCyc: GLC",
         },
         "cpd00020": {
             "id": "cpd00020",
@@ -863,7 +892,7 @@ def comprehensive_compound_metadata():
             "charge": -1,
             "inchikey": "LCTONWCANYUPML-UHFFFAOYSA-M",
             "smiles": "[O-]C(=O)C(=O)C",
-            "aliases": "KEGG: C00022|BiGG: pyr|MetaCyc: PYRUVATE"
+            "aliases": "KEGG: C00022|BiGG: pyr|MetaCyc: PYRUVATE",
         },
         "cpd00007": {
             "id": "cpd00007",
@@ -874,8 +903,8 @@ def comprehensive_compound_metadata():
             "charge": 0,
             "inchikey": "MYMOFIZGZYHOMD-UHFFFAOYSA-N",
             "smiles": "O=O",
-            "aliases": "KEGG: C00007|BiGG: o2|MetaCyc: OXYGEN-MOLECULE"
-        }
+            "aliases": "KEGG: C00007|BiGG: o2|MetaCyc: OXYGEN-MOLECULE",
+        },
     }
 
 
@@ -886,11 +915,11 @@ def invalid_compound_ids():
         "cpd99999",  # Non-existent
         "cpd00000",  # Edge case ID
         "rxn00001",  # Reaction ID instead of compound
-        "cpd001",    # Wrong format (too short)
-        "cpd0000001", # Wrong format (too long)
+        "cpd001",  # Wrong format (too short)
+        "cpd0000001",  # Wrong format (too long)
         "CPD00027",  # Wrong case
         "compound_00027",  # Wrong prefix
-        "",          # Empty string
+        "",  # Empty string
         "cpd00abc",  # Non-numeric
     ]
 
@@ -898,6 +927,7 @@ def invalid_compound_ids():
 # ============================================================================
 # Comprehensive ModelSEED Reaction ID Fixtures
 # ============================================================================
+
 
 @pytest.fixture
 def comprehensive_reaction_ids():
@@ -914,7 +944,6 @@ def comprehensive_reaction_ids():
         "phosphoglycerate_mutase": "rxn00346",
         "enolase": "rxn00347",
         "pyruvate_kinase": "rxn00348",
-
         # TCA cycle reactions
         "citrate_synthase": "rxn00352",
         "aconitase": "rxn00353",
@@ -924,18 +953,14 @@ def comprehensive_reaction_ids():
         "succinate_dehydrogenase": "rxn00357",
         "fumarase": "rxn00358",
         "malate_dehydrogenase": "rxn00359",
-
         # Pentose phosphate pathway
         "glucose_6p_dehydrogenase": "rxn00371",
         "6_phosphogluconate_dehydrogenase": "rxn00372",
-
         # Transport reactions
         "glucose_transport": "rxn05478",
         "oxygen_transport": "rxn08518",
-
         # Biomass
         "biomass_reaction": "rxn00001",
-
         # ATP synthesis
         "atp_synthase": "rxn00062",
     }
@@ -956,7 +981,7 @@ def comprehensive_reaction_metadata():
             "ec_numbers": "2.7.1.1",
             "pathways": "Glycolysis|Central Metabolism",
             "is_transport": False,
-            "aliases": "KEGG: R00200|BiGG: HEX1|MetaCyc: GLUCOKIN-RXN"
+            "aliases": "KEGG: R00200|BiGG: HEX1|MetaCyc: GLUCOKIN-RXN",
         },
         "rxn00359": {
             "id": "rxn00359",
@@ -969,8 +994,8 @@ def comprehensive_reaction_metadata():
             "ec_numbers": "1.1.1.37",
             "pathways": "TCA Cycle|Central Metabolism",
             "is_transport": False,
-            "aliases": "KEGG: R00342|BiGG: MDH|MetaCyc: MALATE-DEH-RXN"
-        }
+            "aliases": "KEGG: R00342|BiGG: MDH|MetaCyc: MALATE-DEH-RXN",
+        },
     }
 
 
@@ -981,11 +1006,11 @@ def invalid_reaction_ids():
         "rxn99999",  # Non-existent
         "rxn00000",  # Edge case ID
         "cpd00027",  # Compound ID instead of reaction
-        "rxn001",    # Wrong format (too short)
-        "rxn0000001", # Wrong format (too long)
+        "rxn001",  # Wrong format (too short)
+        "rxn0000001",  # Wrong format (too long)
         "RXN00148",  # Wrong case
         "reaction_00148",  # Wrong prefix
-        "",          # Empty string
+        "",  # Empty string
         "rxn00abc",  # Non-numeric
     ]
 
@@ -993,6 +1018,7 @@ def invalid_reaction_ids():
 # ============================================================================
 # Integration Test Helpers
 # ============================================================================
+
 
 @pytest.fixture
 def temp_test_dir(tmp_path):
@@ -1006,16 +1032,14 @@ def temp_test_dir(tmp_path):
 # Pytest Configuration
 # ============================================================================
 
+
 def pytest_configure(config):
     """Register custom markers."""
+    config.addinivalue_line("markers", "integration: mark test as integration test")
+    config.addinivalue_line("markers", "slow: mark test as slow running")
     config.addinivalue_line(
-        "markers", "integration: mark test as integration test"
-    )
-    config.addinivalue_line(
-        "markers", "slow: mark test as slow running"
-    )
-    config.addinivalue_line(
-        "markers", "real_llm: mark test as requiring real LLM API calls (expensive, slow, requires argo-proxy)"
+        "markers",
+        "real_llm: mark test as requiring real LLM API calls (expensive, slow, requires argo-proxy)",
     )
 
 
@@ -1035,6 +1059,7 @@ def pytest_collection_modifyitems(config, items):
 # Argo LLM Integration Fixtures (Phase 11.5)
 # ============================================================================
 
+
 @pytest.fixture
 def argo_available():
     """Check if argo-proxy is available on localhost:8000.
@@ -1045,7 +1070,7 @@ def argo_available():
     import socket
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    result = sock.connect_ex(('localhost', 8000))
+    result = sock.connect_ex(("localhost", 8000))
     sock.close()
 
     if result != 0:

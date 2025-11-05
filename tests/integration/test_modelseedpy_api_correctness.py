@@ -53,6 +53,7 @@ def db_index():
 def templates():
     """Load templates for all tests."""
     from gem_flux_mcp.templates.loader import TEMPLATE_CACHE
+
     templates_dict = load_templates()
     TEMPLATE_CACHE.clear()
     TEMPLATE_CACHE.update(templates_dict)
@@ -63,14 +64,14 @@ def templates():
 def glucose_media():
     """Create glucose minimal aerobic media for testing."""
     media_dict = {
-        'cpd00027_e0': (-5, 100),   # D-Glucose
-        'cpd00007_e0': (-10, 100),  # O2
-        'cpd00001_e0': (-100, 100), # H2O
-        'cpd00009_e0': (-100, 100), # Phosphate
-        'cpd00011_e0': (-100, 100), # CO2
-        'cpd00067_e0': (-100, 100), # H+
-        'cpd00013_e0': (-100, 100), # NH3
-        'cpd00048_e0': (-100, 100), # SO4
+        "cpd00027_e0": (-5, 100),  # D-Glucose
+        "cpd00007_e0": (-10, 100),  # O2
+        "cpd00001_e0": (-100, 100),  # H2O
+        "cpd00009_e0": (-100, 100),  # Phosphate
+        "cpd00011_e0": (-100, 100),  # CO2
+        "cpd00067_e0": (-100, 100),  # H+
+        "cpd00013_e0": (-100, 100),  # NH3
+        "cpd00048_e0": (-100, 100),  # SO4
     }
     media = MSMedia.from_dict(media_dict)
     media.id = "test_glucose_aerobic"
@@ -78,6 +79,7 @@ def glucose_media():
 
     # Verify storage succeeded
     from gem_flux_mcp.storage.media import media_exists
+
     assert media_exists("test_glucose_aerobic"), "Media storage failed in fixture"
     assert "test_glucose_aerobic" in MEDIA_STORAGE, "Media not in MEDIA_STORAGE dict"
 
@@ -187,7 +189,7 @@ class TestMSGenomeAPI:
             protein_sequences=protein_sequences,
             template="GramNegative",
             model_name="test_msgenome",
-            annotate_with_rast=False
+            annotate_with_rast=False,
         )
 
         assert response["success"] is True
@@ -207,7 +209,7 @@ class TestMSGenomeAPI:
             protein_sequences=protein_sequences,
             template="Core",  # Use Core template for faster test
             model_name="test_selenocysteine",
-            annotate_with_rast=False
+            annotate_with_rast=False,
         )
 
         assert response["success"] is True
@@ -218,14 +220,16 @@ class TestMSMediaConstraintsAPI:
     """Test MSMedia manual constraint application (no .apply_to_model())."""
 
     @pytest.mark.asyncio
-    async def test_msmedia_manual_constraints_in_gapfilling(self, db_index, templates, glucose_media, realistic_protein_sequences):
+    async def test_msmedia_manual_constraints_in_gapfilling(
+        self, db_index, templates, glucose_media, realistic_protein_sequences
+    ):
         """Verify media constraints applied manually using get_media_constraints()."""
         # Build a model with realistic sequences
         build_response = await build_model(
             protein_sequences=realistic_protein_sequences,
             template="Core",
             model_name="test_media_constraints",
-            annotate_with_rast=False
+            annotate_with_rast=False,
         )
 
         model_id = build_response["model_id"]
@@ -240,7 +244,7 @@ class TestMSMediaConstraintsAPI:
                 media_id=glucose_media,
                 db_index=db_index,
                 target_growth_rate=0.001,
-                gapfill_mode="genomescale_only"  # Skip ATP correction for empty models
+                gapfill_mode="genomescale_only",  # Skip ATP correction for empty models
             )
             # If this runs without AttributeError on MSMedia, the API is correct
             # Gapfilling may fail for other reasons (empty model), but that's expected
@@ -258,14 +262,16 @@ class TestMSGapfillAPI:
     """Test MSGapfill correct parameter usage."""
 
     @pytest.mark.asyncio
-    async def test_msgapfill_parameters(self, db_index, templates, glucose_media, realistic_protein_sequences):
+    async def test_msgapfill_parameters(
+        self, db_index, templates, glucose_media, realistic_protein_sequences
+    ):
         """Verify MSGapfill uses model_or_mdlutl= and run_gapfilling uses minimum_obj=."""
         # Build a model with realistic sequences
         build_response = await build_model(
             protein_sequences=realistic_protein_sequences,
             template="Core",
             model_name="test_msgapfill",
-            annotate_with_rast=False
+            annotate_with_rast=False,
         )
 
         model_id = build_response["model_id"]
@@ -281,12 +287,14 @@ class TestMSGapfillAPI:
                 media_id=glucose_media,
                 db_index=db_index,
                 target_growth_rate=0.001,
-                gapfill_mode="genomescale_only"  # Skip ATP for speed
+                gapfill_mode="genomescale_only",  # Skip ATP for speed
             )
             # No TypeError or KeyError means API is correct
         except TypeError as e:
             if "model_or_mdlutl" in str(e):
-                pytest.fail("MSGapfill still using wrong parameter 'model=' instead of 'model_or_mdlutl='")
+                pytest.fail(
+                    "MSGapfill still using wrong parameter 'model=' instead of 'model_or_mdlutl='"
+                )
             raise
         except KeyError as e:
             if "0.001" in str(e):
@@ -301,14 +309,16 @@ class TestMSATPCorrectionAPI:
     """Test MSATPCorrection correct parameter usage."""
 
     @pytest.mark.asyncio
-    async def test_msatpcorrection_parameters(self, db_index, templates, glucose_media, realistic_protein_sequences):
+    async def test_msatpcorrection_parameters(
+        self, db_index, templates, glucose_media, realistic_protein_sequences
+    ):
         """Verify MSATPCorrection uses model_or_mdlutl= and atp_medias=."""
         # Build a model with realistic sequences
         build_response = await build_model(
             protein_sequences=realistic_protein_sequences,
             template="Core",
             model_name="test_atpcorrection",
-            annotate_with_rast=False
+            annotate_with_rast=False,
         )
 
         model_id = build_response["model_id"]
@@ -324,15 +334,19 @@ class TestMSATPCorrectionAPI:
                 media_id=glucose_media,
                 db_index=db_index,
                 target_growth_rate=0.001,
-                gapfill_mode="atp_only"  # Test ATP correction specifically
+                gapfill_mode="atp_only",  # Test ATP correction specifically
             )
             # No TypeError means API is correct
         except TypeError as e:
             error_str = str(e)
             if "model_or_mdlutl" in error_str:
-                pytest.fail("MSATPCorrection using wrong parameter 'model=' instead of 'model_or_mdlutl='")
+                pytest.fail(
+                    "MSATPCorrection using wrong parameter 'model=' instead of 'model_or_mdlutl='"
+                )
             if "atp_medias" in error_str or "tests" in error_str:
-                pytest.fail("MSATPCorrection using wrong parameter 'tests=' instead of 'atp_medias='")
+                pytest.fail(
+                    "MSATPCorrection using wrong parameter 'tests=' instead of 'atp_medias='"
+                )
             raise
         except Exception:
             # Empty models will cause ATP correction to fail - that's expected
@@ -343,14 +357,16 @@ class TestEndToEndWorkflow:
     """Test complete workflow with all API fixes."""
 
     @pytest.mark.asyncio
-    async def test_complete_workflow_with_correct_apis(self, db_index, templates, glucose_media, realistic_protein_sequences):
+    async def test_complete_workflow_with_correct_apis(
+        self, db_index, templates, glucose_media, realistic_protein_sequences
+    ):
         """Test build -> gapfill -> FBA workflow with all correct APIs."""
         # 1. Build model (tests MSGenome API) with realistic sequences
         build_response = await build_model(
             protein_sequences=realistic_protein_sequences,
             template="Core",
             model_name="test_workflow",
-            annotate_with_rast=False
+            annotate_with_rast=False,
         )
 
         assert build_response["success"] is True
@@ -364,7 +380,7 @@ class TestEndToEndWorkflow:
                 media_id=glucose_media,
                 db_index=db_index,
                 target_growth_rate=0.001,
-                gapfill_mode="genomescale_only"  # Skip ATP for empty models
+                gapfill_mode="genomescale_only",  # Skip ATP for empty models
             )
 
             if gapfill_response is not None:
@@ -377,7 +393,7 @@ class TestEndToEndWorkflow:
                     media_id=glucose_media,
                     db_index=db_index,
                     objective="bio1",
-                    maximize=True
+                    maximize=True,
                 )
 
                 assert fba_response["status"] in ["optimal", "infeasible"]
@@ -401,7 +417,7 @@ class TestEndToEndWorkflow:
             protein_sequences=protein_sequences,
             template="Core",
             model_name="test_seleno_workflow",
-            annotate_with_rast=False
+            annotate_with_rast=False,
         )
 
         assert build_response["success"] is True
@@ -409,8 +425,7 @@ class TestEndToEndWorkflow:
 
 
 @pytest.mark.skipif(
-    not Path("examples/ecoli_proteins.fasta").exists(),
-    reason="E. coli FASTA file not available"
+    not Path("examples/ecoli_proteins.fasta").exists(), reason="E. coli FASTA file not available"
 )
 class TestRastClientAPI:
     """Test RastClient.annotate_genome() usage."""
@@ -429,7 +444,7 @@ class TestRastClientAPI:
                 fasta_file_path="examples/ecoli_proteins.fasta",
                 template="Core",
                 model_name="test_rast_api",
-                annotate_with_rast=True  # Test RAST annotation
+                annotate_with_rast=True,  # Test RAST annotation
             )
 
             # If this succeeds, RastClient.annotate_genome() was used correctly

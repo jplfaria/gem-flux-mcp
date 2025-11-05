@@ -26,18 +26,13 @@ class BuildMediaRequest(BaseModel):
     """
 
     compounds: List[str] = Field(
-        ...,
-        min_length=1,
-        description="List of ModelSEED compound IDs (format: cpd00027)"
+        ..., min_length=1, description="List of ModelSEED compound IDs (format: cpd00027)"
     )
     default_uptake: float = Field(
-        default=100.0,
-        gt=0.0,
-        description="Default maximum uptake rate (mmol/gDW/h)"
+        default=100.0, gt=0.0, description="Default maximum uptake rate (mmol/gDW/h)"
     )
     custom_bounds: Optional[Dict[str, List[float]]] = Field(
-        default=None,
-        description="Custom [lower, upper] bounds for specific compounds"
+        default=None, description="Custom [lower, upper] bounds for specific compounds"
     )
 
     @field_validator("compounds")
@@ -45,7 +40,8 @@ class BuildMediaRequest(BaseModel):
     def validate_compound_ids(cls, v: List[str]) -> List[str]:
         """Ensure all compound IDs match cpd##### format."""
         import re
-        pattern = re.compile(r'^cpd\d{5}$')
+
+        pattern = re.compile(r"^cpd\d{5}$")
         for cpd_id in v:
             if not pattern.match(cpd_id):
                 raise ValueError(
@@ -56,16 +52,16 @@ class BuildMediaRequest(BaseModel):
 
     @field_validator("custom_bounds")
     @classmethod
-    def validate_custom_bounds(cls, v: Optional[Dict[str, List[float]]]) -> Optional[Dict[str, List[float]]]:
+    def validate_custom_bounds(
+        cls, v: Optional[Dict[str, List[float]]]
+    ) -> Optional[Dict[str, List[float]]]:
         """Ensure custom bounds have valid [lower, upper] format."""
         if v is None:
             return v
 
         for cpd_id, bounds in v.items():
             if len(bounds) != 2:
-                raise ValueError(
-                    f"Custom bounds for {cpd_id} must be [lower, upper] array"
-                )
+                raise ValueError(f"Custom bounds for {cpd_id} must be [lower, upper] array")
             lower, upper = bounds
             if lower >= upper:
                 raise ValueError(
@@ -91,8 +87,7 @@ class BuildMediaResponse(BaseModel):
     compounds: List[CompoundInfo] = Field(..., description="Compounds with metadata")
     num_compounds: int = Field(..., description="Total compound count")
     media_type: Literal["minimal", "rich"] = Field(
-        ...,
-        description="Classification: minimal (<50 compounds) or rich (>=50)"
+        ..., description="Classification: minimal (<50 compounds) or rich (>=50)"
     )
     default_uptake_rate: float = Field(..., description="Default uptake value used")
     custom_bounds_applied: int = Field(..., description="Count of custom bounds")
@@ -111,24 +106,19 @@ class BuildModelRequest(BaseModel):
     """
 
     protein_sequences: Optional[Dict[str, str]] = Field(
-        default=None,
-        description="Dict mapping protein IDs to amino acid sequences"
+        default=None, description="Dict mapping protein IDs to amino acid sequences"
     )
     fasta_file_path: Optional[str] = Field(
-        default=None,
-        description="Path to FASTA file with protein sequences"
+        default=None, description="Path to FASTA file with protein sequences"
     )
     template: Literal["GramNegative", "GramPositive", "Core"] = Field(
-        ...,
-        description="ModelSEED template for model construction"
+        ..., description="ModelSEED template for model construction"
     )
     model_name: Optional[str] = Field(
-        default=None,
-        description="Human-readable model name (auto-generated if not provided)"
+        default=None, description="Human-readable model name (auto-generated if not provided)"
     )
     annotate_with_rast: bool = Field(
-        default=True,
-        description="Enable RAST annotation for improved template matching"
+        default=True, description="Enable RAST annotation for improved template matching"
     )
 
     @field_validator("protein_sequences")
@@ -168,21 +158,17 @@ class BuildModelRequest(BaseModel):
             )
 
         if not has_sequences and not has_fasta:
-            raise ValueError(
-                "Must provide either protein_sequences or fasta_file_path"
-            )
+            raise ValueError("Must provide either protein_sequences or fasta_file_path")
 
 
 class ModelStatistics(BaseModel):
     """Detailed model statistics breakdown."""
 
     reactions_by_compartment: Dict[str, int] = Field(
-        ...,
-        description="Reaction counts per compartment"
+        ..., description="Reaction counts per compartment"
     )
     metabolites_by_compartment: Dict[str, int] = Field(
-        ...,
-        description="Metabolite counts per compartment"
+        ..., description="Metabolite counts per compartment"
     )
     reversible_reactions: int = Field(..., description="Reversible reaction count")
     irreversible_reactions: int = Field(..., description="Irreversible reaction count")
@@ -193,13 +179,9 @@ class ModelProperties(BaseModel):
     """Model state and properties."""
 
     is_draft: bool = Field(..., description="True if model is ungapfilled draft")
-    requires_gapfilling: bool = Field(
-        ...,
-        description="True if model needs gapfilling to grow"
-    )
+    requires_gapfilling: bool = Field(..., description="True if model needs gapfilling to grow")
     estimated_growth_without_gapfilling: float = Field(
-        default=0.0,
-        description="Predicted growth rate before gapfilling"
+        default=0.0, description="Predicted growth rate before gapfilling"
     )
 
 
@@ -237,17 +219,13 @@ class GapfillModelRequest(BaseModel):
     model_id: str = Field(..., description="Model to gapfill")
     media_id: str = Field(..., description="Target growth medium")
     target_growth_rate: float = Field(
-        default=0.01,
-        gt=0.0,
-        description="Minimum growth rate to achieve (1/h)"
+        default=0.01, gt=0.0, description="Minimum growth rate to achieve (1/h)"
     )
     allow_all_non_grp_reactions: bool = Field(
-        default=True,
-        description="Allow non-gene-associated reactions"
+        default=True, description="Allow non-gene-associated reactions"
     )
     gapfill_mode: Literal["full", "atp_only", "genomescale_only"] = Field(
-        default="full",
-        description="Gapfilling stages to run"
+        default="full", description="Gapfilling stages to run"
     )
 
 
@@ -258,13 +236,11 @@ class ReactionAdded(BaseModel):
     name: str = Field(..., description="Human-readable reaction name")
     equation: str = Field(..., description="Stoichiometric equation")
     direction: Literal["forward", "reverse", "reversible"] = Field(
-        ...,
-        description="Direction reaction was added"
+        ..., description="Direction reaction was added"
     )
     compartment: str = Field(..., description="Compartment code")
     source: Literal["template_gapfill", "atp_correction", "auto_generated"] = Field(
-        ...,
-        description="Where reaction came from"
+        ..., description="Where reaction came from"
     )
 
 
@@ -303,10 +279,7 @@ class GapfilledModelProperties(BaseModel):
     num_reactions: int = Field(..., description="Total reactions after gapfilling")
     num_metabolites: int = Field(..., description="Total metabolites after gapfilling")
     is_draft: bool = Field(..., description="Should be False after successful gapfilling")
-    requires_further_gapfilling: bool = Field(
-        ...,
-        description="False if achieved target growth"
-    )
+    requires_further_gapfilling: bool = Field(..., description="False if achieved target growth")
 
 
 class GapfillModelResponse(BaseModel):
@@ -320,19 +293,16 @@ class GapfillModelResponse(BaseModel):
     growth_rate_after: float = Field(..., description="Growth rate after gapfilling")
     target_growth_rate: float = Field(..., description="Target growth rate")
     gapfilling_successful: bool = Field(
-        ...,
-        description="True if growth_rate_after >= target_growth_rate"
+        ..., description="True if growth_rate_after >= target_growth_rate"
     )
     num_reactions_added: int = Field(..., description="Total reactions added")
     reactions_added: List[ReactionAdded] = Field(..., description="Added reactions with metadata")
     exchange_reactions_added: List[ExchangeReactionAdded] = Field(
-        ...,
-        description="Auto-generated exchange reactions"
+        ..., description="Auto-generated exchange reactions"
     )
     atp_correction: ATPCorrectionStats = Field(..., description="ATP correction results")
     genomescale_gapfill: GenomescaleGapfillStats = Field(
-        ...,
-        description="Genome-scale gapfilling results"
+        ..., description="Genome-scale gapfilling results"
     )
     model_properties: GapfilledModelProperties = Field(..., description="Final model state")
 
@@ -353,9 +323,7 @@ class RunFBARequest(BaseModel):
     objective: str = Field(default="bio1", description="Objective reaction to optimize")
     maximize: bool = Field(default=True, description="True to maximize, False to minimize")
     flux_threshold: float = Field(
-        default=1e-6,
-        ge=0.0,
-        description="Minimum flux to report (mmol/gDW/h)"
+        default=1e-6, ge=0.0, description="Minimum flux to report (mmol/gDW/h)"
     )
 
 
@@ -396,8 +364,7 @@ class TopFlux(BaseModel):
     reaction_name: str = Field(..., description="Human-readable reaction name")
     flux: float = Field(..., description="Flux value (signed)")
     direction: Literal["forward", "reverse"] = Field(
-        ...,
-        description="Direction based on flux sign"
+        ..., description="Direction based on flux sign"
     )
 
 
@@ -410,16 +377,14 @@ class RunFBAResponse(BaseModel):
     objective_reaction: str = Field(..., description="Objective reaction optimized")
     objective_value: float = Field(..., description="Optimized objective value")
     status: Literal["optimal", "infeasible", "unbounded", "failed"] = Field(
-        ...,
-        description="Optimization status"
+        ..., description="Optimization status"
     )
     solver_status: str = Field(..., description="Detailed solver status")
     active_reactions: int = Field(..., description="Reactions with |flux| > threshold")
     total_reactions: int = Field(..., description="Total reactions in model")
     total_flux: float = Field(..., description="Sum of absolute flux values")
     fluxes: Dict[str, float] = Field(
-        ...,
-        description="Reaction IDs to flux values (filtered by threshold)"
+        ..., description="Reaction IDs to flux values (filtered by threshold)"
     )
     uptake_fluxes: List[UptakeFlux] = Field(..., description="Uptake summary with names")
     secretion_fluxes: List[SecretionFlux] = Field(..., description="Secretion summary with names")
@@ -445,8 +410,7 @@ class CompoundLookupResult(BaseModel):
     inchikey: Optional[str] = Field(None, description="InChI key structure identifier")
     aliases: List[str] = Field(default_factory=list, description="Alternative names")
     external_ids: Dict[str, List[str]] = Field(
-        default_factory=dict,
-        description="Cross-references to other databases"
+        default_factory=dict, description="Cross-references to other databases"
     )
 
 
@@ -457,8 +421,7 @@ class CompoundSearchResult(BaseModel):
     name: str = Field(..., description="Compound name")
     formula: str = Field(..., description="Molecular formula")
     match_type: Literal["name", "abbreviation", "alias", "formula", "id"] = Field(
-        ...,
-        description="Field that matched the query"
+        ..., description="Field that matched the query"
     )
     relevance_score: float = Field(..., description="Match quality (0-1)")
 
@@ -482,16 +445,14 @@ class ReactionLookupResult(BaseModel):
     equation: str = Field(..., description="Stoichiometric equation with names")
     equation_with_ids: str = Field(..., description="Equation with compound IDs")
     reversibility: Literal["irreversible_forward", "irreversible_reverse", "reversible"] = Field(
-        ...,
-        description="Reversibility status"
+        ..., description="Reversibility status"
     )
     direction_symbol: Literal[">", "<", "="] = Field(..., description="Direction symbol")
     ec_numbers: List[str] = Field(default_factory=list, description="EC numbers")
     pathways: List[str] = Field(default_factory=list, description="Pathway associations")
     is_transport: bool = Field(..., description="True if transport reaction")
     external_ids: Dict[str, List[str]] = Field(
-        default_factory=dict,
-        description="Cross-references to other databases"
+        default_factory=dict, description="Cross-references to other databases"
     )
 
 
@@ -503,8 +464,7 @@ class ReactionSearchResult(BaseModel):
     equation: str = Field(..., description="Stoichiometric equation")
     ec_numbers: List[str] = Field(default_factory=list, description="EC numbers")
     match_type: Literal["name", "abbreviation", "ec", "alias", "pathway", "id"] = Field(
-        ...,
-        description="Field that matched the query"
+        ..., description="Field that matched the query"
     )
     relevance_score: float = Field(..., description="Match quality (0-1)")
 
@@ -527,8 +487,7 @@ class ListModelsRequest(BaseModel):
     """Request format for list_models tool."""
 
     filter_state: Literal["all", "draft", "gapfilled"] = Field(
-        default="all",
-        description="Filter models by processing state"
+        default="all", description="Filter models by processing state"
     )
 
 
@@ -580,11 +539,12 @@ class MediaInfo(BaseModel):
     num_compounds: int = Field(..., description="Number of compounds")
     media_type: Literal["minimal", "rich"] = Field(..., description="Classification")
     compounds_preview: List[Dict[str, str]] = Field(
-        ...,
-        description="First 3 compounds with ID and name"
+        ..., description="First 3 compounds with ID and name"
     )
     created_at: str = Field(..., description="ISO 8601 timestamp")
-    is_predefined: bool = Field(default=False, description="True if predefined media, False if user-created")
+    is_predefined: bool = Field(
+        default=False, description="True if predefined media, False if user-created"
+    )
 
 
 class ListMediaResponse(BaseModel):

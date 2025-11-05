@@ -89,9 +89,7 @@ class TestLoadConfigFromEnv:
 
     def test_load_both_from_env(self):
         """Test loading both limits from environment."""
-        with patch.dict(
-            os.environ, {"GEM_FLUX_MAX_MODELS": "300", "GEM_FLUX_MAX_MEDIA": "150"}
-        ):
+        with patch.dict(os.environ, {"GEM_FLUX_MAX_MODELS": "300", "GEM_FLUX_MAX_MEDIA": "150"}):
             config = load_config_from_env()
             assert config.max_models == 300
             assert config.max_media == 150
@@ -134,6 +132,7 @@ class TestInitializeStorage:
         # Verify storage is initialized
         from gem_flux_mcp.storage.media import get_media_count
         from gem_flux_mcp.storage.models import get_model_count
+
         assert get_model_count() == 0
         assert get_media_count() == 0
 
@@ -152,9 +151,7 @@ class TestInitializeStorage:
 
     def test_initialize_from_env_vars(self):
         """Test initialization loads from environment variables."""
-        with patch.dict(
-            os.environ, {"GEM_FLUX_MAX_MODELS": "250", "GEM_FLUX_MAX_MEDIA": "125"}
-        ):
+        with patch.dict(os.environ, {"GEM_FLUX_MAX_MODELS": "250", "GEM_FLUX_MAX_MEDIA": "125"}):
             config = initialize_storage()
 
             assert config.max_models == 250
@@ -231,6 +228,7 @@ class TestShutdownStorage:
         # Verify storage is still empty after shutdown
         from gem_flux_mcp.storage.media import get_media_count
         from gem_flux_mcp.storage.models import get_model_count
+
         assert get_model_count() == 0
         assert get_media_count() == 0
 

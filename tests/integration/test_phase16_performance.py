@@ -205,7 +205,10 @@ class TestDatabaseLookupPerformance:
 
         # Measure batch
         start_time = time.perf_counter()
-        results = [get_compound_name(GetCompoundNameRequest(compound_id=cpd_id), database_index) for cpd_id in compound_ids]
+        results = [
+            get_compound_name(GetCompoundNameRequest(compound_id=cpd_id), database_index)
+            for cpd_id in compound_ids
+        ]
         elapsed = (time.perf_counter() - start_time) * 1000  # Convert to ms
 
         avg_time = elapsed / len(compound_ids)
@@ -238,7 +241,10 @@ class TestDatabaseLookupPerformance:
 
         # Measure batch
         start_time = time.perf_counter()
-        results = [get_reaction_name(GetReactionNameRequest(reaction_id=rxn_id), database_index) for rxn_id in reaction_ids]
+        results = [
+            get_reaction_name(GetReactionNameRequest(reaction_id=rxn_id), database_index)
+            for rxn_id in reaction_ids
+        ]
         elapsed = (time.perf_counter() - start_time) * 1000  # Convert to ms
 
         avg_time = elapsed / len(reaction_ids)
@@ -483,8 +489,8 @@ class TestConcurrentOperationPerformance:
         assert slowdown_factor < 2.0, f"Concurrent slowdown factor: {slowdown_factor:.2f}x"
 
         print("\n✓ Concurrent lookups performance:")
-        print(f"  - Sequential time: {sequential_time*1000:.3f}ms")
-        print(f"  - Concurrent time: {concurrent_time*1000:.3f}ms")
+        print(f"  - Sequential time: {sequential_time * 1000:.3f}ms")
+        print(f"  - Concurrent time: {concurrent_time * 1000:.3f}ms")
         print(f"  - Slowdown factor: {slowdown_factor:.2f}x (<2.0x target)")
 
     def test_mixed_operations_performance(self, database_index):

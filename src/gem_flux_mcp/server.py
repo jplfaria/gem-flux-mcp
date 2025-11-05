@@ -169,9 +169,7 @@ def load_resources(config: dict) -> None:
 
     templates = load_templates(config["template_dir"])
     if not templates:
-        logger.warning(
-            "No templates loaded! At least one template is required for model building."
-        )
+        logger.warning("No templates loaded! At least one template is required for model building.")
         raise ValueError("Failed to load any ModelSEED templates")
 
     logger.info(f"Loaded {len(templates)} templates: {list(templates.keys())}")
@@ -196,10 +194,13 @@ def load_resources(config: dict) -> None:
 
             # Store MSMedia object using the media name as ID
             store_media(media_name, media_obj)
-            logger.info(f"  ✓ Stored predefined media in session: {media_name} ({len(compounds_dict)} compounds)")
+            logger.info(
+                f"  ✓ Stored predefined media in session: {media_name} ({len(compounds_dict)} compounds)"
+            )
         except Exception as e:
             logger.error(f"  ✗ Failed to store predefined media {media_name}: {e}")
             import traceback
+
             logger.error(f"    Traceback: {traceback.format_exc()}")
 
     logger.info(f"Predefined media available in session: {len(loaded_media)}")

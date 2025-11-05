@@ -40,27 +40,27 @@ def validate_template(template: MSTemplate, template_name: str) -> None:
         DatabaseError: If template missing required components
     """
     # Check reactions exist
-    if not hasattr(template, 'reactions') or not template.reactions:
+    if not hasattr(template, "reactions") or not template.reactions:
         raise DatabaseError(
             message=f"Template '{template_name}' has no reactions.\n"
-                    "A valid template must contain at least one reaction.",
-            error_code="INVALID_TEMPLATE_NO_REACTIONS"
+            "A valid template must contain at least one reaction.",
+            error_code="INVALID_TEMPLATE_NO_REACTIONS",
         )
 
     # Check compounds exist (ModelSEED templates use 'compounds', not 'metabolites')
-    if not hasattr(template, 'compounds') or not template.compounds:
+    if not hasattr(template, "compounds") or not template.compounds:
         raise DatabaseError(
             message=f"Template '{template_name}' has no compounds.\n"
-                    "A valid template must contain at least one compound.",
-            error_code="INVALID_TEMPLATE_NO_COMPOUNDS"
+            "A valid template must contain at least one compound.",
+            error_code="INVALID_TEMPLATE_NO_COMPOUNDS",
         )
 
     # Check compartments exist
-    if not hasattr(template, 'compartments') or not template.compartments:
+    if not hasattr(template, "compartments") or not template.compartments:
         raise DatabaseError(
             message=f"Template '{template_name}' has no compartments.\n"
-                    "A valid template must define at least one compartment (e.g., c0, e0).",
-            error_code="INVALID_TEMPLATE_NO_COMPARTMENTS"
+            "A valid template must define at least one compartment (e.g., c0, e0).",
+            error_code="INVALID_TEMPLATE_NO_COMPARTMENTS",
         )
 
     # Log validation success with statistics
@@ -107,24 +107,24 @@ def load_template(template_path: Path, template_name: str) -> MSTemplate:
     if not template_path.exists():
         raise DatabaseError(
             message=f"Template file not found: {template_path}\n"
-                    f"Template '{template_name}' file is missing.",
-            error_code="TEMPLATE_FILE_NOT_FOUND"
+            f"Template '{template_name}' file is missing.",
+            error_code="TEMPLATE_FILE_NOT_FOUND",
         )
 
     # Load and parse JSON
     try:
-        with open(template_path, 'r') as fh:
+        with open(template_path, "r") as fh:
             template_dict = json.load(fh)
     except json.JSONDecodeError as e:
         raise DatabaseError(
             message=f"Invalid JSON in {template_path}: {e}\n"
-                    f"The template file appears to be corrupted.",
-            error_code="INVALID_TEMPLATE_JSON"
+            f"The template file appears to be corrupted.",
+            error_code="INVALID_TEMPLATE_JSON",
         )
     except Exception as e:
         raise DatabaseError(
             message=f"Failed to read template file {template_path}: {e}",
-            error_code="TEMPLATE_READ_ERROR"
+            error_code="TEMPLATE_READ_ERROR",
         )
 
     # Build MSTemplate object using ModelSEEDpy
@@ -133,8 +133,8 @@ def load_template(template_path: Path, template_name: str) -> MSTemplate:
     except Exception as e:
         raise DatabaseError(
             message=f"Failed to build template '{template_name}': {e}\n"
-                    "This may indicate a template version mismatch or corrupted file.",
-            error_code="TEMPLATE_BUILD_FAILED"
+            "This may indicate a template version mismatch or corrupted file.",
+            error_code="TEMPLATE_BUILD_FAILED",
         )
 
     # Validate template integrity (spec 015)
@@ -172,16 +172,16 @@ def load_templates(template_dir: Path | str | None = None) -> dict[str, MSTempla
     if not template_dir.exists():
         raise DatabaseError(
             message=f"Template directory not found: {template_dir}\n\n"
-                    "The server requires ModelSEED template files to operate.\n\n"
-                    "To fix:\n"
-                    "1. Create directory: mkdir -p data/templates\n"
-                    "2. Download required templates:\n"
-                    "   - GramNegModelTemplateV6.json\n"
-                    "   - Core-V5.2.json\n"
-                    "3. Place templates in data/templates/\n"
-                    "4. Restart server\n\n"
-                    "See docs/template-installation.md for detailed instructions.",
-            error_code="TEMPLATE_DIRECTORY_NOT_FOUND"
+            "The server requires ModelSEED template files to operate.\n\n"
+            "To fix:\n"
+            "1. Create directory: mkdir -p data/templates\n"
+            "2. Download required templates:\n"
+            "   - GramNegModelTemplateV6.json\n"
+            "   - Core-V5.2.json\n"
+            "3. Place templates in data/templates/\n"
+            "4. Restart server\n\n"
+            "See docs/template-installation.md for detailed instructions.",
+            error_code="TEMPLATE_DIRECTORY_NOT_FOUND",
         )
 
     templates = {}
@@ -195,17 +195,19 @@ def load_templates(template_dir: Path | str | None = None) -> dict[str, MSTempla
             if template_name in REQUIRED_TEMPLATES:
                 raise DatabaseError(
                     message=f"Required template missing: {filepath}\n\n"
-                            f"Template '{template_name}' is required for server operation.\n\n"
-                            "To fix:\n"
-                            f"1. Download {filename} from ModelSEED\n"
-                            "2. Place in data/templates/\n"
-                            "3. Verify file integrity (valid JSON)\n"
-                            "4. Restart server\n\n"
-                            "Template source: https://github.com/ModelSEED/ModelSEEDDatabase",
-                    error_code="REQUIRED_TEMPLATE_MISSING"
+                    f"Template '{template_name}' is required for server operation.\n\n"
+                    "To fix:\n"
+                    f"1. Download {filename} from ModelSEED\n"
+                    "2. Place in data/templates/\n"
+                    "3. Verify file integrity (valid JSON)\n"
+                    "4. Restart server\n\n"
+                    "Template source: https://github.com/ModelSEED/ModelSEEDDatabase",
+                    error_code="REQUIRED_TEMPLATE_MISSING",
                 )
             else:
-                logger.warning(f"Optional template '{template_name}' not found at {filepath}, skipping")
+                logger.warning(
+                    f"Optional template '{template_name}' not found at {filepath}, skipping"
+                )
                 continue
 
         # Load template
@@ -229,8 +231,8 @@ def load_templates(template_dir: Path | str | None = None) -> dict[str, MSTempla
     if not templates:
         raise DatabaseError(
             message="No templates successfully loaded. Cannot start server.\n"
-                    "At least one template (GramNegative or Core) is required.",
-            error_code="NO_TEMPLATES_LOADED"
+            "At least one template (GramNegative or Core) is required.",
+            error_code="NO_TEMPLATES_LOADED",
         )
 
     # Update global cache
@@ -258,10 +260,7 @@ def get_template(template_name: str) -> MSTemplate:
     """
     if template_name not in TEMPLATE_CACHE:
         valid_names = list(TEMPLATE_CACHE.keys())
-        raise ValueError(
-            f"Unknown template '{template_name}'. "
-            f"Valid templates: {valid_names}"
-        )
+        raise ValueError(f"Unknown template '{template_name}'. Valid templates: {valid_names}")
 
     return TEMPLATE_CACHE[template_name]
 
@@ -287,12 +286,16 @@ def list_available_templates() -> list[dict[str, Any]]:
     templates_info = []
 
     for name, template in TEMPLATE_CACHE.items():
-        templates_info.append({
-            "name": name,
-            "num_reactions": len(template.reactions),
-            "num_compounds": len(template.compounds),  # Templates use .compounds, not .metabolites
-            "compartments": template.compartments,
-            "version": getattr(template, 'version', 'unknown')
-        })
+        templates_info.append(
+            {
+                "name": name,
+                "num_reactions": len(template.reactions),
+                "num_compounds": len(
+                    template.compounds
+                ),  # Templates use .compounds, not .metabolites
+                "compartments": template.compartments,
+                "version": getattr(template, "version", "unknown"),
+            }
+        )
 
     return templates_info

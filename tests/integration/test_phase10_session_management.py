@@ -63,8 +63,12 @@ def setup_storage():
             MEDIA_STORAGE[media_name] = media_data["compounds"]
     except Exception:
         # If loading fails, create mock predefined media
-        for media_name in ["glucose_minimal_aerobic", "glucose_minimal_anaerobic",
-                           "pyruvate_minimal_aerobic", "pyruvate_minimal_anaerobic"]:
+        for media_name in [
+            "glucose_minimal_aerobic",
+            "glucose_minimal_anaerobic",
+            "pyruvate_minimal_aerobic",
+            "pyruvate_minimal_anaerobic",
+        ]:
             MEDIA_STORAGE[media_name] = {
                 "cpd00027_e0": (-5, 100),
                 "cpd00007_e0": (-10, 100),
@@ -295,7 +299,7 @@ def test_delete_model(mock_cobra_model):
     assert response["error_type"] == "ModelNotFound"
     assert model_id in response["message"]
     # response["details"] is a Pydantic model with available_models field
-    assert ("available_models" in response["details"])
+    assert "available_models" in response["details"]
 
     # Test deleting with empty model_id
     request = DeleteModelRequest(model_id="")
@@ -352,6 +356,7 @@ def test_session_isolation(mock_cobra_model, mock_media_dict):
     clear_all_media()
     # Reload predefined media
     from gem_flux_mcp.media.predefined_loader import PREDEFINED_MEDIA_CACHE
+
     for media_name, media_data in PREDEFINED_MEDIA_CACHE.items():
         MEDIA_STORAGE[media_name] = media_data["compounds"]
 

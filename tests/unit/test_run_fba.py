@@ -67,6 +67,7 @@ def mock_model():
 
     # Mock fluxes as pandas Series
     import pandas as pd
+
     fluxes_dict = {
         "bio1": 0.874,
         "EX_cpd00027_e0": -5.0,
@@ -147,13 +148,14 @@ def mock_db_index():
 @pytest.fixture
 def setup_storage(mock_model, mock_media_data):
     """Setup model and media storage."""
-    with patch("gem_flux_mcp.tools.run_fba.model_exists") as mock_model_exists, \
-         patch("gem_flux_mcp.tools.run_fba.media_exists") as mock_media_exists, \
-         patch("gem_flux_mcp.tools.run_fba.retrieve_model") as mock_retrieve_model, \
-         patch("gem_flux_mcp.tools.run_fba.retrieve_media") as mock_retrieve_media, \
-         patch("gem_flux_mcp.tools.run_fba.MODEL_STORAGE") as model_storage, \
-         patch("gem_flux_mcp.tools.run_fba.MEDIA_STORAGE") as media_storage:
-
+    with (
+        patch("gem_flux_mcp.tools.run_fba.model_exists") as mock_model_exists,
+        patch("gem_flux_mcp.tools.run_fba.media_exists") as mock_media_exists,
+        patch("gem_flux_mcp.tools.run_fba.retrieve_model") as mock_retrieve_model,
+        patch("gem_flux_mcp.tools.run_fba.retrieve_media") as mock_retrieve_media,
+        patch("gem_flux_mcp.tools.run_fba.MODEL_STORAGE") as model_storage,
+        patch("gem_flux_mcp.tools.run_fba.MEDIA_STORAGE") as media_storage,
+    ):
         # Mock existence checks
         mock_model_exists.side_effect = lambda k: k == "model_001.gf"
         mock_media_exists.side_effect = lambda k: k == "media_001"

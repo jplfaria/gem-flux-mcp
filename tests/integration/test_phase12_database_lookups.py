@@ -20,7 +20,6 @@ serialization. Tests must use dictionary access (response["key"]) not attribute
 access (response.key).
 """
 
-
 import pandas as pd
 import pytest
 
@@ -62,16 +61,30 @@ def mock_compounds_db():
         "formula": ["H2O", "C6H12O6", "O2", "C10H12N5O13P3", "C10H12N5O10P2", "C6H11O9P"],
         "mass": [18.015, 180.156, 31.999, 507.181, 427.201, 260.136],
         "charge": [0, 0, 0, -4, -3, -2],
-        "inchikey": ["XLYOFNOQVPJJNP-UHFFFAOYSA-N", "WQZGKKKJIJFFOK-GASJEMHNSA-N",
-                     "MYMOFIZGZYHOMD-UHFFFAOYSA-N", "ZKHQWZAMYRWXGA-KQYNXXCUSA-J",
-                     "XTWYTFMLZFPYCI-KQYNXXCUSA-K", "NBSCHQHZLSJFNQ-GASJEMHNSA-L"],
-        "smiles": ["O", "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O", "O=O",
-                   "[O-]P([O-])(=O)OP([O-])(=O)OC[C@H]1O[C@H]([C@H](O)[C@@H]1O)n1cnc2c(N)ncnc12",
-                   "[O-]P([O-])(=O)OC[C@H]1O[C@H]([C@H](O)[C@@H]1O)n1cnc2c(N)ncnc12",
-                   "O[C@@H]1[C@@H](O)[C@@H](OP([O-])([O-])=O)O[C@H]1CO"],
-        "aliases": ["", "KEGG: C00031|BiGG: glc__D|MetaCyc: GLC", "KEGG: C00007|BiGG: o2",
-                    "KEGG: C00002|BiGG: atp", "KEGG: C00008|BiGG: adp",
-                    "KEGG: C00092|BiGG: g6p|MetaCyc: GLC-6-P"],
+        "inchikey": [
+            "XLYOFNOQVPJJNP-UHFFFAOYSA-N",
+            "WQZGKKKJIJFFOK-GASJEMHNSA-N",
+            "MYMOFIZGZYHOMD-UHFFFAOYSA-N",
+            "ZKHQWZAMYRWXGA-KQYNXXCUSA-J",
+            "XTWYTFMLZFPYCI-KQYNXXCUSA-K",
+            "NBSCHQHZLSJFNQ-GASJEMHNSA-L",
+        ],
+        "smiles": [
+            "O",
+            "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O",
+            "O=O",
+            "[O-]P([O-])(=O)OP([O-])(=O)OC[C@H]1O[C@H]([C@H](O)[C@@H]1O)n1cnc2c(N)ncnc12",
+            "[O-]P([O-])(=O)OC[C@H]1O[C@H]([C@H](O)[C@@H]1O)n1cnc2c(N)ncnc12",
+            "O[C@@H]1[C@@H](O)[C@@H](OP([O-])([O-])=O)O[C@H]1CO",
+        ],
+        "aliases": [
+            "",
+            "KEGG: C00031|BiGG: glc__D|MetaCyc: GLC",
+            "KEGG: C00007|BiGG: o2",
+            "KEGG: C00002|BiGG: atp",
+            "KEGG: C00008|BiGG: adp",
+            "KEGG: C00092|BiGG: g6p|MetaCyc: GLC-6-P",
+        ],
     }
     df = pd.DataFrame(data)
     # Set 'id' as index for O(1) lookups via .loc[id]
@@ -89,7 +102,12 @@ def mock_reactions_db():
     data = {
         "id": ["rxn00148", "rxn00200", "rxn00350", "rxn00558"],
         "abbreviation": ["HEX1", "PDH", "PGK", "MDH"],
-        "name": ["hexokinase", "pyruvate dehydrogenase", "phosphoglycerate kinase", "malate dehydrogenase"],
+        "name": [
+            "hexokinase",
+            "pyruvate dehydrogenase",
+            "phosphoglycerate kinase",
+            "malate dehydrogenase",
+        ],
         "equation": [
             "(1) cpd00027[0] + (1) cpd00002[0] => (1) cpd00008[0] + (1) cpd00079[0] + (1) cpd00067[0]",
             "(1) cpd00020[0] + (1) cpd00003[0] + (1) cpd00010[0] => (1) cpd00011[0] + (1) cpd00004[0] + (1) cpd00022[0]",

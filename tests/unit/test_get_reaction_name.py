@@ -30,7 +30,12 @@ def sample_reactions_df():
     return pd.DataFrame(
         {
             "id": ["rxn00148", "rxn00200", "rxn05064", "rxn00216"],
-            "name": ["hexokinase", "pyruvate dehydrogenase", "glucose transport", "citrate synthase"],
+            "name": [
+                "hexokinase",
+                "pyruvate dehydrogenase",
+                "glucose transport",
+                "citrate synthase",
+            ],
             "abbreviation": ["R00200", "R01196", "GLCt", "R00351"],
             "equation": [
                 "(1) cpd00027[c0] + (1) cpd00002[c0] => (1) cpd00008[c0] + (1) cpd00067[c0] + (1) cpd00079[c0]",
@@ -70,14 +75,23 @@ def db_index(sample_reactions_df):
     """Create DatabaseIndex with sample reactions."""
     # Create empty compounds dataframe (not used in these tests)
     # Set explicit dtype to avoid str accessor issues
-    compounds_df = pd.DataFrame(
-        columns=["id", "name", "abbreviation", "formula", "mass", "charge", "inchikey", "smiles", "aliases"]
-    ).astype({
-        "name": str,
-        "abbreviation": str,
-        "formula": str,
-        "aliases": str
-    }).set_index("id")
+    compounds_df = (
+        pd.DataFrame(
+            columns=[
+                "id",
+                "name",
+                "abbreviation",
+                "formula",
+                "mass",
+                "charge",
+                "inchikey",
+                "smiles",
+                "aliases",
+            ]
+        )
+        .astype({"name": str, "abbreviation": str, "formula": str, "aliases": str})
+        .set_index("id")
+    )
 
     return DatabaseIndex(compounds_df, sample_reactions_df)
 
@@ -330,7 +344,9 @@ def test_parse_pathways_with_database_prefix():
 
 def test_parse_pathways_with_description():
     """Test parsing pathways with descriptive text in parentheses."""
-    pathways = parse_pathways("MetaCyc: Glycolysis (Glucose Degradation)|KEGG: rn00010 (Glycolysis / Gluconeogenesis)")
+    pathways = parse_pathways(
+        "MetaCyc: Glycolysis (Glucose Degradation)|KEGG: rn00010 (Glycolysis / Gluconeogenesis)"
+    )
     assert "Glycolysis" in pathways
     assert "rn00010" in pathways
 

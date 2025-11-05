@@ -53,6 +53,7 @@ def delete_media(request: DeleteMediaRequest) -> dict:
         # Check if media exists
         if not media_exists(media_id):
             from gem_flux_mcp.storage.media import list_media_ids
+
             available = list_media_ids()
             return ErrorResponse(
                 success=False,

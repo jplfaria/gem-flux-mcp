@@ -85,8 +85,11 @@ class TestSetupLogger:
         """Test console handler is NOT added when console=False."""
         logger = setup_logger(console=False, name="test_no_console")
         # Should have no StreamHandler targeting stdout
-        stdout_handlers = [h for h in logger.handlers
-                          if isinstance(h, logging.StreamHandler) and h.stream == sys.stdout]
+        stdout_handlers = [
+            h
+            for h in logger.handlers
+            if isinstance(h, logging.StreamHandler) and h.stream == sys.stdout
+        ]
         assert len(stdout_handlers) == 0
 
     def test_setup_logger_file_handler(self, tmp_path):
@@ -240,6 +243,7 @@ class TestGetDefaultLogger:
         """Test get_default_logger auto-creates logger if not configured yet."""
         # Force reset the default logger
         import gem_flux_mcp.logging as logging_module
+
         original_logger = logging_module._default_logger
         logging_module._default_logger = None
 
@@ -353,7 +357,8 @@ class TestLogFormatting:
         log_content = log_file.read_text()
         # Check for timestamp pattern: YYYY-MM-DD HH:MM:SS
         import re
-        assert re.search(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}', log_content)
+
+        assert re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", log_content)
 
     def test_log_format_includes_level(self, tmp_path):
         """Test log messages include level name."""
@@ -389,7 +394,8 @@ class TestLogFormatting:
         log_content = log_file.read_text()
         # Should contain ":NNN" pattern for line number
         import re
-        assert re.search(r':\d+', log_content)
+
+        assert re.search(r":\d+", log_content)
 
 
 class TestEdgeCases:

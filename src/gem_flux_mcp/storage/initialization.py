@@ -133,9 +133,7 @@ def initialize_storage(config: Optional[StorageConfig] = None) -> StorageConfig:
 
     logger.info("Initializing session storage")
     logger.info(f"Storage limits: {config.max_models} models, {config.max_media} media")
-    logger.info(
-        f"Storage initialized: {len(MODEL_STORAGE)} models, {len(MEDIA_STORAGE)} media"
-    )
+    logger.info(f"Storage initialized: {len(MODEL_STORAGE)} models, {len(MEDIA_STORAGE)} media")
 
     return config
 
@@ -150,9 +148,7 @@ def get_storage_config() -> dict:
         RuntimeError: If storage not initialized yet
     """
     if _storage_config is None:
-        raise RuntimeError(
-            "Storage not initialized. Call initialize_storage() first."
-        )
+        raise RuntimeError("Storage not initialized. Call initialize_storage() first.")
     return _storage_config.copy()
 
 
@@ -181,9 +177,7 @@ def shutdown_storage() -> tuple[int, int]:
     models_cleared = clear_all_models()
     media_cleared = clear_all_media()
 
-    logger.info(
-        f"Storage cleared: {models_cleared} models, {media_cleared} media"
-    )
+    logger.info(f"Storage cleared: {models_cleared} models, {media_cleared} media")
 
     return models_cleared, media_cleared
 
@@ -205,9 +199,7 @@ def check_storage_limits() -> dict:
         RuntimeError: If storage not initialized
     """
     if _storage_config is None:
-        raise RuntimeError(
-            "Storage not initialized. Call initialize_storage() first."
-        )
+        raise RuntimeError("Storage not initialized. Call initialize_storage() first.")
 
     # Import here to avoid circular dependency
     from gem_flux_mcp.storage.media import get_media_count

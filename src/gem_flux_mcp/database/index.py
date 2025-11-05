@@ -52,18 +52,14 @@ class DatabaseIndex:
         # (spec 007: Search Operations)
         if not compounds_df.empty:
             self.compounds_df["name_lower"] = self.compounds_df["name"].str.lower()
-            self.compounds_df["abbreviation_lower"] = self.compounds_df[
-                "abbreviation"
-            ].str.lower()
+            self.compounds_df["abbreviation_lower"] = self.compounds_df["abbreviation"].str.lower()
         else:
             self.compounds_df["name_lower"] = pd.Series([], dtype=str)
             self.compounds_df["abbreviation_lower"] = pd.Series([], dtype=str)
 
         if not reactions_df.empty:
             self.reactions_df["name_lower"] = self.reactions_df["name"].str.lower()
-            self.reactions_df["abbreviation_lower"] = self.reactions_df[
-                "abbreviation"
-            ].str.lower()
+            self.reactions_df["abbreviation_lower"] = self.reactions_df["abbreviation"].str.lower()
         else:
             self.reactions_df["name_lower"] = pd.Series([], dtype=str)
             self.reactions_df["abbreviation_lower"] = pd.Series([], dtype=str)
@@ -121,9 +117,7 @@ class DatabaseIndex:
         except KeyError:
             return None
 
-    def search_compounds_by_name(
-        self, query: str, limit: int = 10
-    ) -> list[pd.Series]:
+    def search_compounds_by_name(self, query: str, limit: int = 10) -> list[pd.Series]:
         """
         Search compounds by name (case-insensitive, partial match).
 
@@ -162,9 +156,7 @@ class DatabaseIndex:
         # Convert to list of Series
         return [row for _, row in matches.iterrows()]
 
-    def search_compounds_by_abbreviation(
-        self, query: str, limit: int = 10
-    ) -> list[pd.Series]:
+    def search_compounds_by_abbreviation(self, query: str, limit: int = 10) -> list[pd.Series]:
         """
         Search compounds by abbreviation (case-insensitive, partial match).
 
@@ -190,9 +182,7 @@ class DatabaseIndex:
         matches = matches.sort_values("name").head(limit)
         return [row for _, row in matches.iterrows()]
 
-    def search_reactions_by_name(
-        self, query: str, limit: int = 10
-    ) -> list[pd.Series]:
+    def search_reactions_by_name(self, query: str, limit: int = 10) -> list[pd.Series]:
         """
         Search reactions by name (case-insensitive, partial match).
 
@@ -221,9 +211,7 @@ class DatabaseIndex:
         matches = matches.sort_values("name").head(limit)
         return [row for _, row in matches.iterrows()]
 
-    def search_reactions_by_abbreviation(
-        self, query: str, limit: int = 10
-    ) -> list[pd.Series]:
+    def search_reactions_by_abbreviation(self, query: str, limit: int = 10) -> list[pd.Series]:
         """
         Search reactions by abbreviation (case-insensitive, partial match).
 
@@ -249,9 +237,7 @@ class DatabaseIndex:
         matches = matches.sort_values("name").head(limit)
         return [row for _, row in matches.iterrows()]
 
-    def search_reactions_by_ec_number(
-        self, ec_number: str, limit: int = 10
-    ) -> list[pd.Series]:
+    def search_reactions_by_ec_number(self, ec_number: str, limit: int = 10) -> list[pd.Series]:
         """
         Search reactions by EC number (exact or partial match).
 

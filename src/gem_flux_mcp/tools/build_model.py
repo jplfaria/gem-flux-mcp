@@ -55,6 +55,7 @@ VALID_AMINO_ACIDS = set("ACDEFGHIKLMNPQRSTVWYU")
 def _get_next_steps_build_model() -> list[str]:
     """Get next_steps from centralized prompt."""
     from gem_flux_mcp.prompts import render_prompt
+
     next_steps_text = render_prompt("next_steps/build_model")
     return [
         line.strip()[2:].strip()
@@ -68,7 +69,9 @@ def _get_next_steps_build_model() -> list[str]:
 # =============================================================================
 
 
-def validate_amino_acid_sequence(protein_id: str, sequence: str) -> tuple[bool, list[tuple[str, int]]]:
+def validate_amino_acid_sequence(
+    protein_id: str, sequence: str
+) -> tuple[bool, list[tuple[str, int]]]:
     """Validate amino acid sequence contains only valid characters.
 
     Args:
@@ -109,7 +112,9 @@ def validate_protein_sequences(protein_sequences: dict[str, str]) -> dict[str, A
                 "num_sequences_provided": 0,
                 "minimum_required": 1,
             },
-            suggestions=["Provide at least one protein sequence in the protein_sequences dictionary."],
+            suggestions=[
+                "Provide at least one protein sequence in the protein_sequences dictionary."
+            ],
         )
 
     # Validate each sequence
@@ -298,7 +303,7 @@ def dict_to_fasta_file(protein_sequences: dict[str, str]) -> str:
 
             # Write sequence (wrap at 80 characters for readability)
             for i in range(0, len(sequence), 80):
-                temp_faa.write(f"{sequence[i:i+80]}\n")
+                temp_faa.write(f"{sequence[i : i + 80]}\n")
 
         temp_faa.close()
         logger.debug(f"Created temporary FASTA file: {temp_faa.name}")
@@ -358,6 +363,7 @@ def create_genome_from_dict(
         finally:
             # Clean up temporary file
             import os
+
             try:
                 os.unlink(fasta_path)
                 logger.debug(f"Cleaned up temporary FASTA file: {fasta_path}")
@@ -371,7 +377,9 @@ def create_genome_from_dict(
         # Offline mode: create genome directly from dict
         try:
             genome = MSGenome.from_protein_sequences_hash(protein_sequences)
-            logger.info(f"Created genome from dict (offline mode, {len(protein_sequences)} sequences)")
+            logger.info(
+                f"Created genome from dict (offline mode, {len(protein_sequences)} sequences)"
+            )
 
         except Exception as e:
             raise LibraryError(
@@ -471,7 +479,9 @@ def collect_model_statistics(model: Any, template_name: str) -> dict[str, Any]:
         # Extract compartment from metabolite ID
         if "_" in metabolite.id:
             compartment = metabolite.id.split("_")[-1]
-            metabolites_by_compartment[compartment] = metabolites_by_compartment.get(compartment, 0) + 1
+            metabolites_by_compartment[compartment] = (
+                metabolites_by_compartment.get(compartment, 0) + 1
+            )
 
     # Count exchange reactions
     num_exchange = sum(1 for r in model.reactions if r.id.startswith("EX_"))
@@ -578,7 +588,9 @@ async def build_model(
         ValidationError: If inputs invalid
         LibraryError: If model building fails
     """
-    logger.info(f"build_model called: template={template}, annotate_with_rast={annotate_with_rast}, apply_atp_correction={apply_atp_correction}")
+    logger.info(
+        f"build_model called: template={template}, annotate_with_rast={annotate_with_rast}, apply_atp_correction={apply_atp_correction}"
+    )
 
     # Step 1: Validate mutually exclusive inputs
     if protein_sequences is not None and fasta_file_path is not None:
@@ -588,7 +600,9 @@ async def build_model(
             details={
                 "provided_inputs": ["protein_sequences", "fasta_file_path"],
             },
-            suggestions=["Choose ONE input method: either 'protein_sequences' (dict) OR 'fasta_file_path' (string path)."],
+            suggestions=[
+                "Choose ONE input method: either 'protein_sequences' (dict) OR 'fasta_file_path' (string path)."
+            ],
         )
 
     if protein_sequences is None and fasta_file_path is None:
@@ -598,7 +612,9 @@ async def build_model(
             details={
                 "provided_inputs": [],
             },
-            suggestions=["Provide protein sequences via 'protein_sequences' dict OR 'fasta_file_path' string."],
+            suggestions=[
+                "Provide protein sequences via 'protein_sequences' dict OR 'fasta_file_path' string."
+            ],
         )
 
     # Step 2: Validate template name
@@ -638,7 +654,9 @@ async def build_model(
                 "template": template,
                 "error": str(e),
             },
-            suggestions=["Ensure ModelSEEDpy is correctly installed. Try reinstalling with 'uv sync'."],
+            suggestions=[
+                "Ensure ModelSEEDpy is correctly installed. Try reinstalling with 'uv sync'."
+            ],
         )
 
     # Step 5: Create genome
@@ -680,7 +698,9 @@ async def build_model(
                 "stage": "base_model_construction",
                 "error": str(e),
             },
-            suggestions=["Check protein sequences for validity. If problem persists, this may be a ModelSEEDpy library issue."],
+            suggestions=[
+                "Check protein sequences for validity. If problem persists, this may be a ModelSEEDpy library issue."
+            ],
         )
 
     # Step 7: Add ATPM reaction
@@ -707,15 +727,17 @@ async def build_model(
 
             # Collect statistics
             atp_stats = get_atp_correction_statistics(
-                original_num_reactions,
-                len(model.reactions),
-                test_conditions
+                original_num_reactions, len(model.reactions), test_conditions
             )
-            logger.info(f"ATP correction completed: {atp_stats['reactions_added_by_correction']} reactions added")
+            logger.info(
+                f"ATP correction completed: {atp_stats['reactions_added_by_correction']} reactions added"
+            )
 
         except Exception as e:
             logger.warning(f"ATP correction failed: {e}")
-            logger.warning("Continuing without ATP correction - model may have unrealistic growth rates")
+            logger.warning(
+                "Continuing without ATP correction - model may have unrealistic growth rates"
+            )
             test_conditions = None
             atp_stats = None
             # Continue anyway - ATP correction failure shouldn't break the tool
@@ -768,11 +790,13 @@ async def build_model(
     if annotate_with_rast:
         annotation_note = f"RAST annotation enabled: {gene_count} genes annotated with functional roles and EC numbers"
     else:
-        annotation_note = "RAST annotation disabled: limited reaction mapping (enable RAST for better models)"
+        annotation_note = (
+            "RAST annotation disabled: limited reaction mapping (enable RAST for better models)"
+        )
 
     # Explain ATP correction
     if atp_stats is not None:
-        num_media = atp_stats['num_test_conditions']
+        num_media = atp_stats["num_test_conditions"]
         atp_note = f"ATP correction applied: added {atp_stats['reactions_added_by_correction']} reactions tested across {num_media} media conditions for biologically realistic growth"
     else:
         atp_note = "ATP correction not applied: model may have unrealistic growth predictions"
